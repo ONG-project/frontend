@@ -1,3 +1,4 @@
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import RegisterPage from './Pages/RegisterPage'
 import LoginPage from './Pages/LoginPage'
@@ -14,26 +15,17 @@ import Navbar from './components/Navbar'
 import { User, Bell, Settings } from 'lucide-react'
 import { useState } from 'react'
 
-function App() {
-  const [activePage, setActivePage] = useState('landing')
-  const [selectedNgo, setSelectedNgo] = useState(null)
+function AppContent() {
+  const navigate = useNavigate()
   const [user, setUser] = useState(null)
 
-  // Handler genérico que aceita dados extras (ex: a ONG selecionada)
-  const handleNavigate = (page, data = null) => {
-    if (page === 'ong-profile' && data) {
-      setSelectedNgo(data)
-    }
-    setActivePage(page)
-  }
-
   const navLinks = [
-    { label: 'Nossa Missão', id: 'landing' },
-    { label: 'Causas', id: 'causas' },
-    { label: 'Transparência', id: 'transparency' },
-    { label: 'Sobre', id: 'sobre' },
-    { label: 'Portal Urgência', id: 'relief-core' },
-    { label: 'Gestão ONG', id: 'gestao-ong' },
+    { label: 'Nossa Missão', path: '/' },
+    { label: 'Causas', path: '/causas' },
+    { label: 'Transparência', path: '/transparency' },
+    { label: 'Sobre', path: '/sobre' },
+    { label: 'Urgência', path: '/urgencia' },
+    { label: 'Gestão ONG', path: '/gestao-ong' },
   ]
 
   const rightContent = user ? (
@@ -54,13 +46,13 @@ function App() {
         <Settings className="w-5 h-5" />
       </button>
       <button 
-        onClick={() => handleNavigate('donation')}
+        onClick={() => navigate('/doacao')}
         className="bg-[#0A665C] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-teal-900 transition shadow-sm cursor-pointer"
       >
         Donate
       </button>
       <button
-        onClick={() => handleNavigate('donor-profile')}
+        onClick={() => navigate('/donor-profile')}
         className="w-9 h-9 rounded-full bg-[#F5F2EC] flex items-center justify-center border-2 border-white shadow-sm hover:scale-105 transition overflow-hidden cursor-pointer"
         title="Meu Perfil (João Silva)"
       >
@@ -73,13 +65,13 @@ function App() {
   ) : (
     <div className="flex items-center space-x-4">
       <button 
-        onClick={() => handleNavigate('donation')}
+        onClick={() => navigate('/doacao')}
         className="bg-teal-800 text-white px-5 py-2 rounded-full font-medium text-sm hover:bg-teal-900 transition shadow-sm"
       >
         Doar Agora
       </button>
       <button
-        onClick={() => handleNavigate('login')}
+        onClick={() => navigate('/login')}
         className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition focus:outline-none cursor-pointer"
         title="Login"
       >
@@ -92,32 +84,34 @@ function App() {
     <div className="min-h-screen bg-white font-sans flex flex-col">
       <Navbar
         links={navLinks}
-        activePage={activePage}
-        onNavigate={handleNavigate}
-        onBrandClick={() => handleNavigate('landing')}
+        onNavigate={(path) => navigate(path)}
+        onBrandClick={() => navigate('/')}
         rightContent={rightContent}
         className="border-b border-gray-50"
       />
 
-      {activePage === 'landing' && (
-        <LandingPage
-          onExploreCauses={() => handleNavigate('causas')}
-          onNavigate={handleNavigate}
-        />
-      )}
-      {activePage === 'register' && <RegisterPage onLoginClick={() => handleNavigate('login')} />}
-      {activePage === 'login' && <LoginPage onRegisterClick={() => handleNavigate('register')} onLogin={() => { setUser({ name: 'João Silva', role: 'donor' }); handleNavigate('donor-profile'); }} />}
-      {activePage === 'transparency' && <TransparencyPage />}
-      {activePage === 'sobre' && <AboutPage />}
-      {activePage === 'donation' && <DonationPage onGoHome={() => handleNavigate('landing')} />}
-      {activePage === 'relief-core' && <UrgencyRequestPage />}
-      {activePage === 'gestao-ong' && <NgoManagementPage />}
-      {activePage === 'causas' && <CausesPage onNavigate={handleNavigate} />}
-      {activePage === 'ong-profile' && <NgoProfilePage ong={selectedNgo} onNavigate={handleNavigate} />}
-      {activePage === 'donor-profile' && <DonorProfilePage onNavigate={handleNavigate} />}
-      {activePage === 'ong-transparency' && <NgoTransparencyPage ong={selectedNgo} onNavigate={handleNavigate} />}
+      <Routes>
+        <Route path="/" element={<LandingPage onExploreCauses={() => navigate('/causas')} />} />
+        <Route path="/register" element={<RegisterPage onLoginClick={() => navigate('/login')} />} />
+        <Route path="/login" element={<LoginPage onRegisterClick={() => navigate('/register')} onLogin={() => { setUser({ name: 'João Silva', role: 'donor' }); navigate('/donor-profile'); }} />} />
+        <Route path="/transparency" element={<TransparencyPage />} />
+        <Route path="/sobre" element={<AboutPage />} />
+        <Route path="/doacao" element={<DonationPage onGoHome={() => navigate('/')} />} />
+        <Route path="/urgencia" element={<UrgencyRequestPage />} />
+        <Route path="/gestao-ong" element={<NgoManagementPage />} />
+        <Route path="/causas" element={<CausesPage onNavigate={(path) => navigate(path)} />} />
+        <Route path="/ong/:id" element={<NgoProfilePage onNavigate={(path) => navigate(path)} />} />
+        <Route path="/donor-profile" element={<DonorProfilePage onNavigate={(path) => navigate(path)} />} />
+        <Route path="/ong-transparency" element={<NgoTransparencyPage onNavigate={(path) => navigate(path)} />} />
+      </Routes>
     </div>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
+  )
+}

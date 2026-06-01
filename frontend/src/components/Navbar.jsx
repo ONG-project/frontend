@@ -1,8 +1,10 @@
+import { NavLink } from 'react-router-dom'
+
 const defaultLinks = [
-  { label: 'Explorar', id: 'landing' },
-  { label: 'Causas', id: 'causas' },
-  { label: 'Transparência', id: 'transparency' },
-  { label: 'Sobre', id: 'sobre' },
+  { label: 'Explorar', path: '/' },
+  { label: 'Causas', path: '/causas' },
+  { label: 'Transparência', path: '/transparency' },
+  { label: 'Sobre', path: '/sobre' },
 ]
 
 export default function Navbar({
@@ -14,7 +16,6 @@ export default function Navbar({
   rightContent = null,
   onBrandClick,
   onNavigate,
-  activePage,
 }) {
   return (
     <nav className={`flex justify-between items-center py-6 px-8 md:px-16 bg-white ${className}`}>
@@ -28,17 +29,16 @@ export default function Navbar({
 
       <div className="hidden md:flex space-x-10 text-gray-500 font-medium text-sm">
         {links.map((link) => (
-          <button
-            key={link.id}
-            onClick={() => onNavigate && onNavigate(link.id)}
-            className={
-              activePage === link.id
-                ? 'text-teal-800 font-bold border-b-2 border-teal-700 pb-1'
-                : 'hover:text-teal-700 transition'
+          <NavLink
+            key={link.path}
+            to={link.path || '#'}
+            onClick={() => !link.path && onNavigate && onNavigate(link.path)}
+            className={({ isActive }) =>
+              isActive ? 'text-teal-800 font-bold border-b-2 border-teal-700 pb-1' : 'hover:text-teal-700 transition'
             }
           >
             {link.label}
-          </button>
+          </NavLink>
         ))}
       </div>
 
