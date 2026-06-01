@@ -1,0 +1,86 @@
+import re
+
+from django.contrib.auth.password_validation import validate_password
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from .models import CustomUser
+
+
+class DonorRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'full_name', 'password', 'password_confirm')
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({'password_confirm': 'As senhas não coincidem.'})
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        user = CustomUser.objects.create_user(
+            email=validated_data['email'],
+            full_name=validated_data['full_name'],
+            password=validated_data['password'],
+            role=CustomUser.Role.DONOR,
+        )
+        return user
+
+
+class OngRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(write_only=True)
+    cnpj = serializers.CharField(max_length=18)
+    organization_name = serializers.CharField(max_length=255)
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'full_name', 'password', 'password_confirm', 'cnpj', 'organization_name')
+
+    def validate_cnpj(self, value):
+        # Validação básica de formato: 00.000.000/0000-00 ou 14 dígitos
+        cnpj_numeros = re.sub(r'\D', '', value)
+        if len(cnpj_numeros) != 14:
+            raise serializers.ValidationError('CNPJ inválido. Informe 14 dígitos.')
+        return value
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({'password_confirm': 'As senhas não coincidem.'})
+        return attrs
+
+    def create(self, validated_data):
+        validated_data.pop('password_confirm')
+        # cnpj e organization_name serão usados no perfil de ONG (feature futura)
+        # Por ora, salvamos apenas o usuário base
+        cnpj = validated_data.pop('cnpj')
+        organization_name = validated_data.pop('organization_name')
+        user = CustomUser.objects.create_user(
+            email=validated_data['email'],
+            full_name=validated_data['full_name'],
+            password=validated_data['password'],
+            role=CustomUser.Role.ONG,
+        )
+        # TODO: Criar perfil de ONG vinculado ao usuário quando o app `verification` estiver pronto
+        return user
+
+
+class CurrentUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'email', 'full_name', 'role', 'date_joined')
+        read_only_fields = fields
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Adiciona dados extras ao payload do JWT
+        token['role'] = user.role
+        token['full_name'] = user.full_name
+        return token
