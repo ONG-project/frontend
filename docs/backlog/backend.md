@@ -86,6 +86,9 @@ Tasks relacionadas a modelos, APIs, regras de negocio, permissoes, persistencia 
 - [ ] Criar exportacao real de PDF no painel de relatorios.
 - [ ] Criar historico de arquivos gerados com download.
 - [ ] Criar suporte a periodo personalizado para relatorios.
+- [ ] Implementar os componentes responsáveis por consultar e padronizar os dados provenientes das APIs externas necessárias para a validação da ONG.
+- [ ] Implementar toda a lógica de validação da ONG e cálculo de score.
+- [ ] Disponibilizar a funcionalidade através da API do sistema e garantir sua cobertura mínima de testes.
 
 ## ReliefCore / apoio emergencial
 
