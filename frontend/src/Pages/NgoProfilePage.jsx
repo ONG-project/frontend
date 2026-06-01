@@ -12,6 +12,7 @@ import {
   Heart
 } from 'lucide-react';
 import reflorestaSeedling from '../assets/refloresta_seedling.png';
+import Footer from '../components/Footer';
 
 export default function NgoProfilePage({ ong, onNavigate }) {
   // Configuração padrão caso nenhuma ong seja passada via props
@@ -85,14 +86,17 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           </div>
 
           {/* Card Transparência */}
-          <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex flex-col justify-between items-center text-center space-y-6">
+          <div 
+            onClick={() => onNavigate && onNavigate('ong-transparency', currentOng)}
+            className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:border-[#0A665C]/20 transition-all flex flex-col justify-between items-center text-center space-y-6 cursor-pointer group"
+          >
             <div className="w-full space-y-4">
-              <h3 className="text-xs font-extrabold text-[#0A3D36] uppercase tracking-widest">
+              <h3 className="text-xs font-extrabold text-[#0A3D36] uppercase tracking-widest group-hover:text-[#0A665C] transition-colors">
                 Transparência
               </h3>
               
               {/* Circular Dial Gauge */}
-              <div className="relative w-36 h-36 flex items-center justify-center mx-auto">
+              <div className="relative w-36 h-36 flex items-center justify-center mx-auto transition-transform group-hover:scale-105 duration-300">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" className="stroke-[#EBE9E3]" strokeWidth="7.5" fill="transparent" />
                   <circle
@@ -107,9 +111,14 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               </div>
             </div>
 
-            <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[240px]">
-              Pontuação máxima em saúde financeira e prestação de contas.
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[240px]">
+                Pontuação máxima em saúde financeira e prestação de contas.
+              </p>
+              <span className="inline-flex items-center text-[#0A665C] group-hover:text-[#08524a] text-xs font-bold transition hover:underline">
+                Ver Transparência Pública &rarr;
+              </span>
+            </div>
           </div>
 
         </div>
@@ -303,7 +312,8 @@ export default function NgoProfilePage({ ong, onNavigate }) {
         </div>
 
       </main>
-
+      
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }
