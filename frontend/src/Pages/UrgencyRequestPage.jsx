@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
 import { 
-  Building2, 
-  LayoutGrid, 
-  Asterisk, 
-  ScrollText, 
-  BarChart3, 
-  BookOpen, 
-  Plus, 
-  Settings, 
-  Shield, 
   Wind, 
   TrendingDown, 
   ShieldAlert,
@@ -17,7 +8,6 @@ import {
 
 export default function UrgencyRequestPage() {
   const [selectedCrisis, setSelectedCrisis] = useState('natural'); // 'natural', 'economic', 'political'
-  const [activeSidebar, setActiveSidebar] = useState('requests'); // sidebar navigation state
   
   // Form states
   const [affectedPopulation, setAffectedPopulation] = useState('');
@@ -25,126 +15,16 @@ export default function UrgencyRequestPage() {
   const [operationalRiskSummary, setOperationalRiskSummary] = useState('');
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex font-sans">
-      
-      {/* Sidebar */}
-      <aside className="w-64 bg-[#F4F1EA] flex flex-col justify-between p-6 border-r border-[#E5E2D9] shrink-0">
-        <div className="space-y-8">
-          {/* Logo & Brand */}
-          <div className="flex items-center space-x-2.5 text-[#0A3D36]">
-            <Building2 className="w-7 h-7 fill-[#0A3D36]/10" />
-            <span className="font-bold text-xl tracking-tight">ReliefCore</span>
-          </div>
-
-          {/* New Application Button */}
-          <button className="w-full flex items-center justify-center space-x-2 bg-[#005e54] text-white py-3 px-4 rounded-full font-semibold text-sm hover:bg-[#004d45] transition-colors shadow-sm">
-            <Plus className="w-4 h-4" />
-            <span>New Application</span>
-          </button>
-
-          {/* Main Navigation */}
-          <div className="space-y-6">
-            <div>
-              <p className="text-[10px] font-bold text-gray-500 tracking-wider uppercase mb-3 px-3">
-                Institutional Portal
-              </p>
-              <nav className="space-y-1">
-                <button
-                  onClick={() => setActiveSidebar('dashboard')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSidebar === 'dashboard'
-                      ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                      : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-                  }`}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  <span>Dashboard</span>
-                </button>
-                <button
-                  onClick={() => setActiveSidebar('requests')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSidebar === 'requests'
-                      ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                      : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-                  }`}
-                >
-                  <Asterisk className="w-4 h-4" />
-                  <span>Active Requests</span>
-                </button>
-                <button
-                  onClick={() => setActiveSidebar('compliance')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSidebar === 'compliance'
-                      ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                      : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-                  }`}
-                >
-                  <ScrollText className="w-4 h-4" />
-                  <span>Compliance Logs</span>
-                </button>
-                <button
-                  onClick={() => setActiveSidebar('analytics')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSidebar === 'analytics'
-                      ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                      : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-                  }`}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  <span>Impact Analytics</span>
-                </button>
-                <button
-                  onClick={() => setActiveSidebar('ledger')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    activeSidebar === 'ledger'
-                      ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                      : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-                  }`}
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span>Financial Ledger</span>
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Navigation */}
-        <div className="space-y-1">
-          <button
-            onClick={() => setActiveSidebar('settings')}
-            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeSidebar === 'settings'
-                ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-            }`}
-          >
-            <Settings className="w-4 h-4" />
-            <span>Settings</span>
-          </button>
-          <button
-            onClick={() => setActiveSidebar('security')}
-            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-              activeSidebar === 'security'
-                ? 'bg-white text-[#0A3D36] shadow-sm font-semibold'
-                : 'text-gray-600 hover:bg-[#EBE9E3] hover:text-gray-900'
-            }`}
-          >
-            <Shield className="w-4 h-4" />
-            <span>Security</span>
-          </button>
-        </div>
-      </aside>
-
+    <div className="min-h-screen bg-[#FAF8F5] font-sans">
       {/* Main Content Area */}
-      <main className="flex-1 py-12 px-16 max-w-5xl mx-auto overflow-y-auto">
+      <main className="w-full max-w-5xl mx-auto py-12 px-6 md:px-10">
         {/* Status Badge & Protocol ID */}
         <div className="flex items-center space-x-3 mb-4">
           <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
             ● Em Preenchimento
           </span>
           <span className="text-sm font-semibold text-gray-500">
-            Protocolo #RC-8924-BR
+            Protocolo #UR-8924-BR
           </span>
         </div>
 

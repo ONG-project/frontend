@@ -57,10 +57,10 @@ export default function AboutPage({ onNavigate }) {
             <h2 className="text-3xl font-bold text-gray-900">Nossa História</h2>
             <div className="space-y-4 text-gray-600 leading-relaxed text-sm md:text-base">
               <p>
-                Desde o nosso nascimento, temos um único propósito: facilitar o encontro entre quem quer ajudar e quem precisa de apoio. Acreditamos que a solidariedade deve ser transparente, direta e eficiente.
+                A ONG+ nasceu para simplificar a ponte entre doadores e organizações sérias. Nossa proposta é tornar o ato de ajudar mais claro, seguro e acompanhado de resultados concretos.
               </p>
               <p>
-                O que começou como um pequeno grupo de voluntários se transformou em uma rede nacional que hoje serve de ponte para centenas de ONGs e milhares de doadores.
+                Evoluímos com foco em melhoria contínua: fortalecemos critérios de curadoria, ampliamos mecanismos de transparência e priorizamos relações de confiança com comunidades e parceiros.
               </p>
             </div>
           </div>
@@ -75,13 +75,13 @@ export default function AboutPage({ onNavigate }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <StatCard 
                 icon={Clock} 
-                title="5+ Anos" 
-                subtitle="De história e impacto real" 
+                title="Atuação Contínua" 
+                subtitle="Compromisso diário com impacto social" 
               />
               <StatCard 
                 icon={Globe} 
-                title="Presença Global" 
-                subtitle="Atuando em diversas frentes" 
+                title="Foco Internacional" 
+                subtitle="Iniciativas em diferentes regiões do Brasil" 
               />
             </div>
           </div>

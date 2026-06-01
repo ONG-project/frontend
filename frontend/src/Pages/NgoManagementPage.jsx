@@ -21,6 +21,8 @@ import Footer from '../components/Footer';
 
 export default function NgoManagementPage({ onNavigate }) {
   const [activeSubTab, setActiveSubTab] = useState('visao-geral'); // 'visao-geral', 'campanhas', 'doadores', 'relatorios'
+  const [campaignTab, setCampaignTab] = useState('ativas'); // 'ativas', 'encerradas', 'rascunhos', 'impacto'
+  const [donorSection, setDonorSection] = useState('doadores'); // 'doadores', 'campanhas', 'relatorios', 'retencao'
   
   // Doadores tab states
   const [donorFilter, setDonorFilter] = useState('Todos'); // 'Todos', 'Mensais', 'Eventuais'
@@ -32,6 +34,20 @@ export default function NgoManagementPage({ onNavigate }) {
   const [includeDonors, setIncludeDonors] = useState(true);
   const [includeCampaigns, setIncludeCampaigns] = useState(false);
   const [includeCnpj, setIncludeCnpj] = useState(true);
+
+  const donorRows = [
+    { initials: 'AS', color: 'bg-[#B2E4E1] text-[#0A665C]', name: 'Alice Schmidt', email: 'alice.schmidt@email.com', value: 'R$ 450,00', frequency: 'Mensal', date: '12 Out, 2024', status: 'Ativo' },
+    { initials: 'RM', color: 'bg-[#CBD9ED] text-indigo-700', name: 'Ricardo Mendes', email: 'mendes.r@provedor.net', value: 'R$ 1.200,00', frequency: 'Eventual', date: '08 Out, 2024', status: 'Ativo' },
+    { initials: 'HB', color: 'bg-gray-200 text-gray-600', name: 'Helena Barbosa', email: 'helena.b@site.com', value: 'R$ 75,00', frequency: 'Mensal', date: '05 Out, 2024', status: 'Pendente' },
+    { initials: 'CP', color: 'bg-[#DCEDC8] text-[#0A665C]', name: 'Clara Peroli', email: 'clara.peroli@gmail.com', value: 'R$ 300,00', frequency: 'Mensal', date: '28 Set, 2024', status: 'Ativo' }
+  ];
+
+  const filteredDonors = donorRows.filter((donor) => {
+    const matchesFilter = donorFilter === 'Todos' || donor.frequency === donorFilter;
+    const query = searchQuery.toLowerCase();
+    const matchesQuery = donor.name.toLowerCase().includes(query) || donor.email.toLowerCase().includes(query);
+    return matchesFilter && matchesQuery;
+  });
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col font-sans">
@@ -187,19 +203,26 @@ export default function NgoManagementPage({ onNavigate }) {
 
             {/* Campaign sub-sub-tabs */}
             <div className="flex space-x-6 border-b border-gray-100 pb-1">
-              {['Campanhas Ativas', 'Campanhas Encerradas', 'Rascunhos', 'Relatórios de Impacto'].map((tab, idx) => (
+              {[
+                { id: 'ativas', label: 'Campanhas Ativas' },
+                { id: 'encerradas', label: 'Campanhas Encerradas' },
+                { id: 'rascunhos', label: 'Rascunhos' },
+                { id: 'impacto', label: 'Relatórios de Impacto' }
+              ].map((tab) => (
                 <button
-                  key={tab}
+                  key={tab.id}
+                  onClick={() => setCampaignTab(tab.id)}
                   className={`pb-3 text-xs font-bold uppercase tracking-wider ${
-                    idx === 0 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
+                    campaignTab === tab.id ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
 
             {/* Active Campaigns Grid */}
+            {campaignTab === 'ativas' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Campaign 1: Projeto Verde Urbe */}
               <div className="bg-white rounded-[2rem] border border-gray-150 shadow-sm overflow-hidden flex flex-col md:flex-row">
@@ -279,8 +302,10 @@ export default function NgoManagementPage({ onNavigate }) {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Campaign Encerradas section */}
+            {campaignTab === 'encerradas' && (
             <div className="space-y-6 pt-4">
               <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                 <h3 className="text-xl font-extrabold text-[#0A3D36]">Campanhas Encerradas</h3>
@@ -346,6 +371,53 @@ export default function NgoManagementPage({ onNavigate }) {
                 </div>
               </div>
             </div>
+            )}
+
+            {campaignTab === 'rascunhos' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                  <span className="bg-[#F5F2EC] text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Rascunho</span>
+                  <h3 className="text-lg font-bold text-gray-900">Hortas Escolares 2026</h3>
+                  <p className="text-xs text-gray-500">Última edição: hoje, 10:14. Meta preliminar de R$ 35.000 e plano de execução em revisão.</p>
+                  <div className="flex gap-2 pt-2">
+                    <button className="bg-[#0A665C] text-white text-xs font-bold px-4 py-2 rounded-lg">Continuar edição</button>
+                    <button className="bg-[#EAE8E3] text-gray-700 text-xs font-bold px-4 py-2 rounded-lg">Duplicar</button>
+                  </div>
+                </div>
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                  <span className="bg-[#F5F2EC] text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Rascunho</span>
+                  <h3 className="text-lg font-bold text-gray-900">Mutirão Água Limpa</h3>
+                  <p className="text-xs text-gray-500">Última edição: ontem, 17:38. Escopo inicial definido e aguardando anexos obrigatórios.</p>
+                  <div className="flex gap-2 pt-2">
+                    <button className="bg-[#0A665C] text-white text-xs font-bold px-4 py-2 rounded-lg">Continuar edição</button>
+                    <button className="bg-[#EAE8E3] text-gray-700 text-xs font-bold px-4 py-2 rounded-lg">Excluir rascunho</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {campaignTab === 'impacto' && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-100">
+                  <h3 className="text-lg font-bold text-[#0A3D36]">Relatórios de Impacto</h3>
+                  <p className="text-xs text-gray-500 mt-1">Acompanhe os relatórios publicados por campanha com métricas e evidências.</p>
+                </div>
+                <div className="divide-y divide-gray-100">
+                  {[
+                    { campaign: 'Projeto Verde Urbe', period: 'Maio 2026', metric: '1.240 famílias beneficiadas' },
+                    { campaign: 'Refloresta SP', period: 'Abril 2026', metric: '3.100 mudas plantadas' }
+                  ].map((item) => (
+                    <div key={item.campaign} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{item.campaign}</p>
+                        <p className="text-xs text-gray-500">Período: {item.period}</p>
+                      </div>
+                      <div className="text-xs font-semibold text-[#0A665C]">{item.metric}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -402,18 +474,26 @@ export default function NgoManagementPage({ onNavigate }) {
 
             {/* Inner sub-tabs list */}
             <div className="flex space-x-6 border-b border-gray-100 pb-1">
-              {['Doadores', 'Campanhas', 'Relatórios', 'Retenção'].map((tab, idx) => (
+              {[
+                { id: 'doadores', label: 'Doadores' },
+                { id: 'campanhas', label: 'Campanhas' },
+                { id: 'relatorios', label: 'Relatórios' },
+                { id: 'retencao', label: 'Retenção' }
+              ].map((tab) => (
                 <button
-                  key={tab}
+                  key={tab.id}
+                  onClick={() => setDonorSection(tab.id)}
                   className={`pb-3 text-xs font-bold uppercase tracking-wider ${
-                    idx === 0 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
+                    donorSection === tab.id ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
 
+            {donorSection === 'doadores' && (
+            <>
             {/* Donors Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -429,148 +509,45 @@ export default function NgoManagementPage({ onNavigate }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-150 text-xs font-medium text-gray-700">
-                    {/* Row 1 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#B2E4E1] text-[#0A665C] flex items-center justify-center font-bold text-xs shrink-0">
-                          AS
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Alice Schmidt</div>
-                          <div className="text-gray-400 text-[10px]">alice.schmidt@email.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 450,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">12 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 2 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#CBD9ED] text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">
-                          RM
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Ricardo Mendes</div>
-                          <div className="text-gray-400 text-[10px]">mendes.r@provedor.net</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 1.200,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <Calendar className="w-3 h-3" />
-                          <span>Única</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">08 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 3 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-xs shrink-0">
-                          HB
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Helena Barbosa</div>
-                          <div className="text-gray-400 text-[10px]">helena.b@site.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 75,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">05 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-gray-100 text-gray-500 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Pendente
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 4 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#DCEDC8] text-light-green-800 flex items-center justify-center font-bold text-xs shrink-0">
-                          CP
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Clara Peroli</div>
-                          <div className="text-gray-400 text-[10px]">clara.peroli@gmail.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 300,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">28 Set, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
+                    {filteredDonors.map((donor) => (
+                      <tr key={donor.email}>
+                        <td className="py-4 px-6 flex items-center space-x-3.5">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${donor.color}`}>
+                            {donor.initials}
+                          </div>
+                          <div>
+                            <div className="font-bold text-gray-900">{donor.name}</div>
+                            <div className="text-gray-400 text-[10px]">{donor.email}</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">{donor.value}</td>
+                        <td className="py-4 px-6">
+                          <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
+                            {donor.frequency === 'Mensal' ? <RefreshCw className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
+                            <span>{donor.frequency === 'Eventual' ? 'Única' : donor.frequency}</span>
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-gray-500 font-semibold">{donor.date}</td>
+                        <td className="py-4 px-6">
+                          <span className={`font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide ${donor.status === 'Ativo' ? 'bg-[#CBDDCD]/60 text-[#0A3D36]' : 'bg-gray-100 text-gray-500'}`}>
+                            ● {donor.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
+                            <Mail className="w-3 h-3" />
+                            <span>Enviar Mensagem</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
 
               {/* Table pagination */}
               <div className="flex items-center justify-between border-t border-gray-150 px-6 py-4 text-xs font-semibold text-gray-500">
-                <span>Mostrando 4 de 1.240 doadores ativos</span>
+                <span>Mostrando {filteredDonors.length} de 1.240 doadores ativos</span>
                 <div className="flex items-center space-x-1">
                   <button className="p-1.5 rounded-md hover:bg-gray-100 transition"><ChevronLeft className="w-4 h-4" /></button>
                   <button className="w-7 h-7 bg-[#0A665C] text-white rounded-md flex items-center justify-center font-bold">1</button>
@@ -620,6 +597,55 @@ export default function NgoManagementPage({ onNavigate }) {
                 </p>
               </div>
             </div>
+            </>
+            )}
+
+            {donorSection === 'campanhas' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { title: 'Projeto Verde Urbe', value: 'R$ 45.000', donors: '188 doadores' },
+                  { title: 'Refloresta SP', value: 'R$ 50.400', donors: '121 doadores' },
+                  { title: 'Ciclo Água Viva', value: 'R$ 82.400', donors: '267 doadores' }
+                ].map((item) => (
+                  <div key={item.title} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-2">
+                    <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
+                    <p className="text-2xl font-extrabold text-[#0A665C]">{item.value}</p>
+                    <p className="text-xs text-gray-500">{item.donors}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {donorSection === 'relatorios' && (
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                <h4 className="text-sm font-bold text-gray-900 mb-4">Relatórios da Base de Doadores</h4>
+                <div className="space-y-3">
+                  {['Relatório Mensal de Retenção', 'Ticket Médio por Campanha', 'Doadores Inativos 90+ dias'].map((report) => (
+                    <div key={report} className="flex items-center justify-between bg-[#FAF8F5] border border-gray-100 rounded-xl px-4 py-3">
+                      <span className="text-xs font-semibold text-gray-700">{report}</span>
+                      <button className="text-xs font-bold text-[#0A665C]">Baixar</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {donorSection === 'retencao' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Retenção 30 dias</p>
+                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">82%</p>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Retenção 90 dias</p>
+                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">67%</p>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Risco de churn</p>
+                  <p className="text-3xl font-extrabold text-[#A14E3B] mt-2">14%</p>
+                </div>
+              </div>
+            )}
 
           </div>
         )}
@@ -638,19 +664,6 @@ export default function NgoManagementPage({ onNavigate }) {
                   </span>
                   <span className="text-xs text-gray-500 font-semibold">12.345.678/0001-90</span>
                 </div>
-              </div>
-              
-              <div className="flex space-x-4 border-b border-transparent pb-1">
-                {['Perfil', 'Documentos', 'Relatórios', 'Segurança'].map((tab, idx) => (
-                  <button
-                    key={tab}
-                    className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all relative ${
-                      idx === 2 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
               </div>
             </div>
 
