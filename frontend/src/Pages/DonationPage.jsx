@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { 
+  Sparkles,
   GraduationCap, 
   TreeDeciduous, 
   HeartPulse, 
+  Scale,
   CreditCard, 
   QrCode, 
   FileText, 
@@ -19,7 +21,7 @@ export default function DonationPage({ onGoHome }) {
   const [frequency, setFrequency] = useState('Mensal'); // 'Única', 'Mensal'
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');
-  const [selectedCause, setSelectedCause] = useState('Educação para o Futuro');
+  const [selectedCause, setSelectedCause] = useState('Todas as causas');
   const [paymentMethod, setPaymentMethod] = useState('Cartão');
   
   // Card input fields
@@ -44,6 +46,12 @@ export default function DonationPage({ onGoHome }) {
 
   const causesList = [
     {
+      id: 'Todas as causas',
+      title: 'Todas as causas',
+      description: 'Deixe a alocação com nosso time para apoiar as frentes mais urgentes.',
+      icon: Sparkles,
+    },
+    {
       id: 'Educação para o Futuro',
       title: 'Educação para o Futuro',
       description: 'Alfabetização e treinamento em comunidades carentes.',
@@ -60,6 +68,12 @@ export default function DonationPage({ onGoHome }) {
       title: 'Saúde Comunitária',
       description: 'Apoio médico, psicológico e atendimento em clínicas sociais.',
       icon: HeartPulse,
+    },
+    {
+      id: 'Direitos Humanos',
+      title: 'Direitos Humanos',
+      description: 'Defesa de direitos, acolhimento e suporte jurídico para populações vulneráveis.',
+      icon: Scale,
     },
   ];
 

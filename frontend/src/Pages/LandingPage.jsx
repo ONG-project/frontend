@@ -122,7 +122,7 @@ const HowItWorks = () => (
   </section>
 );
 
-const CTA = ({ onExploreCauses }) => (
+const CTA = ({ onExploreCauses, onNavigate }) => (
   <section className="px-8 pb-24 max-w-6xl mx-auto">
     <div className="bg-[#147B72] rounded-[2.5rem] p-12 md:p-16 text-center text-white flex flex-col items-center shadow-lg">
       <h2 className="text-3xl md:text-4xl font-bold mb-4">Pronto para fazer a diferença?</h2>
@@ -130,7 +130,10 @@ const CTA = ({ onExploreCauses }) => (
         Junte-se à nossa comunidade de doadores e comece a apoiar causas que transformam vidas hoje mesmo.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <button className="bg-white text-teal-800 font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 transition shadow-sm w-full sm:w-auto">
+        <button
+          onClick={() => onNavigate && onNavigate('donation')}
+          className="bg-white text-teal-800 font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 transition shadow-sm w-full sm:w-auto"
+        >
           Doar Agora
         </button>
         <button 
@@ -151,7 +154,7 @@ export default function LandingPage({ onExploreCauses, onNavigate }) {
         <Hero onExploreCauses={onExploreCauses} />
         <Features />
         <HowItWorks />
-        <CTA onExploreCauses={onExploreCauses} />
+        <CTA onExploreCauses={onExploreCauses} onNavigate={onNavigate} />
       </main>
       <Footer onNavigate={onNavigate} />
     </>

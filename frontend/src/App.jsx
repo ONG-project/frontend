@@ -32,7 +32,7 @@ function App() {
     { label: 'Causas', id: 'causas' },
     { label: 'Transparência', id: 'transparency' },
     { label: 'Sobre', id: 'sobre' },
-    { label: 'Portal ReliefCore', id: 'relief-core' },
+    { label: 'Portal Urgência', id: 'relief-core' },
     { label: 'Gestão ONG', id: 'gestao-ong' },
   ]
 
@@ -99,7 +99,12 @@ function App() {
         className="border-b border-gray-50"
       />
 
-      {activePage === 'landing' && <LandingPage onExploreCauses={() => handleNavigate('causas')} />}
+      {activePage === 'landing' && (
+        <LandingPage
+          onExploreCauses={() => handleNavigate('causas')}
+          onNavigate={handleNavigate}
+        />
+      )}
       {activePage === 'register' && <RegisterPage onLoginClick={() => handleNavigate('login')} />}
       {activePage === 'login' && <LoginPage onRegisterClick={() => handleNavigate('register')} onLogin={() => { setUser({ name: 'João Silva', role: 'donor' }); handleNavigate('donor-profile'); }} />}
       {activePage === 'transparency' && <TransparencyPage />}
