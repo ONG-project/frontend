@@ -2,9 +2,19 @@
 
 Tasks relacionadas a modelos, APIs, regras de negocio, permissoes, persistencia e integracoes externas.
 
+Ultima atualizacao: 2026-06-01.
+
+Observacao: o projeto ja possui estrutura Django inicial e um modelo parcial de ONG em `backend/verification/models.py`. As tasks abaixo descrevem o que ainda falta para transformar essa base em API utilizavel pelo produto.
+
+## Itens ja iniciados
+
+- Estrutura Django base em `backend/ong_plus`.
+- Apps de dominio criados como pacotes: `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`, alem de duplicatas sob `backend/apps`.
+- Modelo `NGO` inicial no app `verification`, com campos como nome, CNPJ, area de atuacao, score e status ativo.
+
 ## Estrutura de API e projeto
 
-- [ ] Criar models, serializers, views e urls para os apps `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`.
+- [ ] Completar models, serializers, views e urls para os apps `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`.
 - [ ] Remover duplicidade entre apps na raiz do backend e apps dentro de `backend/apps`, ou padronizar uma unica estrutura.
 - [ ] Adicionar Django REST Framework, caso a API REST seja o caminho escolhido.
 - [ ] Criar endpoints versionados, por exemplo `/api/v1/...`.
@@ -29,11 +39,11 @@ Tasks relacionadas a modelos, APIs, regras de negocio, permissoes, persistencia 
 
 ## ONGs e causas
 
-- [ ] Criar modelo e endpoints de ONGs.
+- [ ] Completar modelo de ONGs e criar endpoints.
 - [ ] Criar modelo e endpoints de causas.
 - [ ] Criar endpoints para listagem, busca e filtros por causa, nome, localidade e CNPJ.
 - [ ] Criar paginacao para listagem de ONGs.
-- [ ] Persistir status de verificacao de cada ONG.
+- [ ] Persistir status de verificacao de cada ONG alem do score inicial ja existente no modelo `NGO`.
 - [ ] Persistir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
 - [ ] Persistir historico de campanhas no perfil publico da ONG.
 - [ ] Persistir metas, arrecadacao atual e progresso por campanha.
@@ -72,7 +82,7 @@ Tasks relacionadas a modelos, APIs, regras de negocio, permissoes, persistencia 
 
 ## Gestao da ONG
 
-- [ ] Persistir dados do painel de gestao da ONG.
+- [ ] Persistir dados do painel de gestao da ONG alem do cadastro basico ja iniciado no modelo `NGO`.
 - [ ] Criar endpoints para edicao de perfil institucional.
 - [ ] Criar endpoints para upload de nova auditoria.
 - [ ] Criar endpoints para criacao de campanha.
@@ -86,9 +96,9 @@ Tasks relacionadas a modelos, APIs, regras de negocio, permissoes, persistencia 
 - [ ] Criar exportacao real de PDF no painel de relatorios.
 - [ ] Criar historico de arquivos gerados com download.
 - [ ] Criar suporte a periodo personalizado para relatorios.
-- [ ] Implementar os componentes responsáveis por consultar e padronizar os dados provenientes das APIs externas necessárias para a validação da ONG.
-- [ ] Implementar toda a lógica de validação da ONG e cálculo de score.
-- [ ] Disponibilizar a funcionalidade através da API do sistema e garantir sua cobertura mínima de testes.
+- [ ] Implementar os componentes responsaveis por consultar e padronizar os dados provenientes das APIs externas necessarias para a validacao da ONG.
+- [ ] Implementar toda a logica de validacao da ONG e calculo de score.
+- [ ] Disponibilizar a funcionalidade atraves da API do sistema e garantir sua cobertura minima de testes.
 
 ## ReliefCore / apoio emergencial
 

@@ -2,6 +2,10 @@
 
 Tasks relacionadas a paginas, navegacao, formularios, estados de interface e experiencia do usuario. Este backlog foi montado a partir dos documentos em `README.md`, `docs/user_stories`, `docs/workflow` e das paginas ja implementadas em `frontend/src/Pages`.
 
+Ultima atualizacao: 2026-06-01.
+
+Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao possuem integracao real, persistencia, validacao completa ou contrato com backend.
+
 ## Paginas ja implementadas ou parcialmente implementadas
 
 - `LandingPage`: home / nossa missao.
@@ -14,12 +18,14 @@ Tasks relacionadas a paginas, navegacao, formularios, estados de interface e exp
 - `LoginPage`: login visual.
 - `UrgencyRequestPage`: portal ReliefCore / solicitacao de apoio emergencial.
 - `NgoManagementPage`: area de gestao da ONG com visao geral, campanhas, doadores e relatorios.
+- `DonorProfilePage`: perfil visual do doador com resumo, historico mockado, recibos mockados e preferencias de causas.
+- `NgoTransparencyPage`: pagina visual de transparencia de uma ONG com dados, certificados e arquivos mockados.
 
 ## Navegacao e estrutura
 
 - [ ] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
 - [ ] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
-- [ ] Criar pagina dedicada de relatorio publico completo para doadores, citada no fluxo como `Pagina do Relatorio`.
+- [ ] Criar pagina dedicada de relatorio publico completo para doadores, citada no fluxo como `Pagina do Relatorio`, ou formalizar `NgoTransparencyPage` como esse destino no fluxo.
 - [ ] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
 - [ ] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
 - [ ] Padronizar nomes e idioma do portal ReliefCore para combinar com o restante da experiencia em portugues.
@@ -28,13 +34,13 @@ Tasks relacionadas a paginas, navegacao, formularios, estados de interface e exp
 
 ## Autenticacao e cadastro
 
-- [ ] Implementar formularios de cadastro de doador com validacao no frontend.
-- [ ] Implementar formularios de cadastro de ONG com campos obrigatorios, incluindo CNPJ.
-- [ ] Diferenciar visualmente o fluxo de cadastro de doador e ONG.
+- [ ] Adicionar validacao, submit e feedback real ao formulario visual de cadastro de doador.
+- [ ] Criar formulario de cadastro de ONG com campos obrigatorios, incluindo CNPJ.
+- [ ] Diferenciar o fluxo de cadastro de doador e ONG alem da tela visual atual focada em doador.
 - [ ] Criar tela ou etapa de onboarding da ONG para completar perfil, documentos e dados bancarios.
-- [ ] Implementar tela de recuperacao de senha.
+- [ ] Implementar tela/fluxo real de recuperacao de senha; hoje existe apenas link visual no login.
 - [ ] Adicionar mensagens de erro, sucesso e estados de carregamento nos fluxos de login/cadastro.
-- [ ] Persistir visualmente o estado autenticado apos login.
+- [ ] Persistir estado autenticado apos login; hoje o usuario e mantido apenas em memoria no `App.jsx`.
 
 ## ONGs e causas
 
@@ -52,8 +58,8 @@ Tasks relacionadas a paginas, navegacao, formularios, estados de interface e exp
 ## Transparencia e verificacao
 
 - [ ] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
-- [ ] Exibir relatorios publicos de prestacao de contas com data de atualizacao.
-- [ ] Criar historico de relatorios e arquivos publicos.
+- [ ] Conectar relatorios publicos de prestacao de contas a dados reais com data de atualizacao.
+- [ ] Conectar historico de relatorios e arquivos publicos a dados reais e downloads funcionais.
 - [ ] Exibir mudancas detectadas desde a ultima verificacao.
 - [ ] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa.
 - [ ] Criar UI para upload de evidencias/documentos de confiabilidade.
@@ -65,8 +71,8 @@ Tasks relacionadas a paginas, navegacao, formularios, estados de interface e exp
 - [ ] Implementar estados visuais de pagamento pendente, aprovado, recusado, cancelado e estornado.
 - [ ] Exibir QR Code real para pagamento PIX.
 - [ ] Exibir link/documento de boleto quando gerado.
-- [ ] Exibir recibo apos confirmacao de pagamento.
-- [ ] Exibir historico de doacoes do doador.
+- [ ] Gerar e exibir recibo real apos confirmacao de pagamento; hoje ha apenas confirmacao visual.
+- [ ] Conectar historico de doacoes do doador a dados reais; hoje `DonorProfilePage` usa dados mockados.
 - [ ] Exibir historico de transacoes para a ONG.
 - [ ] Atualizar progresso de meta na interface apos pagamento confirmado.
 
@@ -83,8 +89,8 @@ Tasks relacionadas a paginas, navegacao, formularios, estados de interface e exp
 - [ ] Implementar filtros reais de doadores mensais, eventuais, pendentes e ativos.
 - [ ] Implementar UI de envio de mensagens para doadores.
 - [ ] Implementar exportacao de relatorio mensal de doadores.
-- [ ] Implementar download de PDFs no painel de relatorios.
-- [ ] Implementar historico de arquivos gerados com download.
+- [ ] Implementar download real de PDFs no painel de relatorios.
+- [ ] Implementar historico real de arquivos gerados com download.
 - [ ] Implementar configuracao de periodo personalizado para relatorios.
 
 ## ReliefCore / apoio emergencial

@@ -2,6 +2,10 @@
 
 Tasks que cruzam frontend e backend, ou que precisam de decisao de produto antes da implementacao detalhada.
 
+Ultima atualizacao: 2026-06-01.
+
+Observacao: as telas atuais do frontend usam principalmente dados mockados e navegacao por estado. As tasks abaixo priorizam decisoes e contratos necessarios para ligar esses fluxos ao backend.
+
 ## Contratos entre frontend e backend
 
 - [ ] Definir contrato da API de autenticacao: login, logout, refresh/session e usuario atual.
@@ -49,7 +53,7 @@ Tasks que cruzam frontend e backend, ou que precisam de decisao de produto antes
 
 ## Documentacao e qualidade
 
-- [ ] Atualizar README principal com links para os novos backlogs.
+- [ ] Atualizar README principal com links para os backlogs de frontend, backend e integracao/produto.
 - [ ] Atualizar `frontend/README.md`, que ainda esta com conteudo padrao do Vite.
 - [ ] Documentar contratos de API usados pelo frontend.
 - [ ] Criar guia de variaveis de ambiente para frontend e backend.
