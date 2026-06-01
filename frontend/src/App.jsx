@@ -8,6 +8,7 @@ import UrgencyRequestPage from './Pages/UrgencyRequestPage'
 import NgoManagementPage from './Pages/NgoManagementPage'
 import CausesPage from './Pages/CausesPage'
 import NgoProfilePage from './Pages/NgoProfilePage'
+import NgoTransparencyPage from './Pages/NgoTransparencyPage'
 import Navbar from './components/Navbar'
 import { User } from 'lucide-react'
 import { useState } from 'react'
@@ -72,6 +73,7 @@ function App() {
       {activePage === 'gestao-ong' && <NgoManagementPage />}
       {activePage === 'causas' && <CausesPage onNavigate={handleNavigate} />}
       {activePage === 'ong-profile' && <NgoProfilePage ong={selectedNgo} onNavigate={handleNavigate} />}
+      {activePage === 'ong-transparency' && <NgoTransparencyPage ong={selectedNgo} onNavigate={handleNavigate} />}
     </div>
   )
 }
