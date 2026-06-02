@@ -1,8 +1,8 @@
 # Backlog frontend
 
-Tasks relacionadas a paginas, navegacao, formularios, estados de interface e experiencia do usuario. Este backlog foi montado a partir dos documentos em `README.md`, `docs/user_stories`, `docs/workflow` e das paginas ja implementadas em `frontend/src/Pages`.
+Tasks relacionadas a paginas, navegacao, formularios, estados de interface, controle de acesso e experiencia do usuario.
 
-Ultima atualizacao: 2026-06-01.
+Ultima atualizacao: 2026-06-02.
 
 Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao possuem integracao real, persistencia, validacao completa ou contrato com backend.
 
@@ -21,29 +21,37 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 - `DonorProfilePage`: perfil visual do doador com resumo, historico mockado, recibos mockados e preferencias de causas.
 - `NgoTransparencyPage`: pagina visual de transparencia de uma ONG com dados, certificados e arquivos mockados.
 
-## Navegacao e estrutura
+## Navegacao, rotas e controle de acesso
 
+- [ ] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
+- [ ] Criar estados de rota/tela para visitante, doador, ONG e admin.
+- [ ] Implementar guards de rota para area do doador, area da ONG e area administrativa.
+- [ ] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
+- [ ] Redirecionar usuario autenticado para a area correta apos login: doador, ONG ou admin.
+- [ ] Bloquear doacoes feitas por usuarios autenticados como ONG, quando a regra de produto exigir.
 - [ ] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
 - [ ] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
-- [ ] Criar pagina dedicada de relatorio publico completo para doadores, citada no fluxo como `Pagina do Relatorio`, ou formalizar `NgoTransparencyPage` como esse destino no fluxo.
-- [ ] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
 - [ ] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
-- [ ] Padronizar nomes e idioma do portal ReliefCore para combinar com o restante da experiencia em portugues.
-- [ ] Criar estados de rota/tela para visitante, doador, ONG e admin.
-- [ ] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
 
 ## Autenticacao e cadastro
 
-- [ ] Adicionar validacao, submit e feedback real ao formulario visual de cadastro de doador.
-- [ ] Criar formulario de cadastro de ONG com campos obrigatorios, incluindo CNPJ.
-- [ ] Diferenciar o fluxo de cadastro de doador e ONG alem da tela visual atual focada em doador.
-- [ ] Criar tela ou etapa de onboarding da ONG para completar perfil, documentos e dados bancarios.
+- [ ] Refatorar `RegisterPage` para apresentar escolha inicial clara entre **Sou doador** e **Sou ONG**.
+- [ ] Criar formulario completo de cadastro de doador com validacao, submit, loading, sucesso e erro.
+- [ ] Criar formulario completo de cadastro de ONG com CNPJ, razao social, nome publico, area de atuacao, localidade e contato.
+- [ ] Adicionar campos de redes sociais no cadastro/onboarding da ONG.
+- [ ] Adicionar etapa de envio de comprovantes de autenticidade da ONG.
+- [ ] Criar etapa de onboarding da ONG para completar perfil, documentos e dados bancarios.
 - [ ] Implementar tela/fluxo real de recuperacao de senha; hoje existe apenas link visual no login.
 - [ ] Adicionar mensagens de erro, sucesso e estados de carregamento nos fluxos de login/cadastro.
 - [ ] Persistir estado autenticado apos login; hoje o usuario e mantido apenas em memoria no `App.jsx`.
 
-## ONGs e causas
+## ONGs, causas, campanhas e bundles
 
+- [ ] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
+- [ ] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
+- [ ] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
+- [ ] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
+- [ ] Criar fluxo de doacao para bundle/campanha coletiva.
 - [ ] Conectar a listagem de ONGs da `CausesPage` a dados da API.
 - [ ] Implementar filtro por causa usando dados reais.
 - [ ] Implementar busca real por nome, causa, localidade e CNPJ.
@@ -51,27 +59,47 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 - [ ] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
 - [ ] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
 - [ ] Adicionar historico de campanhas no perfil publico da ONG.
-- [ ] Adicionar metas, arrecadacao atual e progresso por campanha no perfil publico.
+- [ ] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
 - [ ] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
 - [ ] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
 
+## Sistema de campanhas e matchfunding
+
+- [ ] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
+- [ ] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
+- [ ] Criar suporte visual a rascunhos de campanha.
+- [ ] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
+- [ ] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
+- [ ] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
+- [ ] Diferenciar campanhas individuais de campanhas coletivas/bundles.
+- [ ] Exibir alertas quando uma campanha depende de validacao administrativa.
+- [ ] Criar historico completo de campanhas encerradas.
+
 ## Transparencia e verificacao
 
+- [ ] Refazer `TransparencyPage` para organizar transparencia por plataforma, ONG, campanha, bundle e urgencia.
 - [ ] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
+- [ ] Exibir score da ONG com explicacao visual dos fatores considerados.
+- [ ] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes.
 - [ ] Conectar relatorios publicos de prestacao de contas a dados reais com data de atualizacao.
 - [ ] Conectar historico de relatorios e arquivos publicos a dados reais e downloads funcionais.
 - [ ] Exibir mudancas detectadas desde a ultima verificacao.
 - [ ] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa.
 - [ ] Criar UI para upload de evidencias/documentos de confiabilidade.
+- [ ] Criar visao publica de transparencia de bundles com rateio, ONGs contempladas e comprovantes.
 
 ## Doacoes
 
 - [ ] Conectar o fluxo de doacao ao backend.
+- [ ] Implementar doacao para ONG especifica.
+- [ ] Implementar doacao para campanha individual.
+- [ ] Implementar doacao para fundo/causa.
+- [ ] Implementar doacao para bundle/campanha coletiva.
 - [ ] Implementar validacao de valor minimo e valor customizado.
 - [ ] Implementar estados visuais de pagamento pendente, aprovado, recusado, cancelado e estornado.
 - [ ] Exibir QR Code real para pagamento PIX.
 - [ ] Exibir link/documento de boleto quando gerado.
-- [ ] Gerar e exibir recibo real apos confirmacao de pagamento; hoje ha apenas confirmacao visual.
+- [ ] Gerar e exibir recibo real apos confirmacao de pagamento.
 - [ ] Conectar historico de doacoes do doador a dados reais; hoje `DonorProfilePage` usa dados mockados.
 - [ ] Exibir historico de transacoes para a ONG.
 - [ ] Atualizar progresso de meta na interface apos pagamento confirmado.
@@ -79,12 +107,13 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 ## Area de gestao da ONG
 
 - [ ] Conectar dados do painel de gestao da ONG ao backend.
+- [ ] Realocar a solicitacao de urgencia para dentro da `NgoManagementPage`, mantendo acesso por menu/aba da gestao.
+- [ ] Remover ou redirecionar a tela isolada `UrgencyRequestPage` quando o fluxo estiver integrado.
 - [ ] Implementar edicao de perfil institucional.
+- [ ] Implementar gerenciamento de redes sociais e comprovantes de autenticidade.
 - [ ] Implementar upload de nova auditoria com feedback de status.
 - [ ] Implementar fluxo de criacao de campanha.
 - [ ] Implementar edicao, publicacao, encerramento e arquivamento de campanhas.
-- [ ] Implementar rascunhos de campanha.
-- [ ] Implementar historico completo de campanhas encerradas.
 - [ ] Implementar base real de doadores.
 - [ ] Implementar filtros reais de doadores mensais, eventuais, pendentes e ativos.
 - [ ] Implementar UI de envio de mensagens para doadores.
@@ -93,18 +122,38 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 - [ ] Implementar historico real de arquivos gerados com download.
 - [ ] Implementar configuracao de periodo personalizado para relatorios.
 
-## ReliefCore / apoio emergencial
+## Solicitacao de urgencia
 
 - [ ] Completar as etapas apos "Continuar para Requisitos Financeiros".
+- [ ] Criar etapa de requisitos financeiros com valores solicitados, justificativa, prazo, plano de uso e documentos.
+- [ ] Criar etapa de evidencias da urgencia com upload de comprovantes e documentos de crise.
+- [ ] Criar etapa de revisao e envio.
 - [ ] Implementar salvamento de rascunho na interface.
-- [ ] Implementar upload de comprovantes e documentos de crise.
 - [ ] Exibir status da solicitacao: rascunho, enviada, em analise, aprovada, recusada e concluida.
-- [ ] Criar dashboard real de solicitacoes ativas.
-- [ ] Criar telas de logs de compliance.
-- [ ] Criar telas de analytics de impacto.
-- [ ] Criar tela de ledger financeiro de repasses emergenciais.
-- [ ] Criar telas de configuracoes e seguranca do portal institucional.
+- [ ] Criar dashboard real de solicitacoes ativas na gestao da ONG.
+- [ ] Exibir solicitacoes de apoio emergencial no perfil publico da ONG quando forem publicas.
 - [ ] Exibir solicitacoes de apoio emergencial na pagina de transparencia quando forem publicas.
+
+## Area administrativa
+
+- [ ] Criar layout da area administrativa com menu para documentos, ONGs, campanhas, bundles, urgencias, score e moderacao.
+- [ ] Criar fila de documentos recebidos por ONGs com aprovacao, rejeicao e pedido de ajuste.
+- [ ] Criar tela de validacao de informacoes enviadas por ONGs.
+- [ ] Criar tela de calculo estimado/revisao do score.
+- [ ] Criar tela de validacao de campanhas individuais.
+- [ ] Criar tela de validacao de bundles/campanhas coletivas.
+- [ ] Criar tela de moderacao de conteudo publicado.
+- [ ] Criar tela de validacao de solicitacoes de urgencia.
+- [ ] Criar historico de decisoes administrativas com autor, data e justificativa.
+
+## Tela Sobre
+
+- [ ] Refatorar `AboutPage` para explicar o objetivo do projeto.
+- [ ] Explicar o modelo de matchfunding.
+- [ ] Explicar como funciona o score da ONG.
+- [ ] Explicar como funciona a verificacao documental e de autenticidade.
+- [ ] Explicar como funcionam campanhas individuais e bundles.
+- [ ] Explicar como doadores acompanham transparencia, recibos e impacto.
 
 ## Qualidade de interface
 
@@ -115,4 +164,3 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 - [ ] Adicionar acessibilidade basica: foco visivel, labels, aria quando necessario e navegacao por teclado.
 - [ ] Adicionar testes de frontend para navegacao e fluxos criticos.
 - [ ] Configurar lint/format como rotina de validacao.
-- [ ] Atualizar `frontend/README.md`, que ainda esta com conteudo padrao do Vite.

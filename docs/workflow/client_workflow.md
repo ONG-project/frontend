@@ -1,81 +1,72 @@
 ```mermaid
 flowchart TD
-
-    %% Categorias
-    subgraph Categorias
-        TC["Todas as Causas"]
-        MA["Meio Ambiente"]
-        ED["Educação"]
-        SA["Saúde"]
-        DH["Direitos Humanos"]
-    end
-
-    %% Páginas principais
     Home["Home"]
     Sobre["Sobre"]
     Causas["Causas"]
-    Transparencia["Transparência"]
+    Transparencia["Transparencia"]
     Login["Login"]
+    Cadastro["Cadastro"]
 
-    %% Menu usuário
-    subgraph Perfil
-        Sair(("Sair"))
-        Config(("Configurações"))
-    end
-
-    ConfigPage["Configurações"]
-
-    %% Fluxo inicial
     Home --> Sobre
     Home --> Causas
     Home --> Transparencia
     Home --> Login
+    Home --> Cadastro
 
-    Home --> Perfil
-    Config --> ConfigPage
+    Cadastro --> SouDoador["Sou doador"]
+    SouDoador --> CadastroDoador["Cadastro do doador"]
+    CadastroDoador --> PerfilDoador["Perfil do doador"]
 
-    %% Categorias -> Causas
-    TC --> Causas
-    MA --> Causas
-    ED --> Causas
-    SA --> Causas
-    DH --> Causas
+    Login -- "Perfil doador" --> PerfilDoador
 
-    %% Exploração de causas
-    Causas -- "Explorar Causas" --> PerfilONG["Perfil de uma ONG"]
+    Causas --> ONGs["ONGs individuais"]
+    Causas --> Campanhas["Campanhas individuais"]
+    Causas --> Bundles["Bundles de ONGs"]
 
-    Causas -- "Doar para o nosso fundo" --> DoacaoFMI["Doação FMI"]
+    ONGs --> PerfilONG["Perfil publico da ONG"]
+    Campanhas --> DetalheCampanha["Detalhe da campanha"]
+    Bundles --> DetalheBundle["Detalhe do bundle"]
 
-    %% Transparência
-    Transparencia -- "Saber mais sobre o fundo" --> Apoio["Solicitação de Apoio Emergencial"]
+    PerfilONG --> TransparenciaONG["Transparencia da ONG"]
+    PerfilONG --> DoarONG["Doar para ONG"]
 
-    %% Login
-    Login -- "Fez o login" --> Missao["Nossa Missão - Logado"]
+    DetalheCampanha --> MatchCampanha["Ver matchfunding, se houver"]
+    MatchCampanha --> DoarCampanha["Doar para campanha"]
 
-    Missao -- "Ver Relatório Completo" --> Relatorio["Página do Relatório"]
+    DetalheBundle --> ONGsParticipantes["ONGs participantes"]
+    DetalheBundle --> RegraDistribuicao["Regra de distribuicao"]
+    DetalheBundle --> MatchBundle["Ver matchfunding, se houver"]
+    MatchBundle --> DoarBundle["Doar para bundle"]
 
-    %% Navegação adicional
-    Missao -. "Explorar Novas Causas" .-> Causas
+    Causas --> FundoCausa["Fundo/causa promovida"]
+    FundoCausa --> DoarFundo["Doar para fundo/causa"]
 
-    %% Fluxo não autenticado
-    Relatorio -. "Caso não esteja logado" .-> Login
+    DoarONG --> Pagamento["Pagamento"]
+    DoarCampanha --> Pagamento
+    DoarBundle --> Pagamento
+    DoarFundo --> Pagamento
 
-    %% Observações
-    Note1["Foto de Perfil ao lado superior esquerdo"]
-    Note2["Donate Now"]
+    Pagamento --> Confirmacao["Confirmacao"]
+    Confirmacao --> Recibo["Recibo"]
+    Confirmacao --> Historico["Historico de doacoes"]
+    Historico --> Relatorios["Relatorios de impacto"]
 
-    Home --- Note1
-    Home --- Note2
+    Transparencia --> TransparenciaPlataforma["Transparencia da plataforma"]
+    Transparencia --> TransparenciaCampanhas["Transparencia de campanhas"]
+    Transparencia --> TransparenciaBundles["Transparencia de bundles"]
+    Transparencia --> UrgenciasPublicas["Urgencias publicas aprovadas"]
 
-    %% Status de implementação
+    PerfilDoador --> Historico
+    PerfilDoador --> Recibos["Recibos"]
+    PerfilDoador --> Preferencias["Preferencias de causas"]
+    PerfilDoador --> Configuracoes["Configuracoes"]
+
     classDef naoImplementado fill:#ff5a36,color:#fff;
-    classDef poucoImplementado fill:#f7c948,color:#000;
-    classDef parcial fill:#5fd0c7,color:#000;
+    classDef parcial fill:#f7c948,color:#000;
+    classDef planejado fill:#5fd0c7,color:#000;
     classDef completo fill:#4aa3ff,color:#fff;
 
-    class ConfigPage,Relatorio naoImplementado;
-    class Login poucoImplementado;
-    class Transparencia,PerfilONG,DoacaoFMI,Missao,Apoio parcial;
-    class Home,Sobre,Causas completo;
-
+    class Home,Sobre,Causas,Transparencia completo;
+    class Login,Cadastro,PerfilDoador,PerfilONG parcial;
+    class Bundles,DetalheBundle,MatchCampanha,MatchBundle,TransparenciaBundles planejado;
 ```

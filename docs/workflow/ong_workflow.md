@@ -1,86 +1,76 @@
 ```mermaid
 flowchart TD
-
-    %% Categorias
-    subgraph Categorias
-        TC["Todas as Causas"]
-        MA["Meio Ambiente"]
-        ED["Educação"]
-        SA["Saúde"]
-        DH["Direitos Humanos"]
-    end
-
-    %% Navegação principal
     Home["Home"]
     Sobre["Sobre"]
     Causas["Causas"]
-    Transparencia["Transparência"]
+    Transparencia["Transparencia"]
     Login["Login"]
+    Cadastro["Cadastro"]
 
-    %% Perfil/Menu
-    subgraph Perfil
-        Sair(("Sair"))
-        Config(("Configurações"))
-    end
-
-    ConfigPage["Configurações"]
-
-    %% Fluxo inicial
     Home --> Sobre
     Home --> Causas
     Home --> Transparencia
     Home --> Login
+    Home --> Cadastro
 
-    Home --> Perfil
-    Config --> ConfigPage
+    Cadastro --> SouONG["Sou ONG"]
+    SouONG --> CadastroONG["Cadastro da ONG"]
+    CadastroONG --> Onboarding["Onboarding institucional"]
+    Onboarding --> Dados["Dados institucionais e CNPJ"]
+    Onboarding --> Redes["Redes sociais"]
+    Onboarding --> Documentos["Documentos e autenticidade"]
+    Onboarding --> Bancarios["Dados bancarios"]
+    Bancarios --> EnviarValidacao["Enviar para validacao"]
+    EnviarValidacao --> StatusValidacao["Status de validacao"]
 
-    %% Explorar ONGs
-    TC --> Causas
-    MA --> Causas
-    ED --> Causas
-    SA --> Causas
-    DH --> Causas
+    Login -- "Perfil ONG" --> GestaoONG["Gestao da ONG"]
+    StatusValidacao --> GestaoONG
 
-    Causas -- "Explorar Causas" --> PerfilONG["Perfil de uma ONG"]
+    GestaoONG --> Perfil["Perfil institucional"]
+    GestaoONG --> Campanhas["Campanhas"]
+    GestaoONG --> Bundles["Bundles"]
+    GestaoONG --> Urgencia["Solicitacao de urgencia"]
+    GestaoONG --> Doadores["Doadores"]
+    GestaoONG --> Relatorios["Relatorios"]
+    GestaoONG --> TransparenciaONG["Transparencia da ONG"]
 
-    %% Restrição para ONG
-    Causas -- "Doar para o nosso fundo" --> Restricao["Você não pode porque está logado como ONG"]
+    Perfil --> EditarPerfil["Editar dados e solicitar alteracoes"]
+    Perfil --> AtualizarDocs["Atualizar documentos e evidencias"]
 
-    %% Login
-    Login -- "Fez o login" --> PerfilProprio["Perfil da sua ONG"]
+    Campanhas --> CriarCampanha["Criar campanha"]
+    Campanhas --> Rascunhos["Rascunhos"]
+    Campanhas --> RevisaoCampanha["Enviar campanha para revisao"]
+    RevisaoCampanha --> StatusCampanha["Aprovada, recusada ou ajustes"]
+    StatusCampanha --> PublicarCampanha["Publicar campanha"]
+    Campanhas --> HistoricoCampanhas["Historico de campanhas"]
 
-    %% Área da ONG
-    PerfilProprio --> Apoio["Solicitar Apoio Emergencial"]
-    PerfilProprio --> Relatorio["Página do Relatório"]
-    PerfilProprio --> Doadores["Doadores"]
-    PerfilProprio --> Campanhas["Campanhas"]
+    Bundles --> VerElegibilidade["Ver elegibilidade"]
+    Bundles --> ParticiparBundle["Solicitar participacao"]
+    ParticiparBundle --> RevisaoBundle["Revisao administrativa"]
 
-    %% Relatórios
-    Relatorio --> Exportar["Exportar como PDF"]
+    Urgencia --> DadosUrgencia["Dados da crise"]
+    DadosUrgencia --> RequisitosFinanceiros["Continuar para requisitos financeiros"]
+    RequisitosFinanceiros --> EvidenciasUrgencia["Comprovantes e documentos"]
+    EvidenciasUrgencia --> RevisarUrgencia["Revisar e enviar"]
+    RevisarUrgencia --> StatusUrgencia["Rascunho, enviada, em analise, aprovada, recusada ou concluida"]
 
-    %% Doadores
-    Doadores --> ListaDoadores["Ver lista de doadores"]
-    Doadores --> Mensagens["Enviar mensagens"]
+    Doadores --> ListaDoadores["Lista e filtros"]
+    Doadores --> Mensagens["Mensagens para doadores"]
+    Relatorios --> ExportarPDF["Exportar PDF"]
 
-    %% Campanhas
-    Campanhas --> SuasCampanhas["Suas Campanhas"]
-    Campanhas --> CriarCampanha["Criar uma campanha"]
+    TransparenciaONG --> PerfilPublico["Perfil publico da ONG"]
+    TransparenciaONG --> RelatoriosPublicos["Relatorios publicos"]
+    TransparenciaONG --> UrgenciasPublicas["Urgencias publicas, se aprovadas"]
 
-    %% Transparência
-    Transparencia --> Solicitacoes["Solicitação de Apoio Emergencial"]
+    Causas --> PerfilOutraONG["Perfil de outra ONG"]
+    Causas --> RestricaoDoacao["Bloqueio: ONG nao pode doar quando regra impedir"]
 
-    %% Fluxo não autenticado
-    Relatorio -. "Caso não esteja logado" .-> Login
-
-    %% Estilos
     classDef naoImplementado fill:#ff5a36,color:#fff;
-    classDef poucoImplementado fill:#f7c948,color:#000;
-    classDef parcial fill:#5fd0c7,color:#000;
+    classDef parcial fill:#f7c948,color:#000;
+    classDef planejado fill:#5fd0c7,color:#000;
     classDef completo fill:#4aa3ff,color:#fff;
 
-    class ConfigPage naoImplementado;
-    class Login poucoImplementado;
-    class PerfilProprio,Apoio,Relatorio,Doadores,Campanhas,Solicitacoes parcial;
     class Home,Sobre,Causas,Transparencia completo;
-
+    class Login,Cadastro,GestaoONG parcial;
+    class SouONG,CadastroONG,Onboarding,Urgencia,RequisitosFinanceiros planejado;
 ```
