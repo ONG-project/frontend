@@ -63,7 +63,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
           <div className="space-y-4 max-w-3xl">
             <span className="bg-[#E4F2EE] text-[#0A665C] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1.5 w-fit border border-[#0A665C]/10">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified Non-Profit</span>
+              <span>Organização Verificada</span>
             </span>
 
             <h1 className="text-5xl font-extrabold text-[#0A3D36] tracking-tight leading-none">
@@ -71,7 +71,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             </h1>
 
             <p className="text-gray-500 text-sm leading-relaxed max-w-2xl font-medium pt-1">
-              Radical transparency isn't a goal; it's our foundation. Review our verified legal standings, audited financials, and operational history.
+              Transparência radical não é um objetivo — é nossa base. Revise nossa situação jurídica verificada, financeiras auditadas e histórico operacional.
             </p>
           </div>
 
@@ -87,16 +87,16 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </svg>
               <div className="absolute flex flex-col items-center">
                 <span className="text-2xl font-extrabold text-[#0A3D36]">{resolvedOng.score}</span>
-                <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Trust Score</span>
+                <span className="text-[6px] font-bold text-gray-400 uppercase tracking-widest">Score de Confiança</span>
               </div>
             </div>
             <div className="space-y-1">
               <span className="text-xs font-bold text-[#0A665C] flex items-center space-x-1 uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4" />
-                <span>A+ Excellence</span>
+                <span>Excelência A+</span>
               </span>
               <p className="text-[10px] text-gray-400 max-w-[120px] font-medium leading-tight">
-                Top tier score for financial health & open reporting.
+                Pontuação máxima em saúde financeira e transparência de relatórios.
               </p>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                  Identity Registry
+                  Registro de Identidade
                 </h3>
                 <Building2 className="w-4 h-4 text-gray-400" />
               </div>
@@ -120,15 +120,15 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_1.2fr] gap-8 items-center">
                 <div className="space-y-4">
                   <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">CNPJ (Tax ID)</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">CNPJ</span>
                     <span className="text-sm font-extrabold text-[#0A3D36]">{resolvedOng.cnpj}</span>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Operating Since</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Em operação desde</span>
                     <span className="text-sm font-extrabold text-[#0A3D36]">{resolvedOng.operatingSince}</span>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Legal Nature</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Natureza Jurídica</span>
                     <span className="text-sm font-extrabold text-[#0A3D36]">{resolvedOng.legalNature}</span>
                   </div>
                 </div>
@@ -158,7 +158,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   
                   {/* Caixa flutuante de Endereço */}
                   <div className="relative m-3 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-md border border-gray-100 max-w-[190px]">
-                    <span className="text-[8px] font-bold text-[#0A665C] uppercase tracking-wider block">Headquarters</span>
+                    <span className="text-[8px] font-bold text-[#0A665C] uppercase tracking-wider block">Sede</span>
                     <span className="text-[10px] font-bold text-gray-700 leading-tight block mt-0.5">{resolvedOng.location}</span>
                   </div>
                 </div>
@@ -172,16 +172,16 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex flex-col justify-between space-y-6">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                    Compliance Status
+                    Status de Conformidade
                   </h3>
                   <Scale className="w-4 h-4 text-gray-400" />
                 </div>
 
                 <div className="space-y-4">
                   {[
-                    { label: 'Federal Tax Certificate', status: 'NEGATIVE' },
-                    { label: 'State Tax Certificate', status: 'NEGATIVE' },
-                    { label: 'Labor Compliance (CNDT)', status: 'NEGATIVE' }
+                    { label: 'Certidão Negativa Federal', status: 'NEGATIVA' },
+                    { label: 'Certidão Negativa Estadual', status: 'NEGATIVA' },
+                    { label: 'Regularidade Trabalhista (CNDT)', status: 'NEGATIVA' }
                   ].map((cert, idx) => (
                     <div key={idx} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
                       <span className="text-xs font-semibold text-gray-600">{cert.label}</span>
@@ -202,14 +202,14 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                 </div>
 
                 <div className="space-y-2">
-                  <h4 className="text-lg font-bold tracking-tight">Clean History Confirmation</h4>
+                  <h4 className="text-lg font-bold tracking-tight">Confirmação de Histórico Limpo</h4>
                   <p className="text-xs text-white/70 leading-relaxed">
-                    Certified no legal pendencies or administrative sanctions in the last 10 years of operation.
+                    Certificada sem pendências jurídicas ou sanções administrativas nos últimos 10 anos de operação.
                   </p>
                 </div>
 
                 <button className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md border border-white/5 cursor-pointer text-center">
-                  Verify Public Records
+                  Verificar Registros Públicos
                 </button>
               </div>
 
@@ -223,27 +223,27 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             {/* CARD 4: Financial Health */}
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
               <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                Financial Health
+                Saúde Financeira
               </h3>
 
               {/* Barra de Progresso de Orçamento */}
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Budget Utilization</span>
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Utilização Orçamentária</span>
                   <span className="text-sm font-extrabold text-[#0A665C]">{resolvedOng.budgetUtilization}%</span>
                 </div>
                 <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
                   <div className="bg-[#0A665C] h-full rounded-full transition-all duration-1000" style={{ width: `${resolvedOng.budgetUtilization}%` }} />
                 </div>
                 <p className="text-[9px] text-gray-400 italic">
-                  Operational efficiency vs Programmatic spending.
+                  Eficiência operacional vs. gasto programático.
                 </p>
               </div>
 
               {/* Grid de Indicadores de Auditoria */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-gray-50">
-                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block">Last Audit</span>
+                  <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block">Última Auditoria</span>
                   <span className="text-xs font-extrabold text-gray-700 block mt-1">{resolvedOng.lastAudit}</span>
                 </div>
                 <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-gray-50">
@@ -256,14 +256,14 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             {/* CARD 5: Transparency Assets */}
             <div className="bg-[#F5F2EC]/40 rounded-[2rem] p-8 border border-[#E5E2D9]/40 space-y-6">
               <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
-                Transparency Assets
+                Documentos Públicos
               </h3>
 
               <div className="space-y-3">
                 {[
-                  { name: 'Annual Report 2023', size: 'PDF • 14.2 MB', ext: 'pdf' },
-                  { name: 'Transparency Statute', size: 'PDF • 2.8 MB', ext: 'pdf' },
-                  { name: 'Tax Filings (DRE)', size: 'XLSX • 1.1 MB', ext: 'xlsx' }
+                  { name: 'Relatório Anual 2023', size: 'PDF • 14.2 MB', ext: 'pdf' },
+                  { name: 'Estatuto Social', size: 'PDF • 2.8 MB', ext: 'pdf' },
+                  { name: 'Demonstrativo Financeiro (DRE)', size: 'XLSX • 1.1 MB', ext: 'xlsx' }
                 ].map((asset, idx) => (
                   <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.005)] flex items-center justify-between hover:border-[#0A665C]/20 transition-all group">
                     <div className="flex items-center space-x-3.5">
@@ -295,10 +295,10 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
         {/* Banner Inferior: The Ethical Commitment */}
         <section className="bg-[#FAF8F5] border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.01)] rounded-[2.5rem] p-10 md:p-14 text-center max-w-5xl mx-auto space-y-4">
           <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">
-            The Ethical Commitment
+            Compromisso Ético
           </h2>
           <p className="text-gray-500 text-xs md:text-sm leading-relaxed max-w-3xl mx-auto">
-            Aura Kindred's "Open-Book" policy ensures that every cent donated to {resolvedOng.name} is trackable. We utilize independent third-party audits to validate our impact data, ensuring your contribution creates the change you expect.
+            Nossa política de "Livro Aberto" garante que cada centavo doado para {resolvedOng.name} seja rastreável. Utilizamos auditorias independentes de terceiros para validar nossos dados de impacto, assegurando que sua contribuição gere a mudança esperada.
           </p>
         </section>
 
