@@ -4,20 +4,22 @@ Tasks que cruzam frontend e backend, ou que precisam de decisao de produto antes
 
 Ultima atualizacao: 2026-06-02.
 
-Observacao: as telas atuais do frontend usam principalmente dados mockados e navegacao por estado. As tasks abaixo priorizam decisoes e contratos necessarios para ligar esses fluxos ao backend.
+Observacao: as telas atuais do frontend usam principalmente dados mockados. A navegacao SPA por rotas ja foi implementada no frontend, mas ainda faltam integracao real, persistencia e contratos de API para a maioria dos fluxos.
+
+Prioridade para MVP 09/06: definir contratos minimos de ONGs, transparencia e autenticacao demonstravel; documentar o que ficara mockado; criar checklist de validacao da entrega.
 
 ## Contratos entre frontend e backend
 
-- [ ] Definir contrato da API de autenticacao: login, logout, refresh/session e usuario atual.
+- [ ] Definir contrato da API de autenticacao: login, logout, refresh/session e usuario atual. **P1 MVP**
 - [ ] Definir contrato da API de cadastro de doador.
 - [ ] Definir contrato da API de cadastro e onboarding de ONG.
 - [ ] Definir contrato de upload de documentos, comprovantes de autenticidade e redes sociais da ONG.
 - [ ] Definir contrato da API de perfis e permissoes: visitante, doador, ONG e admin.
-- [ ] Definir contrato da API de ONGs, causas, campanhas, bundles e filtros.
+- [ ] Definir contrato da API de ONGs, causas, campanhas, bundles e filtros. **P0 MVP para ONGs e causas**
 - [ ] Definir contrato da API de campanhas individuais.
 - [ ] Definir contrato da API de bundles/campanhas coletivas.
 - [ ] Definir contrato da API de matchfunding, incluindo calculo, limites e patrocinadores.
-- [ ] Definir contrato da API de transparencia, relatorios e evidencias.
+- [ ] Definir contrato da API de transparencia, relatorios e evidencias. **P0 MVP para transparencia de ONG**
 - [ ] Definir contrato da API de doacoes, pagamentos, match e recibos.
 - [ ] Definir contrato da API da area de gestao da ONG.
 - [ ] Definir contrato da API de solicitacao de urgencia dentro da gestao da ONG.
@@ -96,8 +98,10 @@ Observacao: as telas atuais do frontend usam principalmente dados mockados e nav
 
 - [x] Atualizar README principal com links para os backlogs de frontend, backend e integracao/produto.
 - [x] Atualizar `frontend/README.md`, que ainda estava com conteudo padrao do Vite.
-- [ ] Documentar contratos de API usados pelo frontend.
-- [ ] Criar guia de variaveis de ambiente para frontend e backend.
+- [x] Criar plano de entrega do MVP para 09/06 com prioridades.
+- [x] Criar checklist de validacao do MVP para 09/06.
+- [ ] Documentar contratos de API usados pelo frontend. **P0 MVP para endpoints minimos**
+- [ ] Criar guia de variaveis de ambiente para frontend e backend. **P0 MVP**
 - [ ] Criar checklist de validacao antes de publicar uma feature.
-- [ ] Definir rotina de testes minima: lint, testes frontend, testes backend e testes de integracao.
-- [ ] Revisar textos com caracteres quebrados nos documentos e na interface.
+- [ ] Definir rotina de testes minima: lint, testes frontend, testes backend e testes de integracao. **P0 MVP para build/checks basicos**
+- [ ] Revisar textos com caracteres quebrados nos documentos e na interface. **P0 MVP**

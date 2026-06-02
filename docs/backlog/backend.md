@@ -6,24 +6,29 @@ Ultima atualizacao: 2026-06-02.
 
 Observacao: o projeto ja possui estrutura Django inicial e um modelo parcial de ONG em `backend/verification/models.py`. As tasks abaixo descrevem o que falta para transformar essa base em API utilizavel pelo produto.
 
+Prioridade para MVP 09/06: criar API minima de healthcheck, ONGs e transparencia; documentar variaveis de ambiente; padronizar dados de desenvolvimento; garantir que o backend suba localmente.
+
 ## Itens ja iniciados
 
 - Estrutura Django base em `backend/ong_plus`.
 - Apps de dominio criados como pacotes: `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`, alem de duplicatas sob `backend/apps`.
 - Modelo `NGO` inicial no app `verification`, com campos como nome, CNPJ, area de atuacao, score e status ativo.
+- Configuracao inicial de CORS para o frontend Vite.
+- Rota padrao do Django Admin disponivel em `/admin/`.
 
 ## Estrutura de API e projeto
 
 - [ ] Completar models, serializers, views e urls para os apps `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`.
-- [ ] Remover duplicidade entre apps na raiz do backend e apps dentro de `backend/apps`, ou padronizar uma unica estrutura.
-- [ ] Adicionar Django REST Framework, caso a API REST seja o caminho escolhido.
-- [ ] Criar endpoints versionados, por exemplo `/api/v1/...`.
+- [ ] Remover duplicidade entre apps na raiz do backend e apps dentro de `backend/apps`, ou padronizar uma unica estrutura. **P0 MVP**
+- [ ] Adicionar Django REST Framework, caso a API REST seja o caminho escolhido. **P0 MVP**
+- [ ] Criar endpoints versionados, por exemplo `/api/v1/...`. **P0 MVP**
+- [ ] Criar endpoint de healthcheck. **P0 MVP**
 - [ ] Configurar autenticacao por token ou sessao.
 - [ ] Configurar permissoes por perfil em nivel de API.
-- [ ] Criar seeds/fixtures para desenvolvimento.
+- [ ] Criar seeds/fixtures para desenvolvimento. **P0 MVP**
 - [ ] Criar testes unitarios e de integracao dos dominios principais.
 - [ ] Documentar contratos de API usados pelo frontend.
-- [ ] Revisar configuracao de ambiente, banco e CORS para desenvolvimento e producao.
+- [ ] Revisar configuracao de ambiente, banco e CORS para desenvolvimento e producao. **P0 MVP**
 
 ## Autenticacao, usuarios e acesso
 
@@ -42,7 +47,7 @@ Observacao: o projeto ja possui estrutura Django inicial e um modelo parcial de 
 
 ## ONGs, identidade e autenticidade
 
-- [ ] Completar modelo de ONGs e criar endpoints.
+- [ ] Completar modelo de ONGs e criar endpoints. **P0 MVP para listagem/detalhe**
 - [ ] Adicionar campos de redes sociais da ONG.
 - [ ] Adicionar modelos de comprovantes de autenticidade.
 - [ ] Criar upload, listagem, revisao e historico de documentos de autenticidade.

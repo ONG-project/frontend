@@ -123,6 +123,8 @@ O frontend e uma SPA em React + Vite. O escopo esperado inclui telas publicas, a
 
 ## Documentacao do Escopo
 
+- [Plano de entrega do MVP - 09/06/2026](docs/mvp-entrega-09-06.md)
+- [Checklist de validacao do MVP - 09/06/2026](docs/checklists/mvp-validacao-09-06.md)
 - [Backlog frontend](docs/backlog/frontend.md)
 - [Backlog backend](docs/backlog/backend.md)
 - [Backlog de integracao e produto](docs/backlog/integracao-produto.md)

@@ -6,6 +6,8 @@ Ultima atualizacao: 2026-06-02.
 
 Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao possuem integracao real, persistencia, validacao completa ou contrato com backend.
 
+Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principais, conectar ou padronizar dados de ONGs/transparencia, adicionar estados basicos de loading/erro e garantir build do frontend.
+
 ## Paginas ja implementadas ou parcialmente implementadas
 
 - `LandingPage`: home / nossa missao.
@@ -20,10 +22,11 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 - `NgoManagementPage`: area de gestao da ONG com visao geral, campanhas, doadores e relatorios.
 - `DonorProfilePage`: perfil visual do doador com resumo, historico mockado, recibos mockados e preferencias de causas.
 - `NgoTransparencyPage`: pagina visual de transparencia de uma ONG com dados, certificados e arquivos mockados.
+- Navegacao SPA com `react-router-dom` implementada em `App.jsx`.
 
 ## Navegacao, rotas e controle de acesso
 
-- [ ] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
+- [x] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
 - [ ] Criar estados de rota/tela para visitante, doador, ONG e admin.
 - [ ] Implementar guards de rota para area do doador, area da ONG e area administrativa.
 - [ ] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
@@ -157,10 +160,10 @@ Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao po
 
 ## Qualidade de interface
 
-- [ ] Corrigir textos com caracteres quebrados nos arquivos e na interface.
+- [ ] Corrigir textos com caracteres quebrados nos arquivos e na interface. **P0 MVP**
 - [ ] Revisar responsividade das paginas com sidebars em telas pequenas.
-- [ ] Adicionar estados vazios, loading e erro para listas e formularios.
+- [ ] Adicionar estados vazios, loading e erro para listas e formularios. **P0 MVP nas paginas conectadas a API**
 - [ ] Adicionar confirmacoes visuais para acoes importantes.
 - [ ] Adicionar acessibilidade basica: foco visivel, labels, aria quando necessario e navegacao por teclado.
 - [ ] Adicionar testes de frontend para navegacao e fluxos criticos.
-- [ ] Configurar lint/format como rotina de validacao.
+- [ ] Configurar lint/format como rotina de validacao. **P0 MVP para build/lint basico**
