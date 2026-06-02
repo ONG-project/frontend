@@ -1,7 +1,7 @@
-import {
+﻿import {
   Target, Eye, Gem, Phone, Mail, MapPin, Send,
-  Zap, ShieldCheck, BarChart3, Users, Layers,
-  FileCheck, Star, ArrowRight, CheckCircle
+  Zap, ShieldCheck, BarChart3, Layers,
+  FileCheck, Star, CheckCircle, Heart
 } from 'lucide-react';
 import Footer from '../components/Footer';
 import aboutImage from '../assets/about_us.png';
@@ -69,10 +69,10 @@ export default function AboutPage({ onNavigate }) {
             <h2 className="text-3xl font-bold text-gray-900">Nossa História</h2>
             <div className="space-y-4 text-gray-600 leading-relaxed text-sm md:text-base">
               <p>
-                A ONG+ nasceu para simplificar a ponte entre doadores e organizações sérias. Nossa proposta é tornar o ato de ajudar mais claro, seguro e acompanhado de resultados concretos.
+                A ONG+ nasceu para simplificar a ponte entre doadores e organizaçÃµes sérias. Nossa proposta é tornar o ato de ajudar mais claro, seguro e acompanhado de resultados concretos.
               </p>
               <p>
-                Evoluímos com foco em melhoria contínua: fortalecemos critérios de curadoria, ampliamos mecanismos de transparência e priorizamos relações de confiança com comunidades e parceiros.
+                Evoluímos com foco em melhoria contínua: fortalecemos critérios de curadoria, ampliamos mecanismos de transparência e priorizamos relaçÃµes de confiança com comunidades e parceiros.
               </p>
             </div>
             <div className="grid grid-cols-3 gap-4 pt-4">
@@ -137,7 +137,7 @@ export default function AboutPage({ onNavigate }) {
                 Sua doação pode valer o dobro.
               </h2>
               <p className="text-teal-100 text-sm leading-relaxed">
-                O matchfunding é um mecanismo em que patrocinadores parceiros complementam as doações recebidas por uma campanha, multiplicando o impacto de cada contribuição.
+                O matchfunding é um mecanismo em que patrocinadores parceiros complementam as doaçÃµes recebidas por uma campanha, multiplicando o impacto de cada contribuição.
               </p>
               <div className="space-y-4">
                 {[
@@ -212,7 +212,7 @@ export default function AboutPage({ onNavigate }) {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900">Instituto Rebrota</p>
-                  <p className="text-xs text-gray-500">Pontuação máxima — verificado em Jun/2026</p>
+                  <p className="text-xs text-gray-500">Pontuação máxima - verificado em Jun/2026</p>
                   <span className="inline-flex items-center space-x-1 bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">
                     <ShieldCheck className="w-3 h-3" />
                     <span>Parceiro Verificado</span>
@@ -220,7 +220,7 @@ export default function AboutPage({ onNavigate }) {
                 </div>
               </div>
               <p className="text-xs text-gray-500 leading-relaxed">
-                O score é recalculado sempre que novos documentos são enviados ou verificações externas são realizadas. Doadores sempre veem a data da última atualização.
+                O score é recalculado sempre que novos documentos são enviados ou verificaçÃµes externas são realizadas. Doadores sempre veem a data da última atualização.
               </p>
             </div>
 
@@ -235,7 +235,7 @@ export default function AboutPage({ onNavigate }) {
               </p>
               <ul className="space-y-2">
                 {[
-                  'CNPJ ativo e regular junto à Receita Federal',
+                  'CNPJ ativo e regular junto Ã  Receita Federal',
                   'Estatuto social atualizado',
                   'Balanço patrimonial e DRE dos últimos 2 anos',
                   'Ata de eleição da diretoria',
@@ -259,7 +259,7 @@ export default function AboutPage({ onNavigate }) {
             <SectionLabel>/ Formas de apoio</SectionLabel>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Campanhas e Bundles</h2>
             <p className="text-gray-500 text-sm max-w-xl mx-auto">
-              Você pode apoiar uma ONG individualmente, contribuir para uma campanha específica ou participar de um bundle — uma iniciativa coletiva que une múltiplas organizações em torno de uma causa.
+              Você pode apoiar uma ONG individualmente, contribuir para uma campanha específica ou participar de um bundle - uma iniciativa coletiva que une múltiplas organizaçÃµes em torno de uma causa.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -277,7 +277,7 @@ export default function AboutPage({ onNavigate }) {
             <FeatureBlock
               icon={Layers}
               title="Bundle"
-              description="Um bundle reúne múltiplas ONGs em torno de uma causa temática. Sua doação é distribuída entre as organizações participantes conforme as regras de rateio públicas."
+              description="Um bundle reúne múltiplas ONGs em torno de uma causa temática. Sua doação é distribuída entre as organizaçÃµes participantes conforme as regras de rateio públicas."
               items={['ONGs participantes listadas', 'Regra de distribuição transparente', 'Transparência agregada']}
             />
           </div>
@@ -291,12 +291,12 @@ export default function AboutPage({ onNavigate }) {
             <SectionLabel>/ Para doadores</SectionLabel>
             <h2 className="text-3xl font-bold text-gray-900">Acompanhe cada centavo do seu apoio</h2>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Após cada doação confirmada, você recebe um recibo com todos os dados da transação. No seu perfil, você tem acesso ao histórico completo de doações, recibos para download e o impacto gerado por cada ONG apoiada.
+              Após cada doação confirmada, você recebe um recibo com todos os dados da transação. No seu perfil, você tem acesso ao histórico completo de doaçÃµes, recibos para download e o impacto gerado por cada ONG apoiada.
             </p>
             <div className="space-y-4">
               {[
                 { icon: FileCheck, title: 'Recibo digital', desc: 'Emitido automaticamente após confirmação do pagamento, com dados da ONG, valor e data.' },
-                { icon: BarChart3, title: 'Histórico de doações', desc: 'Visualize todas as suas contribuições, status de pagamento e valores de match aplicados.' },
+                { icon: BarChart3, title: 'Histórico de doaçÃµes', desc: 'Visualize todas as suas contribuiçÃµes, status de pagamento e valores de match aplicados.' },
                 { icon: ShieldCheck, title: 'Relatórios públicos das ONGs', desc: 'As ONGs publicam relatórios de prestação de contas com data de atualização visível.' },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start space-x-4">
@@ -348,14 +348,14 @@ export default function AboutPage({ onNavigate }) {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Mantenha a Conexão</h2>
               <p className="text-gray-600 leading-relaxed text-sm">
-                Transparência e diálogo são fundamentais. Se você tem dúvidas, sugestões ou quer se tornar um parceiro, estamos à disposição.
+                Transparência e diálogo são fundamentais. Se você tem dúvidas, sugestÃµes ou quer se tornar um parceiro, estamos Ã  disposição.
               </p>
             </div>
             <div className="space-y-6">
               {[
                 { icon: Mail, label: 'E-mail', value: 'contato@ongmais.com' },
                 { icon: Phone, label: 'Telefone', value: '+55 (11) 4002-8922' },
-                { icon: MapPin, label: 'Localização', value: 'São Paulo, SP — Brasil' },
+                { icon: MapPin, label: 'Localização', value: 'São Paulo, SP - Brasil' },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="flex items-center space-x-4 group">
                   <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition">
