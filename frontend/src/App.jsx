@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import RegisterPage from './Pages/RegisterPage'
 import LoginPage from './Pages/LoginPage'
@@ -15,9 +15,82 @@ import Navbar from './components/Navbar'
 import { User, Bell, Settings } from 'lucide-react'
 import { useState } from 'react'
 
+const ONG_CATALOG = [
+  {
+    id: 1,
+    name: 'Instituto Rebrota',
+    cnpj: '12.345.678/0001-90',
+    description: 'Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana. Transformamos espaços cinzas em pulmões vivos, conectando comunidades à regeneração ativa da Floresta Amazônica em perímetros municipais.',
+    cause: 'meio-ambiente',
+    score: 96,
+    location: 'Manaus, AM',
+  },
+  {
+    id: 2,
+    name: 'Águas Limpas Brasil',
+    cnpj: '98.765.432/0001-10',
+    description: 'Projetos de saneamento básico e acesso à água potável em comunidades ribeirinhas do Norte e Nordeste.',
+    cause: 'saude',
+    score: 92,
+    location: 'Santarém, PA',
+  },
+  {
+    id: 3,
+    name: 'Educação Sem Fronteiras',
+    cnpj: '45.123.890/0001-55',
+    description: 'Promovemos acesso à educação de qualidade para jovens em situação de vulnerabilidade através de bolsas e mentoria educacional.',
+    cause: 'educacao',
+    score: 88,
+    location: 'São Paulo, SP',
+  },
+  {
+    id: 4,
+    name: 'Vozes da Comunidade',
+    cnpj: '11.222.333/0001-44',
+    description: 'Defesa e fomento dos direitos humanos através de suporte legal, capacitação e denúncia de violações em áreas periféricas.',
+    cause: 'direitos-humanos',
+    score: 95,
+    location: 'Rio de Janeiro, RJ',
+  },
+]
+
+function resolveOngById(id) {
+  return ONG_CATALOG.find((ong) => String(ong.id) === String(id)) || ONG_CATALOG[0]
+}
+
+function OngProfileRoute({ onNavigate }) {
+  const { id } = useParams()
+  const location = useLocation()
+  const currentOng = location.state?.ong || resolveOngById(id)
+
+  return <NgoProfilePage ong={currentOng} onNavigate={onNavigate} />
+}
+
+function OngTransparencyRoute({ onNavigate }) {
+  const { id } = useParams()
+  const location = useLocation()
+  const currentOng = location.state?.ong || resolveOngById(id)
+
+  return <NgoTransparencyPage ong={currentOng} onNavigate={onNavigate} />
+}
+
 function AppContent() {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
+
+  const handleNavigate = (path, data = null) => {
+    if (path === 'ong-profile' && data) {
+      navigate(`/ong/${data.id}`, { state: { ong: data } })
+      return
+    }
+
+    if (path === 'ong-transparency' && data) {
+      navigate(`/ong/${data.id}/transparency`, { state: { ong: data } })
+      return
+    }
+
+    navigate(path)
+  }
 
   const navLinks = [
     { label: 'Nossa Missão', path: '/' },
@@ -84,7 +157,7 @@ function AppContent() {
     <div className="min-h-screen bg-white font-sans flex flex-col">
       <Navbar
         links={navLinks}
-        onNavigate={(path) => navigate(path)}
+        onNavigate={handleNavigate}
         onBrandClick={() => navigate('/')}
         rightContent={rightContent}
         className="border-b border-gray-50"
@@ -99,10 +172,11 @@ function AppContent() {
         <Route path="/doacao" element={<DonationPage onGoHome={() => navigate('/')} />} />
         <Route path="/urgencia" element={<UrgencyRequestPage />} />
         <Route path="/gestao-ong" element={<NgoManagementPage />} />
-        <Route path="/causas" element={<CausesPage onNavigate={(path) => navigate(path)} />} />
-        <Route path="/ong/:id" element={<NgoProfilePage onNavigate={(path) => navigate(path)} />} />
-        <Route path="/donor-profile" element={<DonorProfilePage onNavigate={(path) => navigate(path)} />} />
-        <Route path="/ong-transparency" element={<NgoTransparencyPage onNavigate={(path) => navigate(path)} />} />
+        <Route path="/causas" element={<CausesPage onNavigate={handleNavigate} />} />
+        <Route path="/ong/:id" element={<OngProfileRoute onNavigate={handleNavigate} />} />
+        <Route path="/ong/:id/transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
+        <Route path="/donor-profile" element={<DonorProfilePage onNavigate={handleNavigate} />} />
+        <Route path="/ong-transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
       </Routes>
     </div>
   )
