@@ -16,10 +16,10 @@ import Footer from '../components/Footer';
 export default function DonorProfilePage({ onNavigate }) {
   const [downloadingId, setDownloadingId] = useState(null);
   const [causes, setCauses] = useState([
-    { id: 'env', label: 'Environment', active: true, icon: Globe, bg: 'bg-teal-800 text-white', iconColor: 'text-white' },
-    { id: 'edu', label: 'Education', active: true, icon: BookOpen, bg: 'bg-[#CBDDCD] text-[#0A3D36]', iconColor: 'text-[#0A3D36]' },
-    { id: 'urg', label: 'Urgent Requests', active: true, icon: AlertTriangle, bg: 'bg-red-100 text-red-800', iconColor: 'text-red-600' },
-    { id: 'cli', label: 'Climate Action', active: true, icon: Wind, bg: 'bg-slate-700 text-white', iconColor: 'text-white' }
+    { id: 'env', label: 'Meio Ambiente', active: true, icon: Globe, bg: 'bg-teal-800 text-white', iconColor: 'text-white' },
+    { id: 'edu', label: 'Educação', active: true, icon: BookOpen, bg: 'bg-[#CBDDCD] text-[#0A3D36]', iconColor: 'text-[#0A3D36]' },
+    { id: 'urg', label: 'Urgência', active: true, icon: AlertTriangle, bg: 'bg-red-100 text-red-800', iconColor: 'text-red-600' },
+    { id: 'cli', label: 'Clima', active: true, icon: Wind, bg: 'bg-slate-700 text-white', iconColor: 'text-white' }
   ]);
   const [showAddCause, setShowAddCause] = useState(false);
   const [newCauseText, setNewCauseText] = useState('');
@@ -106,9 +106,9 @@ export default function DonorProfilePage({ onNavigate }) {
                 </div>
               </div>
             </div>
-            {/* Donor since badge */}
+            {/* Badge doador desde */}
             <span className="mt-3 bg-[#0A3D36] text-white text-[9px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-              DONOR SINCE 2022
+              DOADOR DESDE 2022
             </span>
           </div>
 
@@ -118,7 +118,7 @@ export default function DonorProfilePage({ onNavigate }) {
               João Silva
             </h1>
             <p className="text-gray-500 text-lg leading-relaxed font-normal">
-              Your contribution has helped restore <span className="text-[#0A665C] font-semibold">15 hectares</span> of forest and supported <span className="text-[#0A665C] font-semibold">3 local NGOs</span>.
+              Sua contribuição ajudou a restaurar <span className="text-[#0A665C] font-semibold">15 hectares</span> de floresta e apoiou <span className="text-[#0A665C] font-semibold">3 ONGs locais</span>.
             </p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function DonorProfilePage({ onNavigate }) {
                 <Heart className="w-5 h-5 text-[#0A665C] fill-[#0A665C]/10" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                TOTAL DONATED
+                TOTAL DOADO
               </span>
             </div>
             <div>
@@ -149,12 +149,12 @@ export default function DonorProfilePage({ onNavigate }) {
                 <Network className="w-5 h-5 text-gray-500" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                NGOS SUPPORTED
+                ONGS APOIADAS
               </span>
             </div>
             <div>
               <h2 className="text-3xl font-extrabold text-[#0A3D36] tracking-tight">
-                3 Organizations
+                3 Organizações
               </h2>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function DonorProfilePage({ onNavigate }) {
           {/* Donation History */}
           <div className="space-y-6">
             <h3 className="text-xl font-extrabold text-[#0A3D36] tracking-tight">
-              Donation History
+              Histórico de Doações
             </h3>
             
             <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden shadow-[0_4px_25px_rgba(0,0,0,0.01)]">
@@ -174,10 +174,10 @@ export default function DonorProfilePage({ onNavigate }) {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="border-b border-gray-100 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                      <th className="py-5 px-6">Date</th>
-                      <th className="py-5 px-6">Organization / Cause</th>
-                      <th className="py-5 px-6">Value</th>
-                      <th className="py-5 px-6 text-right">Action</th>
+                      <th className="py-5 px-6">Data</th>
+                      <th className="py-5 px-6">Organização / Causa</th>
+                      <th className="py-5 px-6">Valor</th>
+                      <th className="py-5 px-6 text-right">Ação</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -202,7 +202,7 @@ export default function DonorProfilePage({ onNavigate }) {
                               className="text-[#0A665C] hover:text-[#08524a] hover:underline transition flex items-center space-x-1.5 ml-auto cursor-pointer"
                             >
                               <Download className="w-3.5 h-3.5" />
-                              <span>{downloadingId === d.id ? 'Baixando...' : 'Impact Receipt'}</span>
+                              <span>{downloadingId === d.id ? 'Baixando...' : 'Recibo'}</span>
                             </button>
                           </td>
                         </tr>
@@ -220,7 +220,7 @@ export default function DonorProfilePage({ onNavigate }) {
             {/* My Causes */}
             <div className="space-y-4">
               <h3 className="text-xl font-extrabold text-[#0A3D36] tracking-tight">
-                My Causes
+                Minhas Causas
               </h3>
               
               <div className="flex flex-wrap gap-2.5">
@@ -244,7 +244,7 @@ export default function DonorProfilePage({ onNavigate }) {
                     className="flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-xs font-bold border border-gray-300 text-gray-500 hover:bg-[#EAE8E3]/60 transition bg-white cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 text-gray-400" />
-                    <span>Add More</span>
+                    <span>Adicionar Causa</span>
                   </button>
                 ) : (
                   <form onSubmit={handleAddCause} className="flex items-center space-x-2 w-full mt-2">
@@ -281,19 +281,19 @@ export default function DonorProfilePage({ onNavigate }) {
               
               <div className="relative space-y-4">
                 <h4 className="text-xs font-extrabold text-[#0A3D36] uppercase tracking-widest">
-                  Next Steps
+                  Próximos Passos
                 </h4>
                 <p className="text-gray-600 text-xs leading-relaxed font-semibold">
-                  Based on your interest in Education and Climate Action, we suggest checking out the "Amazonia Digital Literacy" campaign or our current urgent requests.
+                  Com base no seu interesse em Educação e Meio Ambiente, sugerimos conhecer a campanha "Letramento Digital Amazônia" ou nossas solicitações de urgência atuais.
                 </p>
               </div>
 
               <div className="relative space-y-3 pt-2">
                 <button
-                  onClick={() => onNavigate && onNavigate('causas')}
+                  onClick={() => onNavigate && onNavigate('/causas')}
                   className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
                 >
-                  <span>Explore Campaigns</span>
+                  <span>Explorar Campanhas</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 
@@ -301,7 +301,7 @@ export default function DonorProfilePage({ onNavigate }) {
                   onClick={() => alert('Agendamento de chamada iniciado! Entraremos em contato.')}
                   className="w-full bg-white hover:bg-gray-50 text-gray-800 py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-colors border border-gray-100 cursor-pointer"
                 >
-                  Schedule a Call
+                  Agendar uma Conversa
                 </button>
               </div>
             </div>
