@@ -151,12 +151,12 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Tela Sobre
 
-- [ ] Refatorar `AboutPage` para explicar o objetivo do projeto.
-- [ ] Explicar o modelo de matchfunding.
-- [ ] Explicar como funciona o score da ONG.
-- [ ] Explicar como funciona a verificacao documental e de autenticidade.
-- [ ] Explicar como funcionam campanhas individuais e bundles.
-- [ ] Explicar como doadores acompanham transparencia, recibos e impacto.
+- [x] Refatorar `AboutPage` para explicar o objetivo do projeto.
+- [x] Explicar o modelo de matchfunding.
+- [x] Explicar como funciona o score da ONG.
+- [x] Explicar como funciona a verificacao documental e de autenticidade.
+- [x] Explicar como funcionam campanhas individuais e bundles.
+- [x] Explicar como doadores acompanham transparencia, recibos e impacto.
 
 ## Qualidade de interface
 
