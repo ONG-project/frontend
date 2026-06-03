@@ -116,7 +116,7 @@ export default function CausesPage({ onNavigate }) {
 
           {/* Botão de Doar Fundo */}
           <button 
-            onClick={() => onNavigate && onNavigate('donation')}
+            onClick={() => onNavigate && onNavigate('doacao')}
             className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-4 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
           >
             <Heart className="w-4.5 h-4.5 fill-white" />
