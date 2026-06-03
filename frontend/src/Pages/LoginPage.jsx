@@ -1,10 +1,27 @@
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
+import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-export default function LoginPage({ onRegisterClick, onLogin }) {
+export default function LoginPage({ onRegisterClick }) {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogin = async (role) => {
+    const mockUser = {
+      name: role === 'donor' ? 'João Silva' : 'Instituto Exemplo',
+      email: 'exemplo@email.com',
+      role: role
+    };
+    await login(mockUser);
+    
+    if (role === 'donor') navigate('/donor-profile');
+    if (role === 'ong') navigate('/gestao-ong');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (onLogin) onLogin();
+    handleLogin('donor');
   };
 
   return (
@@ -96,7 +113,7 @@ export default function LoginPage({ onRegisterClick, onLogin }) {
             {/* Google Login */}
             <button 
               type="button" 
-              onClick={onLogin}
+              onClick={() => handleLogin('donor')}
               className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-full transition flex items-center justify-center space-x-3 shadow-sm cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -131,6 +148,13 @@ export default function LoginPage({ onRegisterClick, onLogin }) {
                 Cadastre-se
               </button>
             </p>
+            
+            {/* Link temporário para simular acesso ONG */}
+            <div className="text-center mt-4">
+               <button type="button" onClick={() => handleLogin('ong')} className="text-xs text-gray-400 hover:text-gray-600 underline">
+                 [Dev] Simular Login ONG
+               </button>
+            </div>
           </form>
         </div>
       </div>

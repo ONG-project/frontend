@@ -27,14 +27,14 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 ## Navegacao, rotas e controle de acesso
 
 - [x] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
-- [ ] Criar estados de rota/tela para visitante, doador, ONG e admin.
-- [ ] Implementar guards de rota para area do doador, area da ONG e area administrativa.
-- [ ] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
-- [ ] Redirecionar usuario autenticado para a area correta apos login: doador, ONG ou admin.
-- [ ] Bloquear doacoes feitas por usuarios autenticados como ONG, quando a regra de produto exigir.
-- [ ] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
-- [ ] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
-- [ ] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
+- [x] Criar estados de rota/tela para visitante, doador, ONG e admin.
+- [x] Implementar guards de rota para area do doador, area da ONG e area administrativa.
+- [x] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
+- [x] Redirecionar usuario autenticado para a area correta apos login: doador, ONG ou admin.
+- [x] Bloquear doacoes feitas por usuarios autenticados como ONG, quando a regra de produto exigir.
+- [x] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
+- [x] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
+- [x] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
 
 ## Autenticacao e cadastro
 

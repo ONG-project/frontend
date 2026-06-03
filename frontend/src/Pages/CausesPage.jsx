@@ -133,13 +133,6 @@ export default function CausesPage({ onNavigate }) {
             <Settings className="w-4 h-4 text-gray-400" />
             <span>Gestão ONG</span>
           </button>
-          <button 
-            onClick={() => onNavigate && onNavigate('/sobre')}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-bold text-gray-500 hover:bg-[#EBE9E3] hover:text-gray-700 transition"
-          >
-            <LifeBuoy className="w-4 h-4 text-gray-400" />
-            <span>Suporte</span>
-          </button>
         </div>
       </aside>
 

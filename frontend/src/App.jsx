@@ -14,6 +14,11 @@ import NgoTransparencyPage from './Pages/NgoTransparencyPage'
 import Navbar from './components/Navbar'
 import { User, Bell, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import RequireAuth from './components/guards/RequireAuth'
+import RequireRole from './components/guards/RequireRole'
+import RequireGuest from './components/guards/RequireGuest'
+import SettingsPage from './Pages/SettingsPage'
 
 const ONG_CATALOG = [
   {
@@ -115,7 +120,7 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
           </button>
           <button
             id="goto-settings-btn"
-            onClick={() => { setOpen(false); onNavigate('/gestao-ong'); }}
+            onClick={() => { setOpen(false); onNavigate('/configuracoes'); }}
             className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition text-left"
           >
             <Settings className="w-4 h-4 text-gray-400" />
@@ -195,7 +200,7 @@ function MobileMenu({ links, user, onNavigate, onLogin, onLogout }) {
 
 function AppContent() {
   const navigate = useNavigate()
-  const [user, setUser] = useState(null)
+  const { user, logout } = useAuth()
 
   const handleNavigate = (path, data = null) => {
     if (path === 'ong-profile' && data) {
@@ -210,7 +215,7 @@ function AppContent() {
   }
 
   const handleLogout = () => {
-    setUser(null)
+    logout()
     navigate('/')
   }
 
@@ -300,23 +305,31 @@ function AppContent() {
 
       <Routes>
         <Route path="/" element={<LandingPage onExploreCauses={() => navigate('/causas')} onNavigate={navigate} />} />
-        <Route path="/register" element={<RegisterPage onLoginClick={() => navigate('/login')} />} />
-        <Route path="/login" element={
-          <LoginPage
-            onRegisterClick={() => navigate('/register')}
-            onLogin={() => { setUser({ name: 'João Silva', role: 'donor' }); navigate('/donor-profile'); }}
-          />
+        
+        {/* Guest Routes */}
+        <Route path="/register" element={
+          <RequireGuest><RegisterPage onLoginClick={() => navigate('/login')} /></RequireGuest>
         } />
+        <Route path="/login" element={
+          <RequireGuest><LoginPage onRegisterClick={() => navigate('/register')} /></RequireGuest>
+        } />
+        
+        {/* Public Routes */}
         <Route path="/transparency" element={<TransparencyPage onNavigate={navigate} />} />
         <Route path="/sobre" element={<AboutPage onNavigate={navigate} />} />
-        <Route path="/doacao" element={<DonationPage onGoHome={() => navigate('/')} />} />
-        <Route path="/urgencia" element={<UrgencyRequestPage />} />
-        <Route path="/gestao-ong" element={<NgoManagementPage />} />
         <Route path="/causas" element={<CausesPage onNavigate={handleNavigate} />} />
         <Route path="/ong/:id" element={<OngProfileRoute onNavigate={handleNavigate} />} />
         <Route path="/ong/:id/transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
-        <Route path="/donor-profile" element={<DonorProfilePage onNavigate={handleNavigate} />} />
         <Route path="/ong-transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
+
+        {/* Protected Area */}
+        <Route path="/doacao" element={<RequireAuth><DonationPage onGoHome={() => navigate('/')} /></RequireAuth>} />
+        <Route path="/urgencia" element={<RequireAuth><UrgencyRequestPage /></RequireAuth>} />
+        <Route path="/configuracoes" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        
+        {/* Role Specific */}
+        <Route path="/donor-profile" element={<RequireRole allowedRoles={['donor']}><DonorProfilePage onNavigate={handleNavigate} /></RequireRole>} />
+        <Route path="/gestao-ong" element={<RequireRole allowedRoles={['ong']}><NgoManagementPage /></RequireRole>} />
       </Routes>
     </div>
   )
@@ -325,7 +338,9 @@ function AppContent() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </BrowserRouter>
   )
 }
