@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import RegisterPage from './Pages/RegisterPage'
 import LoginPage from './Pages/LoginPage'
@@ -324,7 +324,18 @@ function AppContent() {
 
         {/* Protected Area */}
         <Route path="/doacao" element={<RequireAuth><DonationPage onGoHome={() => navigate('/')} /></RequireAuth>} />
-        <Route path="/urgencia" element={<RequireAuth><UrgencyRequestPage /></RequireAuth>} />
+        <Route
+          path="/urgencia"
+          element={
+            <RequireRole allowedRoles={['ong']}>
+              <Navigate to="/gestao-ong?tab=urgencia&action=nova" replace />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/urgencia/nova"
+          element={<RequireRole allowedRoles={['ong']}><UrgencyRequestPage /></RequireRole>}
+        />
         <Route path="/configuracoes" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         
         {/* Role Specific */}

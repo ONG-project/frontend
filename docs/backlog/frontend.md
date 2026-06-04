@@ -129,15 +129,15 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Solicitacao de urgencia
 
-- [ ] Completar as etapas apos "Continuar para Requisitos Financeiros".
-- [ ] Criar etapa de requisitos financeiros com valores solicitados, justificativa, prazo, plano de uso e documentos.
-- [ ] Criar etapa de evidencias da urgencia com upload de comprovantes e documentos de crise.
-- [ ] Criar etapa de revisao e envio.
-- [ ] Implementar salvamento de rascunho na interface.
-- [ ] Exibir status da solicitacao: rascunho, enviada, em analise, aprovada, recusada e concluida.
-- [ ] Criar dashboard real de solicitacoes ativas na gestao da ONG.
-- [ ] Exibir solicitacoes de apoio emergencial no perfil publico da ONG quando forem publicas.
-- [ ] Exibir solicitacoes de apoio emergencial na pagina de transparencia quando forem publicas.
+- [x] Completar as etapas apos "Continuar para Requisitos Financeiros".
+- [x] Criar etapa de requisitos financeiros com valores solicitados, justificativa, prazo, plano de uso e documentos.
+- [x] Criar etapa de evidencias da urgencia com upload de comprovantes e documentos de crise.
+- [x] Criar etapa de revisao e envio.
+- [x] Implementar salvamento de rascunho na interface.
+- [x] Exibir status da solicitacao: rascunho, enviada, em analise, aprovada, recusada e concluida.
+- [x] Criar dashboard real de solicitacoes ativas na gestao da ONG.
+- [x] Exibir solicitacoes de apoio emergencial no perfil publico da ONG quando forem publicas.
+- [x] Exibir solicitacoes de apoio emergencial na pagina de transparencia quando forem publicas.
 
 ## Area administrativa
 
