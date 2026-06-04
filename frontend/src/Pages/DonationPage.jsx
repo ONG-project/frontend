@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   Sparkles,
@@ -19,6 +20,9 @@ import amaraStoryBg from '../assets/amara_story.png';
 
 export default function DonationPage({ onGoHome }) {
   const { user } = useAuth();
+  const location = useLocation();
+  const routeState = location.state || {}; // contains ngoId, ngoName, campaignId, campaignName, bundleId, bundleName, type
+  
   const [donationStep, setDonationStep] = useState(1); // 1 = Form, 3 = Confirmation
 
   if (user?.role === 'ong') {
@@ -43,7 +47,12 @@ export default function DonationPage({ onGoHome }) {
   const [frequency, setFrequency] = useState('Mensal'); // 'Única', 'Mensal'
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');
-  const [selectedCause, setSelectedCause] = useState('Todas as causas');
+  const [selectedCause, setSelectedCause] = useState(() => {
+    if (routeState.type === 'bundle') return `Bundle: ${routeState.bundleName}`;
+    if (routeState.type === 'campaign') return `Campanha: ${routeState.campaignName}`;
+    if (routeState.type === 'ngo') return `ONG: ${routeState.ngoName}`;
+    return 'Todas as causas';
+  });
   const [paymentMethod, setPaymentMethod] = useState('Cartão');
   
   // Card input fields
@@ -211,6 +220,19 @@ export default function DonationPage({ onGoHome }) {
             <p className="text-gray-600 text-base md:text-lg max-w-[500px] leading-relaxed">
               Cada doação é uma curadoria de esperança. Escolha onde sua marca no mundo será deixada hoje.
             </p>
+            {routeState.type && (
+              <div className="bg-[#FAF8F5] border border-[#E5E2D9] rounded-2xl p-4 flex items-center space-x-3 text-sm text-[#0A3D36] max-w-xl">
+                <ShieldCheck className="w-5 h-5 text-[#0A665C] shrink-0" />
+                <div>
+                  <span className="font-semibold text-gray-500">Destino da Doação: </span>
+                  <span className="font-bold text-gray-900">
+                    {routeState.type === 'bundle' && `Bundle Coletivo: ${routeState.bundleName}`}
+                    {routeState.type === 'campaign' && `Campanha: ${routeState.campaignName}`}
+                    {routeState.type === 'ngo' && `ONG: ${routeState.ngoName}`}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Step 1 - Escolha o Valor */}
@@ -302,41 +324,59 @@ export default function DonationPage({ onGoHome }) {
             </div>
             <p className="text-gray-500 text-sm">Qual causa ressoa mais com você agora?</p>
 
-            <div className="space-y-4">
-              {causesList.map((cause) => {
-                const CauseIcon = cause.icon;
-                const isSelected = selectedCause === cause.id;
-                return (
-                  <button
-                    key={cause.id}
-                    type="button"
-                    onClick={() => setSelectedCause(cause.id)}
-                    className={`w-full flex items-start text-left p-5 rounded-2xl border-2 transition-all ${
-                      isSelected 
-                        ? 'bg-white border-[#147B72] shadow-sm' 
-                        : 'bg-white border-transparent hover:border-gray-100'
-                    }`}
-                  >
-                    <div className="flex items-center h-5 mr-4">
-                      <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                        isSelected ? 'border-[#147B72]' : 'border-gray-300'
-                       }`}>
-                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#147B72]" />}
+            {routeState.type ? (
+              <div className="p-5 rounded-2xl border-2 border-[#147B72] bg-white flex items-start space-x-4">
+                <div className="p-2.5 rounded-xl bg-teal-50 text-[#147B72] shrink-0">
+                  <Heart className="w-6 h-6 fill-[#147B72]" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 text-sm">
+                    {routeState.type === 'bundle' && `Bundle Coletivo: ${routeState.bundleName}`}
+                    {routeState.type === 'campaign' && `Campanha: ${routeState.campaignName}`}
+                    {routeState.type === 'ngo' && `ONG: ${routeState.ngoName}`}
+                  </h4>
+                  <p className="text-gray-500 text-xs mt-1 leading-relaxed">
+                    Destino selecionado previamente no catálogo. Caso queira apoiar outro projeto, retorne à página de causas.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {causesList.map((cause) => {
+                  const CauseIcon = cause.icon;
+                  const isSelected = selectedCause === cause.id;
+                  return (
+                    <button
+                      key={cause.id}
+                      type="button"
+                      onClick={() => setSelectedCause(cause.id)}
+                      className={`w-full flex items-start text-left p-5 rounded-2xl border-2 transition-all ${
+                        isSelected 
+                          ? 'bg-white border-[#147B72] shadow-sm' 
+                          : 'bg-white border-transparent hover:border-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center h-5 mr-4">
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
+                          isSelected ? 'border-[#147B72]' : 'border-gray-300'
+                         }`}>
+                          {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-[#147B72]" />}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-grow flex items-start space-x-4">
-                      <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-teal-50 text-[#147B72]' : 'bg-gray-50 text-gray-500'}`}>
-                        <CauseIcon className="w-6 h-6" />
+                      <div className="flex-grow flex items-start space-x-4">
+                        <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-teal-50 text-[#147B72]' : 'bg-gray-50 text-gray-500'}`}>
+                          <CauseIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-sm">{cause.title}</h4>
+                          <p className="text-gray-500 text-xs mt-1 leading-relaxed">{cause.description}</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm">{cause.title}</h4>
-                        <p className="text-gray-500 text-xs mt-1 leading-relaxed">{cause.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Step 3 - Método de Pagamento */}

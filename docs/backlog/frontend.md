@@ -50,12 +50,14 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## ONGs, causas, campanhas e bundles
 
-- [ ] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
-- [ ] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
-- [ ] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
-- [ ] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
-- [ ] Criar fluxo de doacao para bundle/campanha coletiva.
+- [x] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
+- [x] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
+- [x] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
+- [x] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
+- [x] Criar fluxo de doacao para bundle/campanha coletiva.
 - [ ] Conectar a listagem de ONGs da `CausesPage` a dados da API.
+- [ ] Conectar a listagem de campanhas individuais e coletivas (bundles) da `CausesPage` a dados da API.
+- [ ] Conectar a página de detalhe de bundle (`/bundle/:id`) a dados reais da API.
 - [ ] Implementar filtro por causa usando dados reais.
 - [ ] Implementar busca real por nome, causa, localidade e CNPJ.
 - [ ] Adicionar paginacao ou carregamento incremental na listagem de ONGs.
@@ -97,7 +99,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar doacao para ONG especifica.
 - [ ] Implementar doacao para campanha individual.
 - [ ] Implementar doacao para fundo/causa.
-- [ ] Implementar doacao para bundle/campanha coletiva.
+- [x] Implementar doacao para bundle/campanha coletiva.
 - [ ] Implementar validacao de valor minimo e valor customizado.
 - [ ] Implementar estados visuais de pagamento pendente, aprovado, recusado, cancelado e estornado.
 - [ ] Exibir QR Code real para pagamento PIX.

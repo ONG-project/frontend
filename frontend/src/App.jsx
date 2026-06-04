@@ -8,6 +8,7 @@ import DonationPage from './Pages/DonationPage'
 import UrgencyRequestPage from './Pages/UrgencyRequestPage'
 import NgoManagementPage from './Pages/NgoManagementPage'
 import CausesPage from './Pages/CausesPage'
+import BundleDetailPage from './Pages/BundleDetailPage'
 import NgoProfilePage from './Pages/NgoProfilePage'
 import DonorProfilePage from './Pages/DonorProfilePage'
 import NgoTransparencyPage from './Pages/NgoTransparencyPage'
@@ -318,6 +319,7 @@ function AppContent() {
         <Route path="/transparency" element={<TransparencyPage onNavigate={navigate} />} />
         <Route path="/sobre" element={<AboutPage onNavigate={navigate} />} />
         <Route path="/causas" element={<CausesPage onNavigate={handleNavigate} />} />
+        <Route path="/bundle/:id" element={<BundleDetailPage />} />
         <Route path="/ong/:id" element={<OngProfileRoute onNavigate={handleNavigate} />} />
         <Route path="/ong/:id/transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
         <Route path="/ong-transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
