@@ -62,6 +62,18 @@ export default function DonationPage({ onGoHome }) {
 
   const displayAmount = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
 
+  const matchMultiplier = routeState.type === 'bundle' && routeState.bundleId === 'b1' ? 3 
+    : routeState.type === 'campaign' && routeState.campaignId === 'c1' ? 3
+    : routeState.type === 'campaign' && (routeState.campaignId === 'c3' || routeState.campaignId === 'c3 (Cópia)') ? 2
+    : 1;
+
+  const matchSponsor = routeState.type === 'bundle' && routeState.bundleId === 'b1' ? 'Fundação Clima Global'
+    : routeState.type === 'campaign' && routeState.campaignId === 'c1' ? 'BioCorp S.A.'
+    : routeState.type === 'campaign' && (routeState.campaignId === 'c3' || routeState.campaignId === 'c3 (Cópia)') ? 'TechFund Brasil'
+    : null;
+
+  const combinedAmount = displayAmount * matchMultiplier;
+
   const handleAmountSelect = (amount) => {
     setSelectedAmount(amount);
     setCustomAmount('');
@@ -149,9 +161,21 @@ export default function DonationPage({ onGoHome }) {
                 <span className="text-gray-900 font-bold">{selectedCause}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-500 font-medium">Valor Confirmado</span>
-                <span className="text-[#0A665C] font-extrabold text-lg">R$ {displayAmount},00</span>
+                <span className="text-gray-500 font-medium">Valor da sua Doação</span>
+                <span className="text-gray-900 font-bold">R$ {displayAmount},00</span>
               </div>
+              {matchMultiplier > 1 && (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 font-medium">Multiplicador Matchfunding</span>
+                    <span className="text-[#0A665C] font-bold">{matchMultiplier}x ({matchSponsor})</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-[#EAF5F0] p-2.5 rounded-xl border border-emerald-100">
+                    <span className="text-emerald-800 font-bold">Impacto Total Combinado</span>
+                    <span className="text-[#0A665C] font-extrabold text-lg">R$ {combinedAmount},00</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between items-center">
                 <span className="text-gray-500 font-medium">Frequência</span>
                 <span className="text-gray-900 font-bold">{frequency}</span>
@@ -496,11 +520,23 @@ export default function DonationPage({ onGoHome }) {
             
             <div className="space-y-4">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Valor Selecionado</span>
+                <span className="text-gray-500 font-medium">Sua Doação</span>
                 <span className="text-gray-900 font-bold">R$ {displayAmount},00</span>
               </div>
+              {matchMultiplier > 1 && (
+                <>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500 font-medium">Multiplicador</span>
+                    <span className="text-emerald-700 font-bold">{matchMultiplier}x ({matchSponsor})</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/55">
+                    <span className="text-emerald-800 font-bold text-xs">Total do Match</span>
+                    <span className="text-[#0A665C] font-extrabold">R$ {combinedAmount},00</span>
+                  </div>
+                </>
+              )}
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-500 font-medium">Causa</span>
+                <span className="text-gray-500 font-medium">Destino</span>
                 <span className="text-gray-900 font-bold text-right max-w-[200px] truncate">{selectedCause}</span>
               </div>
               <div className="flex justify-between items-center text-sm">

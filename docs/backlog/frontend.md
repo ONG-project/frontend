@@ -70,15 +70,15 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Sistema de campanhas e matchfunding
 
-- [ ] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
-- [ ] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
-- [ ] Criar suporte visual a rascunhos de campanha.
-- [ ] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
-- [ ] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
-- [ ] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
-- [ ] Diferenciar campanhas individuais de campanhas coletivas/bundles.
-- [ ] Exibir alertas quando uma campanha depende de validacao administrativa.
-- [ ] Criar historico completo de campanhas encerradas.
+- [x] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
+- [x] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
+- [x] Criar suporte visual a rascunhos de campanha.
+- [x] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
+- [x] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
+- [x] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
+- [x] Diferenciar campanhas individuais de campanhas coletivas/bundles.
+- [x] Exibir alertas quando uma campanha depende de validacao administrativa.
+- [x] Criar historico completo de campanhas encerradas.
 
 ## Transparencia e verificacao
 
