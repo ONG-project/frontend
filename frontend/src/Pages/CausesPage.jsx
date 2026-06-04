@@ -124,16 +124,7 @@ export default function CausesPage({ onNavigate }) {
           </button>
         </div>
 
-        {/* Links do rodapé da Sidebar */}
-        <div className="space-y-1 pt-6 border-t border-[#E5E2D9]/60">
-          <button 
-            onClick={() => onNavigate && onNavigate('/gestao-ong')}
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-bold text-gray-500 hover:bg-[#EBE9E3] hover:text-gray-700 transition"
-          >
-            <Settings className="w-4 h-4 text-gray-400" />
-            <span>Gestão ONG</span>
-          </button>
-        </div>
+
       </aside>
 
       {/* Área de Conteúdo Principal */}

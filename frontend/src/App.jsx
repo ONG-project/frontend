@@ -112,11 +112,11 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
           </div>
           <button
             id="goto-profile-btn"
-            onClick={() => { setOpen(false); onNavigate('/donor-profile'); }}
+            onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
             className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition text-left"
           >
             <User className="w-4 h-4 text-gray-400" />
-            <span>Meu Perfil</span>
+            <span>{user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}</span>
           </button>
           <button
             id="goto-settings-btn"
@@ -170,9 +170,9 @@ function MobileMenu({ links, user, onNavigate, onLogin, onLogout }) {
           <div className="pt-3 border-t border-gray-100 space-y-2">
             {user ? (
               <>
-                <button onClick={() => { setOpen(false); onNavigate('/donor-profile'); }}
+                <button onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
-                  Meu Perfil
+                  {user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}
                 </button>
                 <button onClick={() => { setOpen(false); onLogout(); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition">
