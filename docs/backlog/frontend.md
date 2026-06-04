@@ -124,6 +124,8 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar download real de PDFs no painel de relatorios.
 - [ ] Implementar historico real de arquivos gerados com download.
 - [ ] Implementar configuracao de periodo personalizado para relatorios.
+- [ ] Criar tela de configuracoes da ONG.
+
 
 ## Solicitacao de urgencia
 
@@ -148,7 +150,6 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Criar tela de moderacao de conteudo publicado.
 - [ ] Criar tela de validacao de solicitacoes de urgencia.
 - [ ] Criar historico de decisoes administrativas com autor, data e justificativa.
-
 ## Tela Sobre
 
 - [x] Refatorar `AboutPage` para explicar o objetivo do projeto.
