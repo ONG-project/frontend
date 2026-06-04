@@ -1,6 +1,7 @@
 import { Banknote, HandCoins, Building2, FileText, ShieldCheck, ChevronDown } from 'lucide-react';
 import imagemGenerica from '../assets/imagem_generica.jpg';
 import Footer from '../components/Footer';
+import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 
 
 
@@ -200,6 +201,14 @@ export default function TransparencyPage({ onNavigate }) {
 
         <ImpactOverview />
         <TransactionsTable />
+
+        <div className="mb-20">
+          <UrgencyPublicSection
+            title="Urgências Públicas na Plataforma"
+            description="Pedidos de apoio emergencial aprovados pelas ONGs parceiras, visíveis para doadores e auditores."
+          />
+        </div>
+
         <EmergencyFund />
       </main>
 
