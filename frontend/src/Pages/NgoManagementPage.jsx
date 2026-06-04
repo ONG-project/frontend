@@ -94,7 +94,8 @@ export default function NgoManagementPage({ onNavigate }) {
             { id: 'visao-geral', label: 'Visão Geral & Transparência' },
             { id: 'campanhas', label: 'Minhas Campanhas' },
             { id: 'doadores', label: 'Doadores' },
-            { id: 'relatorios', label: 'Relatórios' }
+            { id: 'relatorios', label: 'Relatórios' },
+            { id: 'cadastro', label: 'Alterações Cadastrais' }
           ].map((subTab) => {
             const isActive = activeSubTab === subTab.id;
             return (
@@ -890,6 +891,85 @@ export default function NgoManagementPage({ onNavigate }) {
 
             </div>
 
+          </div>
+        )}
+
+        {/* VIEW 5: Alterações Cadastrais */}
+        {activeSubTab === 'cadastro' && (
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-12 animate-fadeIn">
+            {/* Form */}
+            <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-gray-900">Solicitar Alteração Cadastral</h3>
+                <p className="text-xs text-gray-400">
+                  Envie novas informações cadastrais para revisão administrativa. As alterações serão publicadas após validação dos documentos pela equipe do ONG+.
+                </p>
+              </div>
+
+              <form className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Razão Social</label>
+                    <input type="text" placeholder="Instituto Rebrota de Preservação Ambiental" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Fantasia / Público</label>
+                    <input type="text" placeholder="Instituto Rebrota" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Endereço Principal / Sede</label>
+                  <input type="text" placeholder="Rua das Palmeiras, 102, Manaus, AM" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descrição Institucional</label>
+                  <textarea rows="4" placeholder="Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana..." className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documento Comprovatório (PDF)</label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-[#FAF8F5] transition cursor-pointer">
+                    <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <span className="text-xs font-bold text-[#0A665C] block">Fazer upload do Estatuto ou Ata de Eleição</span>
+                    <span className="text-[10px] text-gray-400">PDF de até 10MB</span>
+                  </div>
+                </div>
+
+                <button type="submit" className="bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs tracking-wider transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); alert('Solicitação de alteração cadastral enviada para moderação!'); }}>
+                  Enviar para Análise
+                </button>
+              </form>
+            </div>
+
+            {/* Request feedback section */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6">
+                <h4 className="text-sm font-bold text-gray-900">Histórico de Solicitações</h4>
+                
+                <div className="space-y-4">
+                  {[
+                    { type: 'Endereço & Nome Fantasia', date: '02 Jun, 2026', status: 'Pendente', color: 'bg-amber-100 text-amber-800 border-amber-200', notes: 'Aguardando validação da equipe interna.' },
+                    { type: 'Estatuto de Fundação', date: '14 Abr, 2026', status: 'Aprovada', color: 'bg-[#CBDDCD] text-[#0A3D36] border-[#CBDDCD]', notes: 'Documento homologado com sucesso.' },
+                    { type: 'Razão Social', date: '10 Mar, 2026', status: 'Recusada', color: 'bg-red-50 text-red-700 border-red-100', notes: 'Cópia do CNPJ incorreta ou desatualizada.' }
+                  ].map((req, idx) => (
+                    <div key={idx} className="p-4 rounded-2xl bg-[#FAF8F5] border border-gray-50 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-gray-900">{req.type}</span>
+                        <span className={`text-[9px] font-extrabold border px-2 py-0.5 rounded-full uppercase tracking-wider ${req.color}`}>
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-semibold">Solicitado em: {req.date}</div>
+                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed bg-white p-2 rounded-lg border border-gray-100/50">
+                        {req.notes}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

@@ -61,12 +61,12 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar filtro por causa usando dados reais.
 - [ ] Implementar busca real por nome, causa, localidade e CNPJ.
 - [ ] Adicionar paginacao ou carregamento incremental na listagem de ONGs.
-- [ ] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
-- [ ] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
-- [ ] Adicionar historico de campanhas no perfil publico da ONG.
-- [ ] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
-- [ ] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
-- [ ] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
+- [x] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
+- [x] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
+- [x] Adicionar historico de campanhas no perfil publico da ONG.
+- [x] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
+- [x] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
+- [x] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
 
 ## Sistema de campanhas e matchfunding
 

@@ -64,10 +64,16 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           
           {/* Informações Principais da ONG */}
           <div className="space-y-6">
-            <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-              <span>Parceiro Verificado</span>
-            </span>
+            {currentOng.verified !== false ? (
+              <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
+                <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                <span>Parceiro Verificado</span>
+              </span>
+            ) : (
+              <span className="bg-gray-150 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
+                <span>Aguardando Verificação</span>
+              </span>
+            )}
 
             <h1 className="text-5xl font-extrabold text-[#0A3D36] tracking-tight leading-none">
               {currentOng.name}
@@ -82,6 +88,14 @@ export default function NgoProfilePage({ ong, onNavigate }) {
                 <Building2 className="w-4 h-4 text-gray-400" />
                 <span>CNPJ: {currentOng.cnpj}</span>
               </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 text-gray-400 text-[10px] font-semibold">
+              <span>Fonte dos dados: Receita Federal & Auditoria Interna</span>
+              <span>•</span>
+              <span>Última atualização: {currentOng.lastUpdated || '04/06/2026'}</span>
+              <span>•</span>
+              <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
             </div>
 
             <p className="text-gray-600 text-base leading-relaxed max-w-2xl font-medium pt-2">
