@@ -27,14 +27,14 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 ## Navegacao, rotas e controle de acesso
 
 - [x] Trocar a navegacao por `useState` por um roteador de SPA, como `react-router`, preservando links diretos para cada pagina.
-- [ ] Criar estados de rota/tela para visitante, doador, ONG e admin.
-- [ ] Implementar guards de rota para area do doador, area da ONG e area administrativa.
-- [ ] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
-- [ ] Redirecionar usuario autenticado para a area correta apos login: doador, ONG ou admin.
-- [ ] Bloquear doacoes feitas por usuarios autenticados como ONG, quando a regra de produto exigir.
-- [ ] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
-- [ ] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
-- [ ] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
+- [x] Criar estados de rota/tela para visitante, doador, ONG e admin.
+- [x] Implementar guards de rota para area do doador, area da ONG e area administrativa.
+- [x] Exibir bloqueios e mensagens adequadas quando uma acao nao estiver disponivel para o perfil logado.
+- [x] Redirecionar usuario autenticado para a area correta apos login: doador, ONG ou admin.
+- [x] Bloquear doacoes feitas por usuarios autenticados como ONG, quando a regra de produto exigir.
+- [x] Criar pagina de configuracoes do usuario, citada nos workflows como `Configuracoes`.
+- [x] Criar pagina de suporte, hoje exibida como botao na sidebar de causas sem fluxo implementado.
+- [x] Adicionar menu de perfil com opcoes reais de sair, configuracoes e dados da conta.
 
 ## Autenticacao e cadastro
 
@@ -124,6 +124,8 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar download real de PDFs no painel de relatorios.
 - [ ] Implementar historico real de arquivos gerados com download.
 - [ ] Implementar configuracao de periodo personalizado para relatorios.
+- [ ] Criar tela de configuracoes da ONG.
+
 
 ## Solicitacao de urgencia
 
@@ -148,21 +150,21 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Criar tela de moderacao de conteudo publicado.
 - [ ] Criar tela de validacao de solicitacoes de urgencia.
 - [ ] Criar historico de decisoes administrativas com autor, data e justificativa.
-
 ## Tela Sobre
 
-- [ ] Refatorar `AboutPage` para explicar o objetivo do projeto.
-- [ ] Explicar o modelo de matchfunding.
-- [ ] Explicar como funciona o score da ONG.
-- [ ] Explicar como funciona a verificacao documental e de autenticidade.
-- [ ] Explicar como funcionam campanhas individuais e bundles.
-- [ ] Explicar como doadores acompanham transparencia, recibos e impacto.
+- [x] Refatorar `AboutPage` para explicar o objetivo do projeto.
+- [x] Explicar o modelo de matchfunding.
+- [x] Explicar como funciona o score da ONG.
+- [x] Explicar como funciona a verificacao documental e de autenticidade.
+- [x] Explicar como funcionam campanhas individuais e bundles.
+- [x] Explicar como doadores acompanham transparencia, recibos e impacto.
 
 ## Qualidade de interface
 
 - [ ] Corrigir textos com caracteres quebrados nos arquivos e na interface. **P0 MVP**
 - [ ] Revisar responsividade das paginas com sidebars em telas pequenas.
 - [ ] Adicionar estados vazios, loading e erro para listas e formularios. **P0 MVP nas paginas conectadas a API**
+- [ ] Corrigir botões que não estão funcionando ou levam para links quebrados.
 - [ ] Adicionar confirmacoes visuais para acoes importantes.
 - [ ] Adicionar acessibilidade basica: foco visivel, labels, aria quando necessario e navegacao por teclado.
 - [ ] Adicionar testes de frontend para navegacao e fluxos criticos.

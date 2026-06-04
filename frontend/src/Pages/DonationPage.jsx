@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   Sparkles,
   GraduationCap, 
@@ -17,7 +18,28 @@ import {
 import amaraStoryBg from '../assets/amara_story.png';
 
 export default function DonationPage({ onGoHome }) {
+  const { user } = useAuth();
   const [donationStep, setDonationStep] = useState(1); // 1 = Form, 3 = Confirmation
+
+  if (user?.role === 'ong') {
+    return (
+      <div className="flex-grow bg-[#FCFBF9] font-sans py-16 px-6 text-center flex flex-col items-center justify-center">
+        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 max-w-md w-full">
+          <ShieldCheck className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Acesso Restrito</h2>
+          <p className="text-gray-500 text-sm mb-6">
+            O perfil de ONG não tem permissão para realizar doações. Para doar, por favor faça login com um perfil de Doador.
+          </p>
+          <button 
+            onClick={onGoHome}
+            className="w-full bg-[#147B72] text-white py-3 rounded-xl font-bold hover:bg-teal-800 transition"
+          >
+            Voltar ao Início
+          </button>
+        </div>
+      </div>
+    );
+  }
   const [frequency, setFrequency] = useState('Mensal'); // 'Única', 'Mensal'
   const [selectedAmount, setSelectedAmount] = useState(50);
   const [customAmount, setCustomAmount] = useState('');

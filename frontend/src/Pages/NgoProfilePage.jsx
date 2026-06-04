@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  MapPin, 
-  Building2, 
-  ShieldCheck, 
-  FileText, 
-  Target, 
+import {
+  MapPin,
+  Building2,
+  ShieldCheck,
+  FileText,
+  Target,
   ArrowLeft,
   CreditCard,
   QrCode,
   Wallet,
-  Heart
+  Heart,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Calendar
 } from 'lucide-react';
 import reflorestaSeedling from '../assets/refloresta_seedling.png';
 import Footer from '../components/Footer';
@@ -309,6 +313,136 @@ export default function NgoProfilePage({ ong, onNavigate }) {
 
           </div>
 
+        </div>
+
+        {/* Campanhas Ativas */}
+        <div className="space-y-6 pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">Campanhas Ativas</h2>
+              <p className="text-gray-500 text-sm mt-1">Iniciações em andamento — apoie uma causa específica.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                id: 1,
+                title: 'Micro-florestas Urbanas 2026',
+                desc: 'Plantação de 50.000 mudas em 8 municípios do Amazonas até dezembro de 2026.',
+                meta: 120000,
+                arrecadado: 87400,
+                prazo: 'Dez 2026',
+                status: 'Ativa',
+                match: true,
+                matchLabel: '1x — Patrocinádor: EcoFund'
+              },
+              {
+                id: 2,
+                title: 'Corredores Biológicos Norte',
+                desc: 'Conectar áreas de preservação fragmentadas no Pará e Roraima com faixas de reflorestamento.',
+                meta: 80000,
+                arrecadado: 31200,
+                prazo: 'Mar 2027',
+                status: 'Ativa',
+                match: false,
+                matchLabel: null
+              },
+            ].map((camp) => {
+              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
+              return (
+                <div key={camp.id} className="bg-white rounded-[1.5rem] p-7 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4 hover:shadow-[0_4px_30px_rgba(0,0,0,0.04)] transition-all">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2.5 py-0.5 rounded-full">{camp.status}</span>
+                        {camp.match && (
+                          <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                            <TrendingUp className="w-3 h-3" />
+                            <span>Match {camp.matchLabel}</span>
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-gray-900 text-base">{camp.title}</h3>
+                      <p className="text-gray-500 text-xs leading-relaxed">{camp.desc}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-semibold text-gray-700">
+                      <span>R$ {camp.arrecadado.toLocaleString('pt-BR')} arrecadados</span>
+                      <span>{pct}% da meta</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-teal-500 to-teal-700 h-2 rounded-full"
+                        style={{ width: `${Math.min(pct, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-gray-400">
+                      <span>Meta: R$ {camp.meta.toLocaleString('pt-BR')}</span>
+                      <span className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Prazo: {camp.prazo}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCompleteDonation}
+                    className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
+                  >
+                    Apoiar esta Campanha
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Histórico de Campanhas */}
+        <div className="space-y-6 pt-4">
+          <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">Histórico de Campanhas</h2>
+          <div className="space-y-4">
+            {[
+              { title: 'Sementes do Futuro 2025', meta: 60000, arrecadado: 63500, prazo: 'Jun 2025', status: 'Encerrada' },
+              { title: 'Refloresta Paraá 2024', meta: 45000, arrecadado: 45000, prazo: 'Dez 2024', status: 'Meta atingida' },
+              { title: 'Hortas Comunitárias AM 2024', meta: 30000, arrecadado: 29100, prazo: 'Set 2024', status: 'Encerrada' },
+            ].map((camp, idx) => {
+              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
+              const isComplete = camp.arrecadado >= camp.meta;
+              return (
+                <div key={idx} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      {isComplete
+                        ? <CheckCircle className="w-4 h-4 text-teal-600 shrink-0" />
+                        : <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+                      }
+                      <p className="font-bold text-gray-900 text-sm">{camp.title}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isComplete ? 'bg-[#CBDDCD] text-[#0A3D36]' : 'bg-gray-100 text-gray-600'
+                      }`}>{camp.status}</span>
+                    </div>
+                    <p className="text-gray-400 text-xs pl-6">
+                      R$ {camp.arrecadado.toLocaleString('pt-BR')} / R$ {camp.meta.toLocaleString('pt-BR')} &middot; {camp.prazo}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-3 shrink-0">
+                    <div className="w-24">
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full ${ isComplete ? 'bg-teal-500' : 'bg-gray-300' }`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-gray-600">{pct}%</span>
+                    <button className="text-[#0A665C] text-xs font-bold hover:underline">
+                      Relatório
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
       </main>

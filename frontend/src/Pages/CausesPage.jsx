@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { 
-  Search, 
-  Heart, 
-  Settings, 
-  LifeBuoy, 
-  Leaf, 
-  GraduationCap, 
-  HeartPulse, 
+import {
+  Search,
+  Heart,
+  Settings,
+  LifeBuoy,
+  Leaf,
+  GraduationCap,
+  HeartPulse,
   Scale,
-  Sparkles
+  Sparkles,
+  MapPin,
+  ShieldCheck
 } from 'lucide-react';
 
 // Dados mocked baseados no layout e imagem de referência
@@ -114,7 +116,7 @@ export default function CausesPage({ onNavigate }) {
 
           {/* Botão de Doar Fundo */}
           <button 
-            onClick={() => onNavigate && onNavigate('donation')}
+            onClick={() => onNavigate && onNavigate('doacao')}
             className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-4 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
           >
             <Heart className="w-4.5 h-4.5 fill-white" />
@@ -125,17 +127,11 @@ export default function CausesPage({ onNavigate }) {
         {/* Links do rodapé da Sidebar */}
         <div className="space-y-1 pt-6 border-t border-[#E5E2D9]/60">
           <button 
-            onClick={() => onNavigate && onNavigate('gestao-ong')}
+            onClick={() => onNavigate && onNavigate('/gestao-ong')}
             className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-bold text-gray-500 hover:bg-[#EBE9E3] hover:text-gray-700 transition"
           >
             <Settings className="w-4 h-4 text-gray-400" />
-            <span>Configurações</span>
-          </button>
-          <button 
-            className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-xs font-bold text-gray-500 hover:bg-[#EBE9E3] hover:text-gray-700 transition"
-          >
-            <LifeBuoy className="w-4 h-4 text-gray-400" />
-            <span>Suporte</span>
+            <span>Gestão ONG</span>
           </button>
         </div>
       </aside>
@@ -201,8 +197,20 @@ export default function CausesPage({ onNavigate }) {
 
                 {/* Informações da ONG */}
                 <div className="flex-1 space-y-2">
-                  <h3 className="text-xl font-bold text-gray-900">{ong.name}</h3>
-                  <p className="text-gray-400 text-xs font-semibold">CNPJ: {ong.cnpj}</p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-xl font-bold text-gray-900">{ong.name}</h3>
+                    <span className="inline-flex items-center space-x-1 bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>Verificado</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400 font-semibold">
+                    <span>CNPJ: {ong.cnpj}</span>
+                    <span className="flex items-center space-x-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>{ong.location}</span>
+                    </span>
+                  </div>
                   <p className="text-gray-500 text-xs leading-relaxed max-w-2xl font-medium">
                     {ong.description}
                   </p>
@@ -233,8 +241,20 @@ export default function CausesPage({ onNavigate }) {
               </div>
             ))
           ) : (
-            <div className="text-center py-16 bg-white rounded-[2rem] border border-dashed border-gray-200">
-              <p className="text-gray-400 font-medium text-sm">Nenhuma organização encontrada para os filtros aplicados.</p>
+            <div className="text-center py-20 bg-white rounded-[2rem] border border-dashed border-gray-200 space-y-4">
+              <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto">
+                <Search className="w-7 h-7 text-gray-300" />
+              </div>
+              <p className="text-gray-500 font-semibold text-sm">Nenhuma organização encontrada</p>
+              <p className="text-gray-400 text-xs max-w-xs mx-auto">
+                Tente ajustar os filtros de causa ou remova termos da busca.
+              </p>
+              <button
+                onClick={() => { setActiveFilter('todas'); setSearchQuery(''); }}
+                className="text-[#0A665C] text-xs font-bold hover:underline"
+              >
+                Limpar filtros
+              </button>
             </div>
           )}
         </div>
