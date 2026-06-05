@@ -7,15 +7,37 @@ import {
   FileText, 
   FileSpreadsheet, 
   Building2,
-  Calendar,
-  Layers,
-  ArrowUpRight,
-  Heart
+  Loader2
 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import Footer from '../components/Footer';
 
+// Novos componentes dinâmicos do módulo
+import { useTransparency } from '../hooks/useTransparency';
+import CampaignHistoryTable from '../components/transparency/CampaignHistoryTable';
+import ChangeHistoryTimeline from '../components/transparency/ChangeHistoryTimeline';
+import ChangeRequestForm from '../components/transparency/ChangeRequestForm';
+import FeedbackPanel from '../components/transparency/FeedbackPanel';
+import DataSourceCard from '../components/transparency/DataSourceCard';
+import ConsistencyPanel from '../components/transparency/ConsistencyPanel';
+import ValidationActions from '../components/transparency/ValidationActions';
+
 export default function NgoTransparencyPage({ ong, onNavigate }) {
-  // Dados mockados da ONG principal ou fallback para Instituto Terra Viva
+  const [searchParams] = useSearchParams();
+  const role = searchParams.get('role') || 'DONOR';
+
+  // Usando hook para buscar dados dinâmicos do módulo
+  const ongId = ong?.id || 1;
+  const {
+    data,
+    loading,
+    error,
+    submitChangeRequest,
+    approveRequest,
+    rejectRequest
+  } = useTransparency(ongId);
+
+  // Fallbacks de apresentação visual que mantêm a identidade atual
   const currentOng = ong || {
     name: 'Instituto Terra Viva',
     cnpj: '12.345.678/0001-90',
@@ -28,7 +50,6 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
     auditStatus: 'UNQUALIFIED'
   };
 
-  // Se a ONG foi passada de CausesPage mas não tem todos os campos da transparência, preenchemos dinamicamente
   const resolvedOng = {
     name: currentOng.name || 'Instituto Terra Viva',
     cnpj: currentOng.cnpj || '12.345.678/0001-90',
@@ -40,6 +61,33 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
     lastAudit: currentOng.lastAudit || 'Dec 2023',
     auditStatus: currentOng.auditStatus || 'UNQUALIFIED'
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <Loader2 className="w-10 h-10 text-[#0A665C] animate-spin" />
+          <p className="text-gray-500 font-medium">Carregando dados de transparência...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-red-500 font-bold">{error}</p>
+          <button 
+            onClick={() => onNavigate && onNavigate('ong-profile', currentOng)}
+            className="text-[#0A665C] hover:underline font-medium cursor-pointer"
+          >
+            Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col font-sans">
@@ -58,6 +106,16 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
       {/* Container Principal */}
       <main className="flex-grow max-w-7xl w-full mx-auto px-8 md:px-16 py-10 space-y-12">
         
+        {/* Simulação de Perfis para visualização - Temporário para fins de demonstração */}
+        <div className="flex justify-center mb-4">
+          <div className="bg-white rounded-full px-4 py-2 flex space-x-4 border border-gray-200 text-xs font-bold shadow-sm">
+            <span className="text-gray-400">Visão atual:</span>
+            <span className={role === 'DONOR' ? 'text-teal-600' : 'text-gray-400'}>Doador</span>
+            <span className={role === 'NGO' ? 'text-teal-600' : 'text-gray-400'}>ONG</span>
+            <span className={role === 'ADMIN' ? 'text-teal-600' : 'text-gray-400'}>Admin</span>
+          </div>
+        </div>
+
         {/* Bloco Superior: Título + Badge + Score Dial */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
           <div className="space-y-4 max-w-3xl">
@@ -75,7 +133,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             </p>
           </div>
 
-          {/* Dial Dial Score */}
+          {/* Dial Score */}
           <div className="flex items-center space-x-6 bg-white p-6 rounded-3xl border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] shrink-0 self-stretch lg:self-auto justify-between md:justify-start">
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -102,18 +160,14 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
           </div>
         </div>
 
-        {/* Grid de Informações de Transparência */}
+        {/* Grid de Informações de Transparência Visual Antigo preservado */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 items-start">
           
-          {/* Coluna da Esquerda (Identity, Compliance, Clean History) */}
+          {/* Coluna da Esquerda */}
           <div className="space-y-8">
-            
-            {/* CARD 1: Identity Registry */}
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
               <div className="flex justify-between items-center">
-                <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                  Registro de Identidade
-                </h3>
+                <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">Registro de Identidade</h3>
                 <Building2 className="w-4 h-4 text-gray-400" />
               </div>
 
@@ -133,9 +187,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   </div>
                 </div>
 
-                {/* Mapa SVG de Alta Fidelidade */}
                 <div className="relative h-44 rounded-2xl overflow-hidden border border-gray-100 bg-[#EAE8E3]/35 flex flex-col justify-end">
-                  {/* Fundo de malha do mapa usando SVG */}
                   <svg className="absolute inset-0 w-full h-full text-gray-300" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
@@ -143,20 +195,11 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                       </pattern>
                     </defs>
                     <rect width="100%" height="100%" fill="url(#grid)" />
-                    {/* Linhas de ruas abstratas */}
-                    <path d="M -10,30 L 300,70 M 50,-10 L 120,200 M 150,-20 L 80,200 M -20,120 L 300,100 M 10,160 L 250,140" 
-                          fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth="3" strokeLinecap="round" />
-                    <path d="M -10,30 L 300,70 M 50,-10 L 120,200 M 150,-20 L 80,200" 
-                          fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
-                    {/* Pontos de interesse */}
+                    <path d="M -10,30 L 300,70 M 50,-10 L 120,200 M 150,-20 L 80,200 M -20,120 L 300,100 M 10,160 L 250,140" fill="none" stroke="rgba(0,0,0,0.07)" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M -10,30 L 300,70 M 50,-10 L 120,200 M 150,-20 L 80,200" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
                     <circle cx="95" cy="115" r="8" fill="rgba(10, 102, 92, 0.15)" />
                     <circle cx="95" cy="115" r="4" fill="#0A665C" />
-                    <circle cx="150" cy="50" r="3" fill="#A0A0A0" />
-                    <circle cx="50" cy="80" r="3" fill="#A0A0A0" />
-                    <circle cx="220" cy="120" r="3" fill="#A0A0A0" />
                   </svg>
-                  
-                  {/* Caixa flutuante de Endereço */}
                   <div className="relative m-3 bg-white/95 backdrop-blur-md rounded-xl p-3 shadow-md border border-gray-100 max-w-[190px]">
                     <span className="text-[8px] font-bold text-[#0A665C] uppercase tracking-wider block">Sede</span>
                     <span className="text-[10px] font-bold text-gray-700 leading-tight block mt-0.5">{resolvedOng.location}</span>
@@ -165,18 +208,12 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </div>
             </div>
 
-            {/* Compliance e Clean History Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-              
-              {/* CARD 2: Compliance Status */}
               <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex flex-col justify-between space-y-6">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                    Status de Conformidade
-                  </h3>
+                  <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">Status de Conformidade</h3>
                   <Scale className="w-4 h-4 text-gray-400" />
                 </div>
-
                 <div className="space-y-4">
                   {[
                     { label: 'Certidão Negativa Federal', status: 'NEGATIVA' },
@@ -185,48 +222,32 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   ].map((cert, idx) => (
                     <div key={idx} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
                       <span className="text-xs font-semibold text-gray-600">{cert.label}</span>
-                      <span className="bg-[#E4F2EE] text-[#0A665C] text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border border-[#0A665C]/10 tracking-wider">
-                        {cert.status}
-                      </span>
+                      <span className="bg-[#E4F2EE] text-[#0A665C] text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border border-[#0A665C]/10 tracking-wider">{cert.status}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* CARD 3: Clean History Confirmation */}
               <div className="bg-[#0A3D36] text-white rounded-[2rem] p-8 flex flex-col justify-between space-y-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-[#0A665C]/10 rounded-full translate-x-10 -translate-y-10 group-hover:scale-110 transition-transform duration-500" />
-                
                 <div className="w-10 h-10 bg-[#0A665C]/35 rounded-xl flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5 text-teal-300" />
                 </div>
-
                 <div className="space-y-2">
                   <h4 className="text-lg font-bold tracking-tight">Confirmação de Histórico Limpo</h4>
-                  <p className="text-xs text-white/70 leading-relaxed">
-                    Certificada sem pendências jurídicas ou sanções administrativas nos últimos 10 anos de operação.
-                  </p>
+                  <p className="text-xs text-white/70 leading-relaxed">Certificada sem pendências jurídicas ou sanções administrativas nos últimos 10 anos de operação.</p>
                 </div>
-
                 <button className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md border border-white/5 cursor-pointer text-center">
                   Verificar Registros Públicos
                 </button>
               </div>
-
             </div>
-
           </div>
 
-          {/* Coluna da Direita (Financial Health, Assets) */}
+          {/* Coluna da Direita */}
           <div className="space-y-8">
-            
-            {/* CARD 4: Financial Health */}
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
-              <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">
-                Saúde Financeira
-              </h3>
-
-              {/* Barra de Progresso de Orçamento */}
+              <h3 className="text-xs font-extrabold text-gray-400 uppercase tracking-widest">Saúde Financeira</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Utilização Orçamentária</span>
@@ -235,12 +256,8 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                 <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden">
                   <div className="bg-[#0A665C] h-full rounded-full transition-all duration-1000" style={{ width: `${resolvedOng.budgetUtilization}%` }} />
                 </div>
-                <p className="text-[9px] text-gray-400 italic">
-                  Eficiência operacional vs. gasto programático.
-                </p>
+                <p className="text-[9px] text-gray-400 italic">Eficiência operacional vs. gasto programático.</p>
               </div>
-
-              {/* Grid de Indicadores de Auditoria */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-gray-50">
                   <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block">Última Auditoria</span>
@@ -253,12 +270,8 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </div>
             </div>
 
-            {/* CARD 5: Transparency Assets */}
             <div className="bg-[#F5F2EC]/40 rounded-[2rem] p-8 border border-[#E5E2D9]/40 space-y-6">
-              <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
-                Documentos Públicos
-              </h3>
-
+              <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">Documentos Públicos</h3>
               <div className="space-y-3">
                 {[
                   { name: 'Relatório Anual 2023', size: 'PDF • 14.2 MB', ext: 'pdf' },
@@ -268,18 +281,13 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.005)] flex items-center justify-between hover:border-[#0A665C]/20 transition-all group">
                     <div className="flex items-center space-x-3.5">
                       <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-gray-400 group-hover:text-[#0A665C] transition-colors">
-                        {asset.ext === 'pdf' ? (
-                          <FileText className="w-5 h-5" />
-                        ) : (
-                          <FileSpreadsheet className="w-5 h-5" />
-                        )}
+                        {asset.ext === 'pdf' ? <FileText className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
                       </div>
                       <div className="space-y-0.5">
                         <span className="text-xs font-bold text-gray-800 block leading-tight">{asset.name}</span>
                         <span className="text-[9px] font-semibold text-gray-400 block">{asset.size}</span>
                       </div>
                     </div>
-
                     <button className="w-8 h-8 rounded-full bg-[#FAF8F5] hover:bg-[#E4F2EE] flex items-center justify-center text-gray-400 hover:text-[#0A665C] transition cursor-pointer">
                       <Download className="w-4 h-4" />
                     </button>
@@ -287,9 +295,58 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
 
+        {/* Novas seções integradas do módulo de transparência */}
+        <div className="space-y-8">
+          {/* Histórico e Campanhas acessíveis para todos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <CampaignHistoryTable campaigns={data.campaigns} />
+            <ChangeHistoryTimeline history={data.changeHistory} />
           </div>
 
+          {/* Renderização Condicional baseada na Persona (Role) */}
+          {role === 'NGO' && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 bg-teal-50/50 p-8 rounded-[3rem] border border-teal-100">
+              <div className="col-span-full">
+                <h2 className="text-2xl font-extrabold text-[#0A3D36]">Área da Organização</h2>
+                <p className="text-teal-700 text-sm font-medium">Gerencie suas informações e acompanhe aprovações.</p>
+              </div>
+              <ChangeRequestForm onSubmit={submitChangeRequest} />
+              <FeedbackPanel requests={data.pendingRequests} />
+            </div>
+          )}
+
+          {role === 'ADMIN' && (
+            <div className="grid grid-cols-1 gap-8 mt-12 bg-[#0B0F19] p-8 rounded-[3rem] border border-gray-800">
+              <div className="col-span-full mb-4">
+                <h2 className="text-2xl font-extrabold text-white">Painel de Auditoria</h2>
+                <p className="text-gray-400 text-sm font-medium">Validação de dados e integração de fontes governamentais.</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-8">
+                  <DataSourceCard />
+                  <ConsistencyPanel verification={data.verification} />
+                </div>
+                <div>
+                  <ValidationActions 
+                    requests={data.pendingRequests} 
+                    onApprove={approveRequest}
+                    onReject={rejectRequest}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {role === 'DONOR' && (
+            <div className="flex justify-center pt-8">
+              <button className="bg-[#0A665C] hover:bg-[#08524A] text-white font-extrabold text-lg px-12 py-5 rounded-full transition shadow-xl hover:scale-105 hover:shadow-2xl uppercase tracking-widest cursor-pointer">
+                Apoiar esta ONG Agora
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Banner Inferior: The Ethical Commitment */}
