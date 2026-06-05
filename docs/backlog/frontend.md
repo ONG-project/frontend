@@ -120,7 +120,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar fluxo de criacao de campanha.
 - [ ] Implementar edicao, publicacao, encerramento e arquivamento de campanhas.
 - [ ] Implementar base real de doadores.
-- [ ] Implementar filtros reais de doadores mensais, eventuais, pendentes e ativos.
+- [ ] Implementar filtros reais de doadores mensais e eventuais.
 - [ ] Implementar UI de envio de mensagens para doadores.
 - [ ] Implementar exportacao de relatorio mensal de doadores.
 - [ ] Implementar download real de PDFs no painel de relatorios.
