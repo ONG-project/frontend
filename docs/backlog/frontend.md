@@ -11,7 +11,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 ## Paginas ja implementadas ou parcialmente implementadas
 
 - `LandingPage`: home / nossa missao.
-- `AboutPage`: pagina sobre e formulario de contato visual.
+- `AboutPage`: pagina sobre.
 - `CausesPage`: listagem de ONGs com filtros por causa e busca local.
 - `NgoProfilePage`: perfil publico de uma ONG e fluxo visual de doacao para ONG especifica.
 - `DonationPage`: fluxo visual de doacao para fundo/causa.
