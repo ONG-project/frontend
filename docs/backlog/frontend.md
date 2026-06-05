@@ -50,33 +50,35 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## ONGs, causas, campanhas e bundles
 
-- [ ] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
-- [ ] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
-- [ ] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
-- [ ] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
-- [ ] Criar fluxo de doacao para bundle/campanha coletiva.
+- [x] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
+- [x] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
+- [x] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
+- [x] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
+- [x] Criar fluxo de doacao para bundle/campanha coletiva.
 - [ ] Conectar a listagem de ONGs da `CausesPage` a dados da API.
+- [ ] Conectar a listagem de campanhas individuais e coletivas (bundles) da `CausesPage` a dados da API.
+- [ ] Conectar a página de detalhe de bundle (`/bundle/:id`) a dados reais da API.
 - [ ] Implementar filtro por causa usando dados reais.
 - [ ] Implementar busca real por nome, causa, localidade e CNPJ.
 - [ ] Adicionar paginacao ou carregamento incremental na listagem de ONGs.
-- [ ] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
-- [ ] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
-- [ ] Adicionar historico de campanhas no perfil publico da ONG.
-- [ ] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
-- [ ] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
-- [ ] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
+- [x] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
+- [x] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
+- [x] Adicionar historico de campanhas no perfil publico da ONG.
+- [x] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
+- [x] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
+- [x] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
 
 ## Sistema de campanhas e matchfunding
 
-- [ ] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
-- [ ] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
-- [ ] Criar suporte visual a rascunhos de campanha.
-- [ ] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
-- [ ] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
-- [ ] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
-- [ ] Diferenciar campanhas individuais de campanhas coletivas/bundles.
-- [ ] Exibir alertas quando uma campanha depende de validacao administrativa.
-- [ ] Criar historico completo de campanhas encerradas.
+- [x] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
+- [x] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
+- [x] Criar suporte visual a rascunhos de campanha.
+- [x] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
+- [x] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
+- [x] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
+- [x] Diferenciar campanhas individuais de campanhas coletivas/bundles.
+- [x] Exibir alertas quando uma campanha depende de validacao administrativa.
+- [x] Criar historico completo de campanhas encerradas.
 
 ## Transparencia e verificacao
 
@@ -97,7 +99,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar doacao para ONG especifica.
 - [ ] Implementar doacao para campanha individual.
 - [ ] Implementar doacao para fundo/causa.
-- [ ] Implementar doacao para bundle/campanha coletiva.
+- [x] Implementar doacao para bundle/campanha coletiva.
 - [ ] Implementar validacao de valor minimo e valor customizado.
 - [ ] Implementar estados visuais de pagamento pendente, aprovado, recusado, cancelado e estornado.
 - [ ] Exibir QR Code real para pagamento PIX.
