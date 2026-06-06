@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import {
   MapPin,
   Building2,
@@ -32,6 +33,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
   };
 
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Estados para o formulário interativo de doação
   const [frequency, setFrequency] = useState('mensal'); // 'mensal', 'unica'
@@ -40,6 +42,10 @@ export default function NgoProfilePage({ ong, onNavigate }) {
 
   const handleCompleteDonation = (e) => {
     e.preventDefault();
+    if (!user) {
+      navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
+      return;
+    }
     const selectedAmount = amount === 'custom' ? customAmount : amount;
     navigate('/doacao', {
       state: {
@@ -309,7 +315,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               onClick={handleCompleteDonation}
               className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-4.5 rounded-xl font-bold text-sm tracking-wide shadow-md transition-colors cursor-pointer text-center"
             >
-              Completar Doação
+              {user ? 'Completar Doação' : 'Entrar para Doar'}
             </button>
 
             {/* Payment Method Icons below button */}
@@ -400,17 +406,23 @@ export default function NgoProfilePage({ ong, onNavigate }) {
                     </div>
                   </div>
                   <button
-                    onClick={() => navigate('/doacao', {
-                      state: {
-                        campaignId: camp.id,
-                        campaignName: camp.title,
-                        ngoId: currentOng.id,
-                        type: 'campaign'
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
+                      } else {
+                        navigate('/doacao', {
+                          state: {
+                            campaignId: camp.id,
+                            campaignName: camp.title,
+                            ngoId: currentOng.id,
+                            type: 'campaign'
+                          }
+                        });
                       }
-                    })}
+                    }}
                     className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
                   >
-                    Apoiar esta Campanha
+                    {user ? 'Apoiar esta Campanha' : 'Entrar para Apoiar'}
                   </button>
                 </div>
               );

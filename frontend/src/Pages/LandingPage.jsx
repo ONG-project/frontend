@@ -131,7 +131,7 @@ const CTA = ({ onExploreCauses, onNavigate }) => (
       </p>
       <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
         <button
-          onClick={() => onNavigate && onNavigate('doacao')}
+          onClick={() => onNavigate && onNavigate('/doacao')}
           className="bg-white text-teal-800 font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 transition shadow-sm w-full sm:w-auto"
         >
           Doar Agora

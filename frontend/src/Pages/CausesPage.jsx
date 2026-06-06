@@ -14,7 +14,8 @@ import {
   Percent,
   Users,
   Info,
-  Award
+  Award,
+  Check
 } from 'lucide-react';
 
 // Import local assets for cover images
@@ -166,6 +167,13 @@ export default function CausesPage({ onNavigate }) {
   const [activeTab, setActiveTab] = useState('bundles'); 
   const [activeFilter, setActiveFilter] = useState('todas');
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // Support modal states
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [supportName, setSupportName] = useState('');
+  const [supportEmail, setSupportEmail] = useState('');
+  const [supportMessage, setSupportMessage] = useState('');
+  const [supportSubmitted, setSupportSubmitted] = useState(false);
   
   // Extra filters
   const [locationFilter, setLocationFilter] = useState('todas');
@@ -323,13 +331,21 @@ export default function CausesPage({ onNavigate }) {
           )}
 
           {/* Botão de Doar Fundo */}
-          <button 
-            onClick={() => navigate('/doacao')}
-            className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
-          >
-            <Heart className="w-4 h-4 fill-white" />
-            <span>Doar para o nosso fundo</span>
-          </button>
+          <div className="space-y-2.5 w-full">
+            <button 
+              onClick={() => navigate('/doacao')}
+              className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
+            >
+              <Heart className="w-4 h-4 fill-white" />
+              <span>Doar para o nosso fundo</span>
+            </button>
+            <button 
+              onClick={() => setShowSupportModal(true)}
+              className="w-full bg-white hover:bg-gray-50 text-teal-800 border border-teal-700/20 py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 transition-colors cursor-pointer shadow-xs"
+            >
+              <span>Suporte & Ajuda</span>
+            </button>
+          </div>
         </div>
 
 
@@ -683,6 +699,104 @@ export default function CausesPage({ onNavigate }) {
         </div>
 
       </main>
+
+      {showSupportModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-8 space-y-6 shadow-2xl relative text-left">
+            <button 
+              onClick={() => {
+                setShowSupportModal(false);
+                setSupportSubmitted(false);
+                setSupportName('');
+                setSupportEmail('');
+                setSupportMessage('');
+              }}
+              className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 transition text-lg font-bold"
+            >
+              &times;
+            </button>
+
+            {!supportSubmitted ? (
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                setSupportSubmitted(true);
+              }} className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-extrabold text-[#0A3D36]">Suporte ao Doador</h3>
+                  <p className="text-xs text-gray-500 font-medium">Como podemos ajudar você hoje? Envie uma mensagem.</p>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Nome Completo</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={supportName}
+                      onChange={(e) => setSupportName(e.target.value)}
+                      placeholder="Seu nome"
+                      className="w-full bg-[#FAF8F5] text-gray-800 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0A665C]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">E-mail de Contato</label>
+                    <input 
+                      type="email" 
+                      required
+                      value={supportEmail}
+                      onChange={(e) => setSupportEmail(e.target.value)}
+                      placeholder="seu@email.com"
+                      className="w-full bg-[#FAF8F5] text-gray-800 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0A665C]"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Mensagem / Dúvida</label>
+                    <textarea 
+                      required
+                      rows="4"
+                      value={supportMessage}
+                      onChange={(e) => setSupportMessage(e.target.value)}
+                      placeholder="Descreva seu problema ou sugestão..."
+                      className="w-full bg-[#FAF8F5] text-gray-800 rounded-xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#0A665C] resize-none"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit"
+                  className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 rounded-xl font-bold text-xs shadow-md transition-colors cursor-pointer text-center"
+                >
+                  Enviar Solicitação
+                </button>
+              </form>
+            ) : (
+              <div className="text-center py-8 space-y-4">
+                <div className="w-16 h-16 bg-[#E4F2EE] rounded-full flex items-center justify-center mx-auto text-[#0A665C]">
+                  <Check className="w-8 h-8" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-bold text-gray-900">Mensagem Enviada!</h3>
+                  <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
+                    Obrigado, {supportName}. Recebemos sua mensagem e nossa equipe de suporte entrará em contato em até 24 horas no e-mail {supportEmail}.
+                  </p>
+                </div>
+                <button 
+                  onClick={() => {
+                    setShowSupportModal(false);
+                    setSupportSubmitted(false);
+                    setSupportName('');
+                    setSupportEmail('');
+                    setSupportMessage('');
+                  }}
+                  className="bg-[#0A665C] text-white px-6 py-2.5 rounded-full font-bold text-xs hover:bg-[#08524a] transition cursor-pointer"
+                >
+                  Fechar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -15,12 +15,32 @@ import Footer from '../components/Footer';
 
 export default function DonorProfilePage({ onNavigate }) {
   const [downloadingId, setDownloadingId] = useState(null);
-  const [causes, setCauses] = useState([
-    { id: 'env', label: 'Meio Ambiente', active: true, icon: Globe, bg: 'bg-teal-800 text-white', iconColor: 'text-white' },
-    { id: 'edu', label: 'Educação', active: true, icon: BookOpen, bg: 'bg-[#CBDDCD] text-[#0A3D36]', iconColor: 'text-[#0A3D36]' },
-    { id: 'urg', label: 'Urgência', active: true, icon: AlertTriangle, bg: 'bg-red-100 text-red-800', iconColor: 'text-red-600' },
-    { id: 'cli', label: 'Clima', active: true, icon: Wind, bg: 'bg-slate-700 text-white', iconColor: 'text-white' }
-  ]);
+  const [causes, setCauses] = useState(() => {
+    const saved = localStorage.getItem('donor_causes');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return parsed.map(c => {
+          let IconComponent = Globe;
+          if (c.id === 'edu') IconComponent = BookOpen;
+          else if (c.id === 'urg') IconComponent = AlertTriangle;
+          else if (c.id === 'cli') IconComponent = Wind;
+          return {
+            ...c,
+            icon: IconComponent
+          };
+        });
+      } catch (e) {
+        console.error('Error parsing saved causes', e);
+      }
+    }
+    return [
+      { id: 'env', label: 'Meio Ambiente', active: true, icon: Globe, bg: 'bg-teal-800 text-white', iconColor: 'text-white' },
+      { id: 'edu', label: 'Educação', active: true, icon: BookOpen, bg: 'bg-[#CBDDCD] text-[#0A3D36]', iconColor: 'text-[#0A3D36]' },
+      { id: 'urg', label: 'Urgência', active: true, icon: AlertTriangle, bg: 'bg-red-100 text-red-800', iconColor: 'text-red-600' },
+      { id: 'cli', label: 'Clima', active: true, icon: Wind, bg: 'bg-slate-700 text-white', iconColor: 'text-white' }
+    ];
+  });
   const [showAddCause, setShowAddCause] = useState(false);
   const [newCauseText, setNewCauseText] = useState('');
 
@@ -61,25 +81,52 @@ export default function DonorProfilePage({ onNavigate }) {
     setDownloadingId(id);
     setTimeout(() => {
       setDownloadingId(null);
-      alert('Recibo de Impacto baixado com sucesso!');
-    }, 1500);
+      const donation = donations.find(d => d.id === id) || donations[0];
+      const receiptText = `=========================================
+ONG+ - RECIBO DE IMPACTO SOCIAL
+=========================================
+ID da Doação: ${donation.id}
+Data: ${donation.date}
+Doador: João Silva
+Organização Beneficiada: ${donation.ngo}
+Causa: ${donation.cause}
+Valor da Contribuição: ${donation.value}
+
+Agradecemos o seu apoio em ajudar a restaurar a biodiversidade
+e apoiar comunidades locais. Seu impacto é real!
+=========================================
+Gerado automaticamente pela plataforma ONG+`;
+
+      const blob = new Blob([receiptText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `recibo-ongplus-doacao-${id}.txt`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 1200);
   };
 
   const handleAddCause = (e) => {
     e.preventDefault();
     if (!newCauseText.trim()) return;
     const newId = `custom-${Date.now()}`;
-    setCauses([
-      ...causes,
-      {
-        id: newId,
-        label: newCauseText.trim(),
-        active: true,
-        icon: Globe,
-        bg: 'bg-teal-700 text-white',
-        iconColor: 'text-white'
-      }
-    ]);
+    const newCause = {
+      id: newId,
+      label: newCauseText.trim(),
+      active: true,
+      icon: Globe,
+      bg: 'bg-teal-700 text-white',
+      iconColor: 'text-white'
+    };
+    const updatedCauses = [...causes, newCause];
+    setCauses(updatedCauses);
+    
+    // Save to localStorage (storing serialized items without the React component references)
+    const toSave = updatedCauses.map(({ id, label, active, bg, iconColor }) => ({ id, label, active, bg, iconColor }));
+    localStorage.setItem('donor_causes', JSON.stringify(toSave));
+
     setNewCauseText('');
     setShowAddCause(false);
   };
