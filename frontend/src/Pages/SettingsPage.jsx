@@ -8,7 +8,7 @@ export default function SettingsPage() {
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || 'email@exemplo.com');
+  const [email, setEmail] = useState(user?.email ?? '');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
