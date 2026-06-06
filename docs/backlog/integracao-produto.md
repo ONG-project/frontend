@@ -2,9 +2,9 @@
 
 Tasks que cruzam frontend e backend, ou que precisam de decisao de produto antes da implementacao detalhada.
 
-Ultima atualizacao: 2026-06-02.
+Ultima atualizacao: 2026-06-05.
 
-Observacao: as telas atuais do frontend usam principalmente dados mockados. A navegacao SPA por rotas ja foi implementada no frontend, mas ainda faltam integracao real, persistencia e contratos de API para a maioria dos fluxos.
+Observacao: as telas atuais do frontend usam principalmente dados mockados. A navegacao SPA por rotas ja foi implementada no frontend. O modulo de transparencia (`NgoTransparencyPage`) foi refatorado com `transparencyService` e `useTransparency` — a camada de servico esta estruturada e pronta para substituicao por chamadas reais de API, bastando implementar os endpoints correspondentes no backend.
 
 Prioridade para MVP 09/06: definir contratos minimos de ONGs, transparencia e autenticacao demonstravel; documentar o que ficara mockado; criar checklist de validacao da entrega.
 
@@ -19,7 +19,7 @@ Prioridade para MVP 09/06: definir contratos minimos de ONGs, transparencia e au
 - [ ] Definir contrato da API de campanhas individuais.
 - [ ] Definir contrato da API de bundles/campanhas coletivas.
 - [ ] Definir contrato da API de matchfunding, incluindo calculo, limites e patrocinadores.
-- [ ] Definir contrato da API de transparencia, relatorios e evidencias. **P0 MVP para transparencia de ONG**
+- [~] Definir contrato da API de transparencia, relatorios e evidencias. **P0 MVP para transparencia de ONG** — frontend ja possui `transparencyService` estruturado aguardando endpoints: `GET /ngo/:id/profile`, `GET /ngo/:id/verification`, `GET /ngo/:id/financial`, `GET /ngo/:id/campaigns`, `GET /ngo/:id/change-history`, `GET /ngo/:id/pending-requests`, `POST /ngo/:id/change-requests`, `PUT /change-requests/:id/approve`, `PUT /change-requests/:id/reject`.
 - [ ] Definir contrato da API de doacoes, pagamentos, match e recibos.
 - [ ] Definir contrato da API da area de gestao da ONG.
 - [ ] Definir contrato da API de solicitacao de urgencia dentro da gestao da ONG.

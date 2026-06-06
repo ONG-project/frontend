@@ -2,7 +2,7 @@
 
 Tasks relacionadas a paginas, navegacao, formularios, estados de interface, controle de acesso e experiencia do usuario.
 
-Ultima atualizacao: 2026-06-02.
+Ultima atualizacao: 2026-06-05.
 
 Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao possuem integracao real, persistencia, validacao completa ou contrato com backend.
 
@@ -21,7 +21,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - `UrgencyRequestPage`: portal ReliefCore / solicitacao de apoio emergencial.
 - `NgoManagementPage`: area de gestao da ONG com visao geral, campanhas, doadores e relatorios.
 - `DonorProfilePage`: perfil visual do doador com resumo, historico mockado, recibos mockados e preferencias de causas.
-- `NgoTransparencyPage`: pagina visual de transparencia de uma ONG com dados, certificados e arquivos mockados.
+- `NgoTransparencyPage`: pagina de transparencia de ONG refatorada com modulo dinamico: historico de campanhas, timeline de alteracoes, formulario de solicitacao de mudancas, painel de feedback, fontes de dados, painel de consistencia e acoes de validacao. Renderizacao condicional por papel (doador, ONG, admin). Integrada com `useTransparency` hook e `transparencyService` (mock pronto para API real).
 - Navegacao SPA com `react-router-dom` implementada em `App.jsx`.
 
 ## Navegacao, rotas e controle de acesso
@@ -84,14 +84,20 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 - [ ] Refazer `TransparencyPage` para organizar transparencia por plataforma, ONG, campanha, bundle e urgencia.
 - [ ] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
-- [ ] Exibir score da ONG com explicacao visual dos fatores considerados.
-- [ ] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes.
+- [x] Exibir score da ONG com explicacao visual dos fatores considerados. (`NgoTransparencyPage` - dial de score com porcentagem e classificacao)
+- [x] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes. (`DataSourceCard`, `ChangeHistoryTimeline`, `VerificationStatus`)
 - [ ] Conectar relatorios publicos de prestacao de contas a dados reais com data de atualizacao.
 - [ ] Conectar historico de relatorios e arquivos publicos a dados reais e downloads funcionais.
-- [ ] Exibir mudancas detectadas desde a ultima verificacao.
-- [ ] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa.
+- [x] Exibir mudancas detectadas desde a ultima verificacao. (`ChangeHistoryTimeline` com timeline de alteracoes de campo, valor anterior/novo, autor e data)
+- [x] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa. (`ConsistencyPanel` e `VerificationStatus` com estados: verified, analysis, pending, inconsistent)
 - [ ] Criar UI para upload de evidencias/documentos de confiabilidade.
 - [ ] Criar visao publica de transparencia de bundles com rateio, ONGs contempladas e comprovantes.
+- [x] Criar componentes modulares de transparencia: `CampaignHistoryTable`, `ChangeHistoryTimeline`, `ChangeRequestForm`, `ConsistencyPanel`, `DataSourceCard`, `FeedbackPanel`, `FinancialTransparencyCard`, `ONGProfileCard`, `ValidationActions`, `VerificationStatus`.
+- [x] Criar hook `useTransparency` com carregamento paralelo de dados, loading/error states e acoes de submit/aprovar/rejeitar.
+- [x] Criar `transparencyService` com estrutura de mock pronta para substituicao por chamadas reais de API.
+- [x] Implementar renderizacao condicional por papel na `NgoTransparencyPage`: area da organizacao para ONG (formulario + feedback), painel de auditoria para admin (fontes + consistencia + validacoes) e CTA de doacao para doador.
+- [x] Exibir status de verificacao da ONG com visual diferenciado por estado (verificada, em analise, pendente, inconsistente). (`VerificationStatus`)
+- [x] Exibir metas, arrecadacao atual e numero de doadores na transparencia financeira. (`FinancialTransparencyCard`)
 
 ## Doacoes
 
