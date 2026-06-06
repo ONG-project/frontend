@@ -9,9 +9,10 @@ export default function LoginPage({ onRegisterClick }) {
 
   const handleLogin = async (role) => {
     const mockUser = {
-      name: role === 'donor' ? 'João Silva' : 'Instituto Exemplo',
+      name: role === 'donor' ? 'João Silva' : 'Instituto Rebrota',
       email: 'exemplo@email.com',
-      role: role
+      role: role,
+      ...(role === 'ong' ? { ngoId: 1, ngoName: 'Instituto Rebrota' } : {}),
     };
     await login(mockUser);
     

@@ -2,7 +2,7 @@
 
 Tasks relacionadas a paginas, navegacao, formularios, estados de interface, controle de acesso e experiencia do usuario.
 
-Ultima atualizacao: 2026-06-02.
+Ultima atualizacao: 2026-06-05.
 
 Observacao: telas e fluxos mockados continuam como pendentes quando ainda nao possuem integracao real, persistencia, validacao completa ou contrato com backend.
 
@@ -11,7 +11,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 ## Paginas ja implementadas ou parcialmente implementadas
 
 - `LandingPage`: home / nossa missao.
-- `AboutPage`: pagina sobre e formulario de contato visual.
+- `AboutPage`: pagina sobre.
 - `CausesPage`: listagem de ONGs com filtros por causa e busca local.
 - `NgoProfilePage`: perfil publico de uma ONG e fluxo visual de doacao para ONG especifica.
 - `DonationPage`: fluxo visual de doacao para fundo/causa.
@@ -21,7 +21,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - `UrgencyRequestPage`: portal ReliefCore / solicitacao de apoio emergencial.
 - `NgoManagementPage`: area de gestao da ONG com visao geral, campanhas, doadores e relatorios.
 - `DonorProfilePage`: perfil visual do doador com resumo, historico mockado, recibos mockados e preferencias de causas.
-- `NgoTransparencyPage`: pagina visual de transparencia de uma ONG com dados, certificados e arquivos mockados.
+- `NgoTransparencyPage`: pagina de transparencia de ONG refatorada com modulo dinamico: historico de campanhas, timeline de alteracoes, formulario de solicitacao de mudancas, painel de feedback, fontes de dados, painel de consistencia e acoes de validacao. Renderizacao condicional por papel (doador, ONG, admin). Integrada com `useTransparency` hook e `transparencyService` (mock pronto para API real).
 - Navegacao SPA com `react-router-dom` implementada em `App.jsx`.
 
 ## Navegacao, rotas e controle de acesso
@@ -50,46 +50,54 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## ONGs, causas, campanhas e bundles
 
-- [ ] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
-- [ ] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
-- [ ] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
-- [ ] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
-- [ ] Criar fluxo de doacao para bundle/campanha coletiva.
+- [x] Refatorar `CausesPage` para separar visualmente ONGs individuais, campanhas individuais e bundles.
+- [x] Exibir ONGs individuais com filtros por causa, localidade, verificacao, score e busca textual.
+- [x] Exibir bundles de ONGs por causa tematica, com titulo, descricao, meta, progresso e ONGs participantes.
+- [x] Criar pagina de detalhe de bundle com regras de elegibilidade, distribuicao dos recursos e transparencia agregada.
+- [x] Criar fluxo de doacao para bundle/campanha coletiva.
 - [ ] Conectar a listagem de ONGs da `CausesPage` a dados da API.
+- [ ] Conectar a listagem de campanhas individuais e coletivas (bundles) da `CausesPage` a dados da API.
+- [ ] Conectar a página de detalhe de bundle (`/bundle/:id`) a dados reais da API.
 - [ ] Implementar filtro por causa usando dados reais.
 - [ ] Implementar busca real por nome, causa, localidade e CNPJ.
 - [ ] Adicionar paginacao ou carregamento incremental na listagem de ONGs.
-- [ ] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
-- [ ] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
-- [ ] Adicionar historico de campanhas no perfil publico da ONG.
-- [ ] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
-- [ ] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
-- [ ] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
+- [x] Exibir status de verificacao de cada ONG de forma consistente na listagem e no perfil.
+- [x] Exibir fonte dos dados, data da ultima atualizacao e indicador de consistencia.
+- [x] Adicionar historico de campanhas no perfil publico da ONG.
+- [x] Adicionar metas, arrecadacao atual, match aplicado e progresso por campanha no perfil publico.
+- [x] Criar formulario de solicitacao de alteracoes cadastrais da ONG.
+- [x] Criar feedback visual para alteracoes solicitadas, aprovadas ou recusadas.
 
 ## Sistema de campanhas e matchfunding
 
-- [ ] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
-- [ ] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
-- [ ] Criar suporte visual a rascunhos de campanha.
-- [ ] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
-- [ ] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
-- [ ] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
-- [ ] Diferenciar campanhas individuais de campanhas coletivas/bundles.
-- [ ] Exibir alertas quando uma campanha depende de validacao administrativa.
-- [ ] Criar historico completo de campanhas encerradas.
+- [x] Criar UI de criacao de campanha com objetivo, causa, meta, prazo, midias, requisitos e destino dos recursos.
+- [x] Criar UI de edicao, publicacao, encerramento, arquivamento e duplicacao de campanhas.
+- [x] Criar suporte visual a rascunhos de campanha.
+- [x] Exibir status da campanha: rascunho, em revisao, aprovada, publicada, recusada, encerrada e arquivada.
+- [x] Exibir regras de matchfunding quando aplicaveis: patrocinador, multiplicador, teto e periodo.
+- [x] Mostrar ao doador valor original, valor combinado por match e impacto total estimado.
+- [x] Diferenciar campanhas individuais de campanhas coletivas/bundles.
+- [x] Exibir alertas quando uma campanha depende de validacao administrativa.
+- [x] Criar historico completo de campanhas encerradas.
 
 ## Transparencia e verificacao
 
 - [ ] Refazer `TransparencyPage` para organizar transparencia por plataforma, ONG, campanha, bundle e urgencia.
 - [ ] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
-- [ ] Exibir score da ONG com explicacao visual dos fatores considerados.
-- [ ] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes.
+- [x] Exibir score da ONG com explicacao visual dos fatores considerados. (`NgoTransparencyPage` - dial de score com porcentagem e classificacao)
+- [x] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes. (`DataSourceCard`, `ChangeHistoryTimeline`, `VerificationStatus`)
 - [ ] Conectar relatorios publicos de prestacao de contas a dados reais com data de atualizacao.
 - [ ] Conectar historico de relatorios e arquivos publicos a dados reais e downloads funcionais.
-- [ ] Exibir mudancas detectadas desde a ultima verificacao.
-- [ ] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa.
+- [x] Exibir mudancas detectadas desde a ultima verificacao. (`ChangeHistoryTimeline` com timeline de alteracoes de campo, valor anterior/novo, autor e data)
+- [x] Exibir dados inconsistentes com alertas claros antes da exibicao publica completa. (`ConsistencyPanel` e `VerificationStatus` com estados: verified, analysis, pending, inconsistent)
 - [ ] Criar UI para upload de evidencias/documentos de confiabilidade.
 - [ ] Criar visao publica de transparencia de bundles com rateio, ONGs contempladas e comprovantes.
+- [x] Criar componentes modulares de transparencia: `CampaignHistoryTable`, `ChangeHistoryTimeline`, `ChangeRequestForm`, `ConsistencyPanel`, `DataSourceCard`, `FeedbackPanel`, `FinancialTransparencyCard`, `ONGProfileCard`, `ValidationActions`, `VerificationStatus`.
+- [x] Criar hook `useTransparency` com carregamento paralelo de dados, loading/error states e acoes de submit/aprovar/rejeitar.
+- [x] Criar `transparencyService` com estrutura de mock pronta para substituicao por chamadas reais de API.
+- [x] Implementar renderizacao condicional por papel na `NgoTransparencyPage`: area da organizacao para ONG (formulario + feedback), painel de auditoria para admin (fontes + consistencia + validacoes) e CTA de doacao para doador.
+- [x] Exibir status de verificacao da ONG com visual diferenciado por estado (verificada, em analise, pendente, inconsistente). (`VerificationStatus`)
+- [x] Exibir metas, arrecadacao atual e numero de doadores na transparencia financeira. (`FinancialTransparencyCard`)
 
 ## Doacoes
 
@@ -97,7 +105,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar doacao para ONG especifica.
 - [ ] Implementar doacao para campanha individual.
 - [ ] Implementar doacao para fundo/causa.
-- [ ] Implementar doacao para bundle/campanha coletiva.
+- [x] Implementar doacao para bundle/campanha coletiva.
 - [ ] Implementar validacao de valor minimo e valor customizado.
 - [ ] Implementar estados visuais de pagamento pendente, aprovado, recusado, cancelado e estornado.
 - [ ] Exibir QR Code real para pagamento PIX.
@@ -118,26 +126,26 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 - [ ] Implementar fluxo de criacao de campanha.
 - [ ] Implementar edicao, publicacao, encerramento e arquivamento de campanhas.
 - [ ] Implementar base real de doadores.
-- [ ] Implementar filtros reais de doadores mensais, eventuais, pendentes e ativos.
+- [ ] Implementar filtros reais de doadores mensais e eventuais.
 - [ ] Implementar UI de envio de mensagens para doadores.
 - [ ] Implementar exportacao de relatorio mensal de doadores.
 - [ ] Implementar download real de PDFs no painel de relatorios.
 - [ ] Implementar historico real de arquivos gerados com download.
 - [ ] Implementar configuracao de periodo personalizado para relatorios.
-- [ ] Criar tela de configuracoes da ONG.
+- [x] Criar tela de configuracoes da ONG.
 
 
 ## Solicitacao de urgencia
 
-- [ ] Completar as etapas apos "Continuar para Requisitos Financeiros".
-- [ ] Criar etapa de requisitos financeiros com valores solicitados, justificativa, prazo, plano de uso e documentos.
-- [ ] Criar etapa de evidencias da urgencia com upload de comprovantes e documentos de crise.
-- [ ] Criar etapa de revisao e envio.
-- [ ] Implementar salvamento de rascunho na interface.
-- [ ] Exibir status da solicitacao: rascunho, enviada, em analise, aprovada, recusada e concluida.
-- [ ] Criar dashboard real de solicitacoes ativas na gestao da ONG.
-- [ ] Exibir solicitacoes de apoio emergencial no perfil publico da ONG quando forem publicas.
-- [ ] Exibir solicitacoes de apoio emergencial na pagina de transparencia quando forem publicas.
+- [x] Completar as etapas apos "Continuar para Requisitos Financeiros".
+- [x] Criar etapa de requisitos financeiros com valores solicitados, justificativa, prazo, plano de uso e documentos.
+- [x] Criar etapa de evidencias da urgencia com upload de comprovantes e documentos de crise.
+- [x] Criar etapa de revisao e envio.
+- [x] Implementar salvamento de rascunho na interface.
+- [x] Exibir status da solicitacao: rascunho, enviada, em analise, aprovada, recusada e concluida.
+- [x] Criar dashboard real de solicitacoes ativas na gestao da ONG.
+- [x] Exibir solicitacoes de apoio emergencial no perfil publico da ONG quando forem publicas.
+- [x] Exibir solicitacoes de apoio emergencial na pagina de transparencia quando forem publicas.
 
 ## Area administrativa
 

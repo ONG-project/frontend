@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, useParams, Navigate } from 'react-router-dom'
 import LandingPage from './Pages/LandingPage'
 import RegisterPage from './Pages/RegisterPage'
 import LoginPage from './Pages/LoginPage'
@@ -8,6 +8,7 @@ import DonationPage from './Pages/DonationPage'
 import UrgencyRequestPage from './Pages/UrgencyRequestPage'
 import NgoManagementPage from './Pages/NgoManagementPage'
 import CausesPage from './Pages/CausesPage'
+import BundleDetailPage from './Pages/BundleDetailPage'
 import NgoProfilePage from './Pages/NgoProfilePage'
 import DonorProfilePage from './Pages/DonorProfilePage'
 import NgoTransparencyPage from './Pages/NgoTransparencyPage'
@@ -112,11 +113,11 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
           </div>
           <button
             id="goto-profile-btn"
-            onClick={() => { setOpen(false); onNavigate('/donor-profile'); }}
+            onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
             className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition text-left"
           >
             <User className="w-4 h-4 text-gray-400" />
-            <span>Meu Perfil</span>
+            <span>{user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}</span>
           </button>
           <button
             id="goto-settings-btn"
@@ -170,9 +171,9 @@ function MobileMenu({ links, user, onNavigate, onLogin, onLogout }) {
           <div className="pt-3 border-t border-gray-100 space-y-2">
             {user ? (
               <>
-                <button onClick={() => { setOpen(false); onNavigate('/donor-profile'); }}
+                <button onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
-                  Meu Perfil
+                  {user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}
                 </button>
                 <button onClick={() => { setOpen(false); onLogout(); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition">
@@ -318,13 +319,25 @@ function AppContent() {
         <Route path="/transparency" element={<TransparencyPage onNavigate={navigate} />} />
         <Route path="/sobre" element={<AboutPage onNavigate={navigate} />} />
         <Route path="/causas" element={<CausesPage onNavigate={handleNavigate} />} />
+        <Route path="/bundle/:id" element={<BundleDetailPage />} />
         <Route path="/ong/:id" element={<OngProfileRoute onNavigate={handleNavigate} />} />
         <Route path="/ong/:id/transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
         <Route path="/ong-transparency" element={<OngTransparencyRoute onNavigate={handleNavigate} />} />
 
         {/* Protected Area */}
         <Route path="/doacao" element={<RequireAuth><DonationPage onGoHome={() => navigate('/')} /></RequireAuth>} />
-        <Route path="/urgencia" element={<RequireAuth><UrgencyRequestPage /></RequireAuth>} />
+        <Route
+          path="/urgencia"
+          element={
+            <RequireRole allowedRoles={['ong']}>
+              <Navigate to="/gestao-ong?tab=urgencia&action=nova" replace />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/urgencia/nova"
+          element={<RequireRole allowedRoles={['ong']}><UrgencyRequestPage /></RequireRole>}
+        />
         <Route path="/configuracoes" element={<RequireAuth><SettingsPage /></RequireAuth>} />
         
         {/* Role Specific */}
