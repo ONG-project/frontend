@@ -82,8 +82,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Transparencia e verificacao
 
-- [ ] Refazer `TransparencyPage` para organizar transparencia por plataforma, ONG, campanha, bundle e urgencia.
-- [ ] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
+- [x] Criar pagina ou secao de evidencias de confiabilidade acessivel ao doador.
 - [x] Exibir score da ONG com explicacao visual dos fatores considerados. (`NgoTransparencyPage` - dial de score com porcentagem e classificacao)
 - [x] Exibir fonte dos dados, data de ultima verificacao e historico de alteracoes. (`DataSourceCard`, `ChangeHistoryTimeline`, `VerificationStatus`)
 - [ ] Conectar relatorios publicos de prestacao de contas a dados reais com data de atualizacao.
