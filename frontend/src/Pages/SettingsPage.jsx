@@ -16,7 +16,9 @@ export default function SettingsPage() {
     setEmail(user?.email ?? '');
   }, [user]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
+    await login({ ...user, name, email });
     alert('Alterações salvas com sucesso!');
   };
 
