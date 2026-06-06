@@ -168,7 +168,7 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Qualidade de interface
 
-- [ ] Corrigir textos com caracteres quebrados nos arquivos e na interface. **P0 MVP**
+- [x] Corrigir textos com caracteres quebrados nos arquivos e na interface. **P0 MVP**
 - [ ] Revisar responsividade das paginas com sidebars em telas pequenas.
 - [ ] Adicionar estados vazios, loading e erro para listas e formularios. **P0 MVP nas paginas conectadas a API**
 - [x] Corrigir botões que não estão funcionando ou levam para links quebrados (Auditoria de bugs concluída: 6 críticos, 8 altos e 6 médios resolvidos).
