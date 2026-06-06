@@ -13,7 +13,7 @@ import NgoProfilePage from './Pages/NgoProfilePage'
 import DonorProfilePage from './Pages/DonorProfilePage'
 import NgoTransparencyPage from './Pages/NgoTransparencyPage'
 import Navbar from './components/Navbar'
-import { User, Bell, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react'
+import { User, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import RequireAuth from './components/guards/RequireAuth'
@@ -167,36 +167,7 @@ function AppContent() {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
-  const [showNotifications, setShowNotifications] = useState(false)
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Doação confirmada', text: 'João Silva, você doou recentemente para o Instituto Rebrota.', time: 'Há 2 horas', read: false, path: '/donor-profile' },
-    { id: 2, title: 'Campanha em Destaque', text: 'A campanha "Aliança Amazônia Viva" atingiu 65% da meta com matchfunding!', time: 'Ontem', read: false, path: '/causas' }
-  ])
-  const notificationsRef = useRef(null)
 
-  const hasUnread = notifications.some(n => !n.read)
-
-  const handleMarkAllAsRead = () => {
-    setNotifications([])
-  }
-
-  const handleMarkAsRead = (id, path) => {
-    setNotifications(prev => prev.filter(n => n.id !== id))
-    if (path) {
-      navigate(path)
-      setShowNotifications(false)
-    }
-  }
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
-        setShowNotifications(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
 
   const handleNavigate = (path, data = null) => {
     if (path === 'ong-profile' && data) {
@@ -224,56 +195,6 @@ function AppContent() {
 
   const rightContent = user ? (
     <div className="flex items-center space-x-5">
-      <div className="relative" ref={notificationsRef}>
-        <button
-          id="notifications-btn"
-          className="relative text-gray-500 hover:text-teal-800 transition cursor-pointer"
-          title="Notificações"
-          onClick={() => setShowNotifications(!showNotifications)}
-        >
-          <Bell className="w-5 h-5" />
-          {hasUnread && <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>}
-        </button>
-        {showNotifications && (
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-50 text-left">
-            <div className="px-4 pb-2 border-b border-gray-50 flex justify-between items-center">
-              <span className="text-xs font-bold text-gray-900">Notificações</span>
-              {hasUnread && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                  className="text-[10px] text-teal-600 font-bold hover:underline cursor-pointer bg-transparent border-none p-0"
-                >
-                  Marcar todas como lidas
-                </button>
-              )}
-            </div>
-            <div className="max-h-64 overflow-y-auto divide-y divide-gray-50">
-              {notifications.length > 0 ? (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    onClick={() => handleMarkAsRead(n.id, n.path)}
-                    className="px-4 py-3 transition cursor-pointer hover:bg-gray-50 relative bg-teal-50/10"
-                  >
-                    <div className="flex justify-between items-start gap-2">
-                      <p className="text-xs text-gray-700 font-bold">
-                        {n.title}
-                      </p>
-                      <span className="w-1.5 h-1.5 bg-teal-600 rounded-full shrink-0 mt-1"></span>
-                    </div>
-                    <p className="text-[11px] text-gray-500 mt-0.5">{n.text}</p>
-                    <span className="text-[9px] text-gray-400 block mt-1">{n.time}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-6 text-center text-gray-400 text-xs font-medium">
-                  Nenhuma notificação pendente
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
       <button
         id="donate-btn"
         onClick={() => navigate('/doacao')}
