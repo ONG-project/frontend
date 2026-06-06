@@ -12,8 +12,8 @@ export default function SettingsPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
-    setName(user?.name || '');
-    setEmail(user?.email || 'email@exemplo.com');
+    setName(user?.name ?? '');
+    setEmail(user?.email ?? '');
   }, [user]);
 
   const handleSave = () => {
