@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Bell, User, CreditCard, X } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
