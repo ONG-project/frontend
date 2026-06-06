@@ -146,6 +146,7 @@ export default function SettingsPage() {
                 <h3 className="text-xl font-bold text-gray-900">Atualizar Método de Pagamento</h3>
                 <button 
                   onClick={() => setShowPaymentModal(false)}
+                  aria-label="Fechar modal"
                   className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
