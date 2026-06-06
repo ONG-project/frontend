@@ -54,6 +54,12 @@ class NGO(models.Model):
         auto_now=True,
         help_text="Timestamp when the record was last updated"
     )
+    social_networks = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        help_text="NGO's social network(S), if exsistent"
+    )
 
     class Meta:
         db_table = 'ngo'
