@@ -228,7 +228,17 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   <h4 className="text-lg font-bold tracking-tight">Confirmação de Histórico Limpo</h4>
                   <p className="text-xs text-white/70 leading-relaxed">Certificada sem pendências jurídicas ou sanções administrativas nos últimos 10 anos de operação.</p>
                 </div>
-                <button className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md border border-white/5 cursor-pointer text-center">
+                <button
+                  onClick={() => {
+                    const cnpjClean = resolvedOng.cnpj.replace(/\D/g, '');
+                    window.open(
+                      `https://servicos.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj=${cnpjClean}`,
+                      '_blank',
+                      'noopener,noreferrer'
+                    );
+                  }}
+                  className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition shadow-md border border-white/5 cursor-pointer text-center"
+                >
                   Verificar Registros Públicos
                 </button>
               </div>
@@ -279,9 +289,13 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                         <span className="text-[9px] font-semibold text-gray-400 block">{asset.size}</span>
                       </div>
                     </div>
-                    <button className="w-8 h-8 rounded-full bg-[#FAF8F5] hover:bg-[#E4F2EE] flex items-center justify-center text-gray-400 hover:text-[#0A665C] transition cursor-pointer">
-                      <Download className="w-4 h-4" />
-                    </button>
+                    <button
+                       title="Download disponível em breve"
+                       disabled
+                       className="w-8 h-8 rounded-full bg-[#FAF8F5] flex items-center justify-center text-gray-300 cursor-not-allowed"
+                     >
+                       <Download className="w-4 h-4" />
+                     </button>
                   </div>
                 ))}
               </div>
@@ -333,7 +347,10 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
 
           {role === 'DONOR' && (
             <div className="flex justify-center pt-8">
-              <button className="bg-[#0A665C] hover:bg-[#08524A] text-white font-extrabold text-lg px-12 py-5 rounded-full transition shadow-xl hover:scale-105 hover:shadow-2xl uppercase tracking-widest cursor-pointer">
+              <button
+                onClick={() => onNavigate && onNavigate('/doacao')}
+                className="bg-[#0A665C] hover:bg-[#08524A] text-white font-extrabold text-lg px-12 py-5 rounded-full transition shadow-xl hover:scale-105 hover:shadow-2xl uppercase tracking-widest cursor-pointer"
+              >
                 Apoiar esta ONG Agora
               </button>
             </div>

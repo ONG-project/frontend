@@ -40,7 +40,7 @@ export default function Footer({ onNavigate }) {
           {/* Brand */}
           <div className="col-span-1">
             <button
-              onClick={() => nav('landing')}
+              onClick={() => nav('/')}
               className="text-xl font-bold text-teal-800 tracking-tight mb-4 block"
             >
               ONG<span className="text-teal-600">+</span>

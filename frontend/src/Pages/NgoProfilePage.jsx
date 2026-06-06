@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
   Building2,
@@ -30,18 +31,25 @@ export default function NgoProfilePage({ ong, onNavigate }) {
     score: 96
   };
 
+  const navigate = useNavigate();
+
   // Estados para o formulário interativo de doação
   const [frequency, setFrequency] = useState('mensal'); // 'mensal', 'unica'
   const [amount, setAmount] = useState('100'); // '50', '100', '200', 'custom'
   const [customAmount, setCustomAmount] = useState('');
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const handleCompleteDonation = (e) => {
     e.preventDefault();
-    setPaymentSuccess(true);
-    setTimeout(() => {
-      setPaymentSuccess(false);
-    }, 5000);
+    const selectedAmount = amount === 'custom' ? customAmount : amount;
+    navigate('/doacao', {
+      state: {
+        ngoId: currentOng.id,
+        ngoName: currentOng.name,
+        type: 'ngo',
+        amount: selectedAmount,
+        frequency
+      }
+    });
   };
 
   return (
@@ -228,23 +236,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           {/* Direita: Checkout Card */}
           <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6 relative">
             
-            {paymentSuccess && (
-              <div className="absolute inset-0 bg-white/95 rounded-[2rem] flex flex-col items-center justify-center p-8 space-y-4 z-10 transition-all">
-                <div className="w-14 h-14 bg-[#E4F2EE] text-[#0A665C] rounded-full flex items-center justify-center">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-bold text-[#0A3D36]">Doação Concluída!</h4>
-                <p className="text-xs text-gray-500 text-center max-w-[240px]">
-                  Muito obrigado por apoiar o {currentOng.name}. Seu impacto ambiental começará hoje mesmo.
-                </p>
-                <button 
-                  onClick={() => setPaymentSuccess(false)}
-                  className="bg-[#0A665C] text-white px-5 py-2 rounded-full font-bold text-xs"
-                >
-                  Fechar
-                </button>
-              </div>
-            )}
+
 
             {/* Toggle de Frequência */}
             <div className="bg-[#FAF8F5] p-1 rounded-full flex border border-gray-100">
@@ -408,7 +400,14 @@ export default function NgoProfilePage({ ong, onNavigate }) {
                     </div>
                   </div>
                   <button
-                    onClick={handleCompleteDonation}
+                    onClick={() => navigate('/doacao', {
+                      state: {
+                        campaignId: camp.id,
+                        campaignName: camp.title,
+                        ngoId: currentOng.id,
+                        type: 'campaign'
+                      }
+                    })}
                     className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
                   >
                     Apoiar esta Campanha
@@ -457,9 +456,13 @@ export default function NgoProfilePage({ ong, onNavigate }) {
                       </div>
                     </div>
                     <span className="text-xs font-bold text-gray-600">{pct}%</span>
-                    <button className="text-[#0A665C] text-xs font-bold hover:underline">
-                      Relatório
-                    </button>
+                     <button
+                       title="Relatórios disponíveis em breve"
+                       disabled
+                       className="text-gray-300 text-xs font-bold cursor-not-allowed"
+                     >
+                       Relatório
+                     </button>
                   </div>
                 </div>
               );
