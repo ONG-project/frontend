@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Settings, Shield, Bell, User, CreditCard, X } from 'lucide-react';
+import { Shield, Bell, User, CreditCard, X } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user } = useAuth();
