@@ -38,14 +38,14 @@ Prioridade para MVP 09/06: corrigir textos quebrados, estabilizar rotas principa
 
 ## Autenticacao e cadastro
 
-- [ ] Refatorar `RegisterPage` para apresentar escolha inicial clara entre **Sou doador** e **Sou ONG**.
-- [ ] Criar formulario completo de cadastro de doador com validacao, submit, loading, sucesso e erro.
-- [ ] Criar formulario completo de cadastro de ONG com CNPJ, razao social, nome publico, area de atuacao, localidade e contato.
+- [x] Refatorar `RegisterPage` para apresentar escolha inicial clara entre **Sou doador** e **Sou ONG**.
+- [x] Criar formulario completo de cadastro de doador com validacao, submit, loading, sucesso e erro (implementado visual/mock).
+- [x] Criar formulario completo de cadastro de ONG com CNPJ, razao social, nome publico, area de atuacao, localidade e contato (implementado visual/mock).
 - [ ] Adicionar campos de redes sociais no cadastro/onboarding da ONG.
 - [ ] Adicionar etapa de envio de comprovantes de autenticidade da ONG.
 - [ ] Criar etapa de onboarding da ONG para completar perfil, documentos e dados bancarios.
 - [ ] Implementar tela/fluxo real de recuperacao de senha; hoje existe apenas link visual no login.
-- [ ] Adicionar mensagens de erro, sucesso e estados de carregamento nos fluxos de login/cadastro.
+- [x] Adicionar mensagens de erro, sucesso e estados de carregamento nos fluxos de login/cadastro (implementado visual/mock).
 - [ ] Persistir estado autenticado apos login; hoje o usuario e mantido apenas em memoria no `App.jsx`.
 
 ## ONGs, causas, campanhas e bundles
