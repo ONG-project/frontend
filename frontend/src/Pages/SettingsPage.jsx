@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Settings, Shield, Bell, User, CreditCard } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Shield, Bell, User, CreditCard, X } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  useEffect(() => {
+    setName(user?.name ?? '');
+    setEmail(user?.email ?? '');
+  }, [user]);
+
+  const handleSave = async () => {
+    if (!user) return;
+    await login({ ...user, name, email });
+    alert('Alterações salvas com sucesso!');
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -32,11 +49,22 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                      <input type="text" className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600" value={user?.name || ''} readOnly />
+                      <input 
+                        type="text" 
+                        className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition" 
+                        value={name} 
+                        onChange={(e) => setName(e.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <input type="email" className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 text-gray-600" value={user?.email || 'email@exemplo.com'} readOnly />
+                      <input 
+                        type="email" 
+                        placeholder="email@exemplo.com"
+                        className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                     </div>
                   </div>
                 </section>
@@ -65,7 +93,10 @@ export default function SettingsPage() {
                 <Shield className="w-5 h-5 mr-2 text-gray-400" />
                 Segurança
               </h3>
-              <button className="text-teal-700 hover:text-teal-900 font-medium text-sm transition">
+              <button 
+                onClick={() => navigate('/alterar-senha')}
+                className="text-teal-700 hover:text-teal-900 font-medium text-sm transition cursor-pointer"
+              >
                 Alterar senha
               </button>
             </section>
@@ -86,7 +117,10 @@ export default function SettingsPage() {
                       <p className="text-xs text-gray-500">Expira em 12/28</p>
                     </div>
                   </div>
-                  <button className="text-teal-700 hover:text-teal-900 font-medium text-sm transition">
+                  <button 
+                    onClick={() => setShowPaymentModal(true)}
+                    className="text-teal-700 hover:text-teal-900 font-medium text-sm transition cursor-pointer"
+                  >
                     Atualizar
                   </button>
                 </div>
@@ -95,11 +129,69 @@ export default function SettingsPage() {
           </div>
           
           <div className="p-6 md:p-8 bg-gray-50 border-t border-gray-100 flex justify-end">
-            <button className="bg-teal-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-teal-900 transition">
+            <button 
+              onClick={handleSave}
+              className="bg-teal-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-teal-900 transition cursor-pointer"
+            >
               Salvar Alterações
             </button>
           </div>
         </div>
+
+        {/* Payment Modal */}
+        {showPaymentModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 className="text-xl font-bold text-gray-900">Atualizar Método de Pagamento</h3>
+                <button 
+                  onClick={() => setShowPaymentModal(false)}
+                  aria-label="Fechar modal"
+                  className="text-gray-400 hover:text-gray-600 transition cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Número do Cartão</label>
+                  <input type="text" placeholder="0000 0000 0000 0000" className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Validade</label>
+                    <input type="text" placeholder="MM/AA" className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                    <input type="text" placeholder="123" className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nome no Cartão</label>
+                  <input type="text" placeholder="Nome Impresso" className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" />
+                </div>
+              </div>
+              <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end space-x-3">
+                <button 
+                  onClick={() => setShowPaymentModal(false)}
+                  className="px-4 py-2 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={() => {
+                    alert('Método de pagamento atualizado!');
+                    setShowPaymentModal(false);
+                  }}
+                  className="bg-teal-800 text-white px-4 py-2 rounded-xl font-bold hover:bg-teal-900 transition cursor-pointer"
+                >
+                  Salvar Cartão
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

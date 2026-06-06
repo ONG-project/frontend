@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import UrgencyRequestsDashboard from '../components/urgency/UrgencyRequestsDashboard';
-import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 import { 
   UploadCloud, 
   ChevronRight, 
@@ -50,21 +48,10 @@ export default function NgoManagementPage({ onNavigate }) {
     if (tabFromUrl) setActiveSubTab(tabFromUrl);
   }, [tabFromUrl]);
 
-  useEffect(() => {
-    if (tabFromUrl === 'urgencia' && searchParams.get('action') === 'nova') {
-      setUrgencyView('form');
-      setUrgencyRequestId(null);
-    }
-  }, [tabFromUrl, searchParams]);
-
   const handleTabChange = (tabId) => {
     setActiveSubTab(tabId);
     setSearchParams(tabId === 'visao-geral' ? {} : { tab: tabId });
     setIsCreatingCampaign(false);
-    if (tabId !== 'urgencia') {
-      setUrgencyView('list');
-      setUrgencyRequestId(null);
-    }
   };
   const [campaignTab, setCampaignTab] = useState('ativas'); // 'ativas', 'encerradas', 'rascunhos', 'impacto'
   const [donorSection, setDonorSection] = useState('doadores'); // 'doadores', 'campanhas', 'relatorios', 'retencao'
@@ -333,7 +320,6 @@ export default function NgoManagementPage({ onNavigate }) {
           {[
             { id: 'visao-geral', label: 'Visão Geral & Transparência' },
             { id: 'campanhas', label: 'Minhas Campanhas' },
-            { id: 'urgencia', label: 'Urgência' },
             { id: 'doadores', label: 'Doadores' },
             { id: 'relatorios', label: 'Relatórios' },
             { id: 'cadastro', label: 'Alterações Cadastrais' }
@@ -390,14 +376,6 @@ export default function NgoManagementPage({ onNavigate }) {
                 <button className="w-full bg-white hover:bg-gray-50 text-[#0A665C] font-bold py-3.5 px-6 rounded-2xl border border-[#EBE9E3] shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer">
                   <UploadCloud className="w-4 h-4" />
                   <span>Enviar Nova Auditoria</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => handleTabChange('urgencia')}
-                  className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white font-bold py-3.5 px-6 rounded-2xl shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer"
-                >
-                  <span>Solicitações de Urgência</span>
                 </button>
               </div>
             </div>
@@ -756,56 +734,6 @@ export default function NgoManagementPage({ onNavigate }) {
           </div>
         )}
 
-        {/* VIEW: Urgência */}
-        {activeSubTab === 'urgencia' && (
-          <div className="space-y-6">
-            {urgencyView === 'list' && (
-              <UrgencyRequestsDashboard
-                ngoId={ngoId}
-                onCreateNew={() => {
-                  setUrgencyRequestId(null);
-                  setUrgencyView('form');
-                }}
-                onEditRequest={(id) => {
-                  setUrgencyRequestId(id);
-                  setUrgencyView('form');
-                }}
-                onViewRequest={(id) => {
-                  setUrgencyRequestId(id);
-                  setUrgencyView('view');
-                }}
-              />
-            )}
-            {(urgencyView === 'form' || urgencyView === 'view') && (
-              <div className="space-y-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUrgencyView('list');
-                    setUrgencyRequestId(null);
-                  }}
-                  className="text-sm font-bold text-[#0A665C] hover:underline"
-                >
-                  ← Voltar às solicitações
-                </button>
-                <UrgencyRequestWizard
-                  ngoId={ngoId}
-                  ngoName={ngoName}
-                  requestId={urgencyRequestId}
-                  readOnly={urgencyView === 'view'}
-                  onComplete={() => {
-                    setUrgencyView('list');
-                    setUrgencyRequestId(null);
-                  }}
-                  onCancel={() => {
-                    setUrgencyView('list');
-                    setUrgencyRequestId(null);
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
 
         {/* VIEW 3: Doadores */}
         {activeSubTab === 'doadores' && (

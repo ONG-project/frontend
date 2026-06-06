@@ -2,7 +2,6 @@ import React from 'react';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Footer from '../components/Footer';
-import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 import { useGlobalTransparency } from '../hooks/useGlobalTransparency';
 import GlobalMetricsCard from '../components/transparency/GlobalMetricsCard';
 import AllocationCriteriaPanel from '../components/transparency/AllocationCriteriaPanel';
@@ -70,13 +69,6 @@ export default function TransparencyPage({ onNavigate }) {
         {/* ── Critérios de Alocação ────────────────────────────────────── */}
         <AllocationCriteriaPanel criteria={criteria} role={role} />
 
-        {/* ── Urgências Públicas ───────────────────────────────────────── */}
-        <div className="mb-20">
-          <UrgencyPublicSection
-            title="Urgências Públicas na Plataforma"
-            description="Pedidos de apoio emergencial aprovados pelas ONGs parceiras, visíveis para doadores e auditores."
-          />
-        </div>
 
         {/* ── Tabela de Repasses ───────────────────────────────────────── */}
         <ResourceDistributionTable transfers={transfers} role={role} />

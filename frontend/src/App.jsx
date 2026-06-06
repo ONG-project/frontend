@@ -5,7 +5,7 @@ import LoginPage from './Pages/LoginPage'
 import TransparencyPage from './Pages/TransparencyPage'
 import AboutPage from './Pages/AboutPage'
 import DonationPage from './Pages/DonationPage'
-import UrgencyRequestPage from './Pages/UrgencyRequestPage'
+import ChangePasswordPage from './Pages/ChangePasswordPage'
 import NgoManagementPage from './Pages/NgoManagementPage'
 import CausesPage from './Pages/CausesPage'
 import BundleDetailPage from './Pages/BundleDetailPage'
@@ -362,19 +362,8 @@ function AppContent() {
 
         {/* Protected Area */}
         <Route path="/doacao" element={<RequireAuth><DonationPage onGoHome={() => navigate('/')} /></RequireAuth>} />
-        <Route
-          path="/urgencia"
-          element={
-            <RequireRole allowedRoles={['ong']}>
-              <Navigate to="/gestao-ong?tab=urgencia&action=nova" replace />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/urgencia/nova"
-          element={<RequireRole allowedRoles={['ong']}><UrgencyRequestPage /></RequireRole>}
-        />
         <Route path="/configuracoes" element={<RequireAuth><SettingsPage /></RequireAuth>} />
+        <Route path="/alterar-senha" element={<RequireAuth><ChangePasswordPage /></RequireAuth>} />
         
         {/* Role Specific */}
         <Route path="/donor-profile" element={<RequireRole allowedRoles={['donor']}><DonorProfilePage onNavigate={handleNavigate} /></RequireRole>} />
