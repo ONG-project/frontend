@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Bell, User, CreditCard, X } from 'lucide-react';
+import { Shield, User, CreditCard, X } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, login } = useAuth();
@@ -69,22 +69,6 @@ export default function SettingsPage() {
                   </div>
                 </section>
 
-                <section>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Bell className="w-5 h-5 mr-2 text-gray-400" />
-                    Notificações
-                  </h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" className="form-checkbox h-5 w-5 text-teal-600 rounded" defaultChecked />
-                      <span className="text-gray-700">Receber atualizações de campanhas</span>
-                    </label>
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input type="checkbox" className="form-checkbox h-5 w-5 text-teal-600 rounded" defaultChecked />
-                      <span className="text-gray-700">Receber relatórios de transparência</span>
-                    </label>
-                  </div>
-                </section>
               </>
             )}
 
