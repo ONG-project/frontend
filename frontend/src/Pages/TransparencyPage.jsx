@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Loader2, RefreshCw, Users, Handshake } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import Footer from '../components/Footer';
 import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 import { useGlobalTransparency } from '../hooks/useGlobalTransparency';
@@ -9,42 +9,12 @@ import AllocationCriteriaPanel from '../components/transparency/AllocationCriter
 import ResourceDistributionTable from '../components/transparency/ResourceDistributionTable';
 
 
-// ─── Role Pill Selector (simulação) ────────────────────────────────────────
-function RoleSelector({ role, onChange }) {
-  return (
-    <div className="flex items-center justify-center mb-8">
-      <div className="flex bg-gray-100 rounded-full p-1 gap-1 shadow-inner">
-        <button
-          onClick={() => onChange('DONOR')}
-          className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-bold transition ${
-            role === 'DONOR' ? 'bg-teal-700 text-white shadow' : 'text-gray-500 hover:text-teal-600'
-          }`}
-        >
-          <Users className="w-4 h-4" />
-          <span>Visão Doador</span>
-        </button>
-        <button
-          onClick={() => onChange('NGO')}
-          className={`flex items-center space-x-2 px-5 py-2 rounded-full text-sm font-bold transition ${
-            role === 'NGO' ? 'bg-teal-700 text-white shadow' : 'text-gray-500 hover:text-teal-600'
-          }`}
-        >
-          <Handshake className="w-4 h-4" />
-          <span>Visão ONG</span>
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ──────────────────────────────────────────────────────────────
 export default function TransparencyPage({ onNavigate }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const role = searchParams.get('role') || 'DONOR';
+  const { user } = useAuth();
+  const role = user?.role === 'ong' ? 'NGO' : 'DONOR';
 
   const { metrics, transfers, criteria, loading, error, reload } = useGlobalTransparency();
-
-  const handleRoleChange = (r) => setSearchParams({ role: r });
 
   // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) {
@@ -92,8 +62,7 @@ export default function TransparencyPage({ onNavigate }) {
           </p>
         </div>
 
-        {/* ── Role Toggle ─────────────────────────────────────────────── */}
-        <RoleSelector role={role} onChange={handleRoleChange} />
+
 
         {/* ── Métricas Globais ─────────────────────────────────────────── */}
         <GlobalMetricsCard metrics={metrics} role={role} />

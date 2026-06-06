@@ -20,45 +20,9 @@ import RequireAuth from './components/guards/RequireAuth'
 import RequireRole from './components/guards/RequireRole'
 import RequireGuest from './components/guards/RequireGuest'
 import SettingsPage from './Pages/SettingsPage'
+import { ONG_CATALOG } from './data/ongs'
 
-const ONG_CATALOG = [
-  {
-    id: 1,
-    name: 'Instituto Rebrota',
-    cnpj: '12.345.678/0001-90',
-    description: 'Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana. Transformamos espaços cinzas em pulmões vivos, conectando comunidades à regeneração ativa da Floresta Amazônica em perímetros municipais.',
-    cause: 'meio-ambiente',
-    score: 96,
-    location: 'Manaus, AM',
-  },
-  {
-    id: 2,
-    name: 'Águas Limpas Brasil',
-    cnpj: '98.765.432/0001-10',
-    description: 'Projetos de saneamento básico e acesso à água potável em comunidades ribeirinhas do Norte e Nordeste.',
-    cause: 'saude',
-    score: 92,
-    location: 'Santarém, PA',
-  },
-  {
-    id: 3,
-    name: 'Educação Sem Fronteiras',
-    cnpj: '45.123.890/0001-55',
-    description: 'Promovemos acesso à educação de qualidade para jovens em situação de vulnerabilidade através de bolsas e mentoria educacional.',
-    cause: 'educacao',
-    score: 88,
-    location: 'São Paulo, SP',
-  },
-  {
-    id: 4,
-    name: 'Vozes da Comunidade',
-    cnpj: '11.222.333/0001-44',
-    description: 'Defesa e fomento dos direitos humanos através de suporte legal, capacitação e denúncia de violações em áreas periféricas.',
-    cause: 'direitos-humanos',
-    score: 95,
-    location: 'Rio de Janeiro, RJ',
-  },
-]
+
 
 function resolveOngById(id) {
   return ONG_CATALOG.find((ong) => String(ong.id) === String(id)) || ONG_CATALOG[0]
@@ -317,20 +281,20 @@ function AppContent() {
       >
         Doar Agora
       </button>
-      <ProfileDropdown user={user} onLogout={handleLogout} onNavigate={navigate} />
+      <ProfileDropdown user={user} onLogout={handleLogout} onNavigate={handleNavigate} />
     </div>
   ) : (
     <div className="hidden md:flex items-center space-x-4">
       <button
         id="donate-now-btn"
-        onClick={() => navigate('/doacao')}
+        onClick={() => handleNavigate('/doacao')}
         className="bg-teal-800 text-white px-5 py-2 rounded-full font-medium text-sm hover:bg-teal-900 transition shadow-sm"
       >
         Doar Agora
       </button>
       <button
         id="login-btn"
-        onClick={() => navigate('/login')}
+        onClick={() => handleNavigate('/login')}
         className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-300 transition focus:outline-none cursor-pointer"
         title="Login"
       >
@@ -345,7 +309,7 @@ function AppContent() {
         <nav className="flex justify-between items-center py-6 px-8 md:px-16 bg-white border-b border-gray-50">
           <div
             className="text-2xl font-bold text-teal-800 tracking-tight cursor-pointer"
-            onClick={() => navigate('/')}
+            onClick={() => handleNavigate('/')}
           >
             ONG<span className="text-teal-600">+</span>
           </div>
@@ -355,7 +319,7 @@ function AppContent() {
             {navLinks.map(link => (
               <button
                 key={link.path}
-                onClick={() => navigate(link.path)}
+                onClick={() => handleNavigate(link.path)}
                 className="hover:text-teal-700 transition"
               >
                 {link.label}
@@ -368,8 +332,8 @@ function AppContent() {
             <MobileMenu
               links={navLinks}
               user={user}
-              onNavigate={navigate}
-              onLogin={() => navigate('/login')}
+              onNavigate={handleNavigate}
+              onLogin={() => handleNavigate('/login')}
               onLogout={handleLogout}
             />
           </div>

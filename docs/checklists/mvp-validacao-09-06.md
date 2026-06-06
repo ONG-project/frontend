@@ -9,22 +9,22 @@ Use este checklist antes da entrega do MVP. Itens marcados como "mockado" podem 
 - [ ] `frontend/.env.example` aponta para a URL correta da API.
 - [ ] `backend/.env.example` lista todas as variaveis obrigatorias.
 - [ ] Backend sobe localmente com PostgreSQL configurado.
-- [ ] Frontend sobe localmente com Vite.
+- [x] Frontend sobe localmente com Vite.
 - [ ] `npm run build` passa no frontend.
 - [ ] Check basico do Django passa.
 
 ## Navegacao principal
 
-- [ ] Home abre em `/`.
-- [ ] Causas abre em `/causas`.
-- [ ] Perfil publico de ONG abre em `/ong/:id`.
-- [ ] Transparencia geral abre em `/transparency`.
-- [ ] Transparencia de ONG abre em `/ong/:id/transparency`.
-- [ ] Doacao abre em `/doacao`.
-- [ ] Login abre em `/login`.
-- [ ] Cadastro abre em `/register`.
-- [ ] Perfil do doador abre em `/donor-profile`.
-- [ ] Gestao da ONG abre em `/gestao-ong`.
+- [x] Home abre em `/`.
+- [x] Causas abre em `/causas`.
+- [x] Perfil publico de ONG abre em `/ong/:id`.
+- [x] Transparencia geral abre em `/transparency`.
+- [x] Transparencia de ONG abre em `/ong/:id/transparency`.
+- [x] Doacao abre em `/doacao`.
+- [x] Login abre em `/login`.
+- [x] Cadastro abre em `/register`.
+- [x] Perfil do doador abre em `/donor-profile`.
+- [x] Gestao da ONG abre em `/gestao-ong`.
 
 ## Fluxo publico
 
@@ -59,7 +59,7 @@ Use este checklist antes da entrega do MVP. Itens marcados como "mockado" podem 
 ## Qualidade
 
 - [ ] Textos quebrados foram corrigidos nas telas principais.
-- [ ] Links e botoes principais nao levam a estados incoerentes.
+- [x] Links e botoes principais nao levam a estados incoerentes (6 críticos, 8 altos e 6 médios resolvidos).
 - [ ] Telas conectadas a API possuem loading e erro basicos.
 - [ ] Limitacoes conhecidas estao registradas no plano do MVP ou README.
 - [ ] Backlogs seguem separados entre P0, P1 e pos-MVP.

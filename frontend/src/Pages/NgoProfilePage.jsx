@@ -111,7 +111,11 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               <span>•</span>
               <span>Última atualização: {currentOng.lastUpdated || '04/06/2026'}</span>
               <span>•</span>
-              <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
+              {currentOng.verified !== false ? (
+                <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
+              ) : (
+                <span className="text-amber-600">Consistência de dados: Sob análise documental</span>
+              )}
             </div>
 
             <p className="text-gray-600 text-base leading-relaxed max-w-2xl font-medium pt-2">

@@ -9,7 +9,7 @@ import {
   Building2,
   Loader2
 } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
 
 // Novos componentes dinâmicos do módulo
@@ -22,8 +22,9 @@ import DataSourceCard from '../components/transparency/DataSourceCard';
 import ConsistencyPanel from '../components/transparency/ConsistencyPanel';
 import ValidationActions from '../components/transparency/ValidationActions';
 
-export default function NgoTransparencyPage({ ong, onNavigate }) {
+export default function NgoTransparencyPage({ ong }) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const role = searchParams.get('role') || 'DONOR';
 
   // Usando hook para buscar dados dinâmicos do módulo
@@ -79,7 +80,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
         <div className="text-center space-y-4">
           <p className="text-red-500 font-bold">{error}</p>
           <button 
-            onClick={() => onNavigate && onNavigate('ong-profile', currentOng)}
+            onClick={() => navigate(`/ong/${currentOng.id}`)}
             className="text-[#0A665C] hover:underline font-medium cursor-pointer"
           >
             Voltar
@@ -92,10 +93,9 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col font-sans">
       
-      {/* Botão de Voltar */}
       <div className="max-w-7xl w-full mx-auto px-8 md:px-16 pt-6">
         <button 
-          onClick={() => onNavigate && onNavigate('ong-profile', currentOng)}
+          onClick={() => navigate(`/ong/${currentOng.id}`)}
           className="flex items-center space-x-2 text-gray-500 hover:text-[#0A665C] transition font-bold text-xs uppercase tracking-wider cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
