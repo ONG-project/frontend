@@ -105,16 +105,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
 
       {/* Container Principal */}
       <main className="flex-grow max-w-7xl w-full mx-auto px-8 md:px-16 py-10 space-y-12">
-        
-        {/* Simulação de Perfis para visualização - Temporário para fins de demonstração */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-white rounded-full px-4 py-2 flex space-x-4 border border-gray-200 text-xs font-bold shadow-sm">
-            <span className="text-gray-400">Visão atual:</span>
-            <span className={role === 'DONOR' ? 'text-teal-600' : 'text-gray-400'}>Doador</span>
-            <span className={role === 'NGO' ? 'text-teal-600' : 'text-gray-400'}>ONG</span>
-            <span className={role === 'ADMIN' ? 'text-teal-600' : 'text-gray-400'}>Admin</span>
-          </div>
-        </div>
+
 
         {/* Bloco Superior: Título + Badge + Score Dial */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
