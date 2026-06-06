@@ -297,12 +297,7 @@ export default function DonorProfilePage({ onNavigate }) {
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 
-                <button
-                  onClick={() => alert('Agendamento de chamada iniciado! Entraremos em contato.')}
-                  className="w-full bg-white hover:bg-gray-50 text-gray-800 py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center shadow-sm transition-colors border border-gray-100 cursor-pointer"
-                >
-                  Agendar uma Conversa
-                </button>
+
               </div>
             </div>
 

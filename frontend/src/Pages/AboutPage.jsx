@@ -1,4 +1,4 @@
-﻿import {
+import {
   Target, Eye, Gem, Phone, Mail, MapPin, Send,
   Zap, ShieldCheck, BarChart3, Layers,
   FileCheck, Star, CheckCircle, Heart
@@ -341,58 +341,7 @@ export default function AboutPage({ onNavigate }) {
         </div>
       </section>
 
-      {/* Contato */}
-      <section className="bg-white py-24 px-6 border-t border-gray-50">
-        <div className="max-w-[1000px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16">
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">Mantenha a Conexão</h2>
-              <p className="text-gray-600 leading-relaxed text-sm">
-                Transparência e diálogo são fundamentais. Se você tem dúvidas, sugestões ou quer se tornar um parceiro, estamos à disposição.
-              </p>
-            </div>
-            <div className="space-y-6">
-              {[
-                { icon: Mail, label: 'E-mail', value: 'contato@ongmais.com' },
-                { icon: Phone, label: 'Telefone', value: '+55 (11) 4002-8922' },
-                { icon: MapPin, label: 'Localização', value: 'São Paulo, SP - Brasil' },
-              ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="flex items-center space-x-4 group">
-                  <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center group-hover:bg-teal-100 transition">
-                    <Icon className="w-5 h-5 text-teal-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">{label}</p>
-                    <p className="text-gray-900 font-medium text-sm">{value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="bg-[#F9FAF9] p-8 md:p-10 rounded-[2.5rem] shadow-sm border border-gray-100">
-            <h3 className="text-xl font-bold text-gray-900 mb-8">Envie uma Mensagem</h3>
-            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nome Completo</label>
-                <input type="text" placeholder="Seu nome aqui..." className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">E-mail</label>
-                <input type="email" placeholder="exemplo@email.com" className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Mensagem</label>
-                <textarea rows="4" placeholder="Como podemos ajudar?" className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition resize-none" />
-              </div>
-              <button type="submit" className="w-full bg-teal-800 hover:bg-teal-900 text-white font-bold py-4 rounded-xl transition shadow-md flex items-center justify-center space-x-2">
-                <span>Enviar Mensagem</span>
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
 
       <Footer onNavigate={onNavigate} />
     </div>

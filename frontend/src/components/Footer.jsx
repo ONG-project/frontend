@@ -35,7 +35,7 @@ export default function Footer({ onNavigate }) {
       <div className="max-w-[1000px] mx-auto">
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
 
           {/* Brand */}
           <div className="col-span-1">
@@ -50,26 +50,6 @@ export default function Footer({ onNavigate }) {
             </p>
           </div>
 
-          {/* Explorar */}
-          <div>
-            <h4 className="font-bold text-gray-900 text-sm mb-4">Explorar</h4>
-            <ul className="space-y-3">
-              <LinkItem id="landing">Projetos Ativos</LinkItem>
-              <LinkItem id="landing">Como Funciona</LinkItem>
-              <LinkItem id="transparency">Blog de Impacto</LinkItem>
-            </ul>
-          </div>
-
-          {/* Transparência */}
-          <div>
-            <h4 className="font-bold text-gray-900 text-sm mb-4">Transparência</h4>
-            <ul className="space-y-3">
-              <LinkItem id="transparency">Relatórios Anuais</LinkItem>
-              <LinkItem id="transparency">Dados Abertos</LinkItem>
-              <LinkItem id="transparency">Termos de Uso</LinkItem>
-            </ul>
-          </div>
-
           {/* Contato */}
           <div>
             <h4 className="font-bold text-gray-900 text-sm mb-4">Contato</h4>
@@ -78,13 +58,9 @@ export default function Footer({ onNavigate }) {
                 <Mail className="w-3 h-3 shrink-0" />
                 <span>contato@ongmais.com</span>
               </li>
-              <li className="flex items-center space-x-2">
-                <Phone className="w-3 h-3 shrink-0" />
-                <span>+55 (11) 4002-8922</span>
-              </li>
               <li className="flex items-start space-x-2">
                 <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
-                <span>São Paulo, SP — Brasil</span>
+                <span>Maceió, AL — Brasil</span>
               </li>
             </ul>
           </div>
@@ -93,11 +69,6 @@ export default function Footer({ onNavigate }) {
         {/* Bottom bar */}
         <div className="border-t border-gray-300 pt-8 flex flex-col md:flex-row justify-between items-center text-[0.65rem] text-gray-500">
           <p>© {new Date().getFullYear()} ONG+. Todos os direitos reservados.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-gray-800 transition">Privacidade</a>
-            <a href="#" className="hover:text-gray-800 transition">Cookies</a>
-            <a href="#" className="hover:text-gray-800 transition">LGPD</a>
-          </div>
         </div>
 
       </div>
