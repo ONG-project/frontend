@@ -58,6 +58,7 @@ export default function SettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                       <input 
                         type="email" 
+                        placeholder="email@exemplo.com"
                         className="w-full p-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition" 
                         value={email} 
                         onChange={(e) => setEmail(e.target.value)}
