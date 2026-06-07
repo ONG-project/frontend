@@ -552,10 +552,10 @@ export default function DonationPage({ onGoHome }) {
                 <span className="text-xs font-bold uppercase tracking-wider">Transparência</span>
               </div>
               <div className="text-teal-900 font-extrabold text-sm">
-                SCORE 9.8/10
+                SCORE 100/100
               </div>
               <p className="text-gray-600 text-xs leading-relaxed">
-                Auditado pela Transparência Brasil. 100% dos recursos são aplicados diretamente no projeto escolhido.
+                Score calculado via verificação automatizada de CNPJ, endereço e tempo de atuação. 100% dos recursos são aplicados diretamente no projeto escolhido.
               </p>
             </div>
 

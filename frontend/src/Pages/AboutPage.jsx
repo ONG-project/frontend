@@ -189,11 +189,9 @@ export default function AboutPage({ onNavigate }) {
               Cada ONG cadastrada recebe uma pontuação de 0 a 100 calculada com base em múltiplos fatores de confiabilidade. Quanto maior o score, maior a evidência de transparência e boa gestão.
             </p>
             <div className="space-y-4 bg-[#F9FAF9] rounded-[1.5rem] p-6 border border-gray-100">
-              <ScoreFactor label="Saúde financeira e prestação de contas" pct={30} />
-              <ScoreFactor label="Regularidade documental (CNPJ, estatuto)" pct={25} />
-              <ScoreFactor label="Histórico de relatórios públicos" pct={20} />
-              <ScoreFactor label="Verificação de redes sociais e presença" pct={15} />
-              <ScoreFactor label="Tempo de atuação e histórico" pct={10} />
+              <ScoreFactor label="CNPJ ativo e validado (Receita Federal)" pct={50} />
+              <ScoreFactor label="Consistência de endereço (API de CEP)" pct={25} />
+              <ScoreFactor label="Tempo de atuação comprovado (> 5 anos)" pct={25} />
             </div>
           </div>
           <div className="space-y-6">

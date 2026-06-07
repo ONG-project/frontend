@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ONG_CATALOG } from '../data/ongs';
+import { Loader2 } from 'lucide-react';
+import { ngoService } from '../services/ngoService';
 import {
   Search,
   Heart,
@@ -26,10 +27,14 @@ import loginBgPlant from '../assets/login_bg_plant.png';
 import aboutUs from '../assets/about_us.png';
 import genericImage from '../assets/imagem_generica.jpg';
 
-// ONGs catalog
-const initialOngs = ONG_CATALOG;
+// Fallback icons per cause slug
+const CAUSE_ICONS = {
+  'meio-ambiente': 'tree',
+  saude: 'drop',
+  educacao: 'pencil',
+  'direitos-humanos': 'scale',
+};
 
-// Mocked Campaigns with Cover Images
 const initialCampaigns = [
   {
     id: 'c1',
@@ -115,6 +120,9 @@ const initialBundles = [
 
 export default function CausesPage({ onNavigate }) {
   const navigate = useNavigate();
+  const [ongs, setOngs] = useState([]);
+  const [ongsLoading, setOngsLoading] = useState(true);
+  const [ongsError, setOngsError] = useState(null);
   // Set default active tab to 'ongs' for maximum prominence and better UX
   const [activeTab, setActiveTab] = useState('ongs'); 
   const [activeFilter, setActiveFilter] = useState('todas');
@@ -127,13 +135,35 @@ export default function CausesPage({ onNavigate }) {
   const [supportMessage, setSupportMessage] = useState('');
   const [supportSubmitted, setSupportSubmitted] = useState(false);
   
-  // Extra filters
   const [locationFilter, setLocationFilter] = useState('todas');
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minScore, setMinScore] = useState(0);
 
-  // Extracted unique locations for filters
-  const locations = ['Manaus, AM', 'Santarém, PA', 'São Paulo, SP', 'Rio de Janeiro, RJ'];
+  useEffect(() => {
+    let cancelled = false;
+    ngoService.list()
+      .then((data) => {
+        if (!cancelled) {
+          setOngs(
+            data.map((ong) => ({
+              ...ong,
+              icon: CAUSE_ICONS[ong.cause] || 'tree',
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOngsError('Não foi possível carregar as ONGs. Verifique se o backend está ativo.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setOngsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const locations = [...new Set(ongs.map((ong) => ong.location).filter(Boolean))];
 
   const handleGoToBundle = (bundleId) => {
     navigate(`/bundle/${bundleId}`);
@@ -150,7 +180,7 @@ export default function CausesPage({ onNavigate }) {
   };
 
   // Filter logic for ONGs
-  const filteredOngs = initialOngs.filter(ong => {
+  const filteredOngs = ongs.filter(ong => {
     const matchesCause = activeFilter === 'todas' || ong.cause === activeFilter;
     const matchesSearch = 
       ong.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -566,7 +596,14 @@ export default function CausesPage({ onNavigate }) {
 
           {/* ABA ONGS INDIVIDUAIS */}
           {activeTab === 'ongs' && (
-            filteredOngs.length > 0 ? (
+            ongsLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <Loader2 className="w-8 h-8 animate-spin text-[#0A665C] mb-3" />
+                <p className="text-sm font-medium">Carregando ONGs...</p>
+              </div>
+            ) : ongsError ? (
+              <div className="text-center py-20 text-red-500 font-medium">{ongsError}</div>
+            ) : filteredOngs.length > 0 ? (
               filteredOngs.map(ong => (
                 <div 
                   key={ong.id} 

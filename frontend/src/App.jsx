@@ -13,33 +13,102 @@ import NgoProfilePage from './Pages/NgoProfilePage'
 import DonorProfilePage from './Pages/DonorProfilePage'
 import NgoTransparencyPage from './Pages/NgoTransparencyPage'
 import Navbar from './components/Navbar'
-import { User, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react'
+import { User, Bell, Settings, LogOut, Menu, X, ChevronDown, Loader2 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import RequireAuth from './components/guards/RequireAuth'
 import RequireRole from './components/guards/RequireRole'
 import RequireGuest from './components/guards/RequireGuest'
 import SettingsPage from './Pages/SettingsPage'
-import { ONG_CATALOG } from './data/ongs'
+import { ngoService } from './services/ngoService'
 
-
-
-function resolveOngById(id) {
-  return ONG_CATALOG.find((ong) => String(ong.id) === String(id)) || ONG_CATALOG[0]
+function OngRouteLoader() {
+  return (
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+      <div className="flex flex-col items-center space-y-4">
+        <Loader2 className="w-10 h-10 text-[#0A665C] animate-spin" />
+        <p className="text-gray-500 font-medium">Carregando ONG...</p>
+      </div>
+    </div>
+  )
 }
 
 function OngProfileRoute({ onNavigate }) {
   const { id } = useParams()
   const location = useLocation()
-  const currentOng = location.state?.ong || resolveOngById(id)
-  return <NgoProfilePage ong={currentOng} onNavigate={onNavigate} />
+  const [ong, setOng] = useState(location.state?.ong || null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      if (location.state?.ong && String(location.state.ong.id) === String(id)) {
+        setOng(location.state.ong)
+        setLoading(false)
+        return
+      }
+      try {
+        const data = await ngoService.getById(id)
+        if (!cancelled) setOng(data)
+      } catch {
+        if (!cancelled) setError('Não foi possível carregar a ONG.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [id, location.state?.ong])
+
+  if (loading) return <OngRouteLoader />
+  if (error || !ong) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <p className="text-red-500 font-medium">{error || 'ONG não encontrada.'}</p>
+      </div>
+    )
+  }
+  return <NgoProfilePage ong={ong} onNavigate={onNavigate} />
 }
 
 function OngTransparencyRoute({ onNavigate }) {
   const { id } = useParams()
   const location = useLocation()
-  const currentOng = location.state?.ong || resolveOngById(id)
-  return <NgoTransparencyPage ong={currentOng} onNavigate={onNavigate} />
+  const [ong, setOng] = useState(location.state?.ong || null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      if (location.state?.ong && String(location.state.ong.id) === String(id)) {
+        setOng(location.state.ong)
+        setLoading(false)
+        return
+      }
+      try {
+        const data = await ngoService.getById(id)
+        if (!cancelled) setOng(data)
+      } catch {
+        if (!cancelled) setError('Não foi possível carregar a ONG.')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [id, location.state?.ong])
+
+  if (loading) return <OngRouteLoader />
+  if (error || !ong) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <p className="text-red-500 font-medium">{error || 'ONG não encontrada.'}</p>
+      </div>
+    )
+  }
+  return <NgoTransparencyPage ong={ong} onNavigate={onNavigate} />
 }
 
 function ProfileDropdown({ user, onLogout, onNavigate }) {

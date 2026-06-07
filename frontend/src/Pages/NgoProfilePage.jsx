@@ -109,7 +109,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
             <div className="flex flex-wrap items-center gap-4 text-gray-400 text-[10px] font-semibold">
               <span>Fonte dos dados: Receita Federal & Auditoria Interna</span>
               <span>•</span>
-              <span>Última atualização: {currentOng.lastUpdated || '04/06/2026'}</span>
+              <span>Última atualização: {currentOng.lastUpdated || currentOng.scoreUpdatedAt?.slice(0, 10) || '—'}</span>
               <span>•</span>
               {currentOng.verified !== false ? (
                 <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
