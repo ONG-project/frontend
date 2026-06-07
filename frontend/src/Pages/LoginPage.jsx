@@ -12,7 +12,7 @@ export default function LoginPage({ onRegisterClick }) {
       name: role === 'donor' ? 'João Silva' : 'Instituto Rebrota',
       email: 'exemplo@email.com',
       role: role,
-      ...(role === 'ong' ? { ngoId: 1, ngoName: 'Instituto Rebrota' } : {}),
+      ...(role === 'ong' ? { ngoName: 'Instituto Rebrota' } : {}),
     };
     await login(mockUser);
     

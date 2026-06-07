@@ -1,28 +1,28 @@
 import json
-
+from datetime import timedelta
+from django.utils import timezone
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
 from django.shortcuts import get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
-from verification.serializers import OngValidationSerializer
-from verification.services.validation_service import validate_ngo
-from verification.exceptions import CnpjNotFound, ExternalApiError, InvalidAddressError
-from verification.models import NGO, Campaign, Bundle
-from verification.ngo_response import (
-    serialize_ngo_detail,
+from .models import NGO, Campaign, Bundle
+from .ngo_response import (
     serialize_ngo_list_item,
+    serialize_ngo_detail,
     build_verification_payload,
     get_allocation_criteria,
     serialize_campaign,
     serialize_bundle_list_item,
     serialize_bundle_detail,
 )
+from .services.validation_service import validate_ngo
+from .services.cnpj_service import ExternalApiError
 
 
 @require_GET
 def health_check_view(request):
-    return JsonResponse({"status": "ok", "service": "ong-plus-api"})
+    return JsonResponse({"status": "ok"})
 
 
 @require_GET
@@ -59,23 +59,16 @@ def validate_ong_view(request):
     and returns computed score, status, and validation flags.
     """
     try:
-        data = json.loads(request.body)
+        body = json.loads(request.body)
+        cnpj_input = body.get('cnpj', '').strip()
+        if not cnpj_input:
+            return JsonResponse({"error": "CNPJ is required."}, status=400)
+        
+        result = validate_ngo(cnpj_input)
+        return JsonResponse(result)
+
     except json.JSONDecodeError:
-        return JsonResponse({"error": "Malformed JSON payload."}, status=400)
-
-    serializer = OngValidationSerializer(data=data)
-    if not serializer.is_valid():
-        return JsonResponse(serializer.errors, status=400)
-
-    cnpj = serializer.validated_data["cnpj"]
-
-    try:
-        result = validate_ngo(cnpj)
-        return JsonResponse(result, status=200)
-    except CnpjNotFound as e:
-        return JsonResponse({"error": str(e)}, status=404)
-    except InvalidAddressError as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        return JsonResponse({"error": "Invalid JSON."}, status=400)
     except ExternalApiError as e:
         return JsonResponse({"error": str(e)}, status=502)
     except Exception as e:
@@ -87,8 +80,90 @@ def validate_ong_view(request):
 
 @require_GET
 def list_campaigns_view(request):
-    campaigns = Campaign.objects.filter(is_active=True).select_related('ngo').order_by('-created_at')
+    campaigns = Campaign.objects.filter(is_active=True, status=Campaign.Status.PUBLISHED).select_related('ngo').order_by('-created_at')
     return JsonResponse([serialize_campaign(c) for c in campaigns], safe=False)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def ngo_campaigns_view(request, pk):
+    ngo = get_object_or_404(NGO, pk=pk)
+    
+    if request.method == "GET":
+        campaigns = Campaign.objects.filter(ngo=ngo, is_active=True).order_by('-created_at')
+        return JsonResponse([serialize_campaign(c) for c in campaigns], safe=False)
+        
+    elif request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            days_left = int(data.get('daysLeft', 30))
+            end_date = timezone.now().date() + timedelta(days=days_left)
+            
+            campaign = Campaign.objects.create(
+                ngo=ngo,
+                name=data.get('name'),
+                description=data.get('description', ''),
+                cause=data.get('cause', 'outros'),
+                status=data.get('status', Campaign.Status.DRAFT),
+                target_amount=data.get('targetAmount', 0),
+                end_date=end_date,
+                match_multiplier=data.get('matchMultiplier', 1),
+                match_sponsor=data.get('matchSponsor', ''),
+                match_cap=data.get('matchCap'),
+                match_period=data.get('matchPeriod', ''),
+                requirements=data.get('requirements', ''),
+                destination=data.get('destination', '')
+            )
+            return JsonResponse(serialize_campaign(campaign), status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def campaign_detail_view(request, pk):
+    campaign = get_object_or_404(Campaign, pk=pk, is_active=True)
+    try:
+        data = json.loads(request.body)
+        campaign.name = data.get('name', campaign.name)
+        campaign.description = data.get('description', campaign.description)
+        campaign.cause = data.get('cause', campaign.cause)
+        
+        if 'status' in data:
+            campaign.status = data.get('status')
+            
+        campaign.target_amount = data.get('targetAmount', campaign.target_amount)
+        
+        if 'daysLeft' in data:
+            days_left = int(data.get('daysLeft'))
+            campaign.end_date = timezone.now().date() + timedelta(days=days_left)
+            
+        campaign.match_multiplier = data.get('matchMultiplier', campaign.match_multiplier)
+        campaign.match_sponsor = data.get('matchSponsor', campaign.match_sponsor)
+        campaign.match_cap = data.get('matchCap', campaign.match_cap)
+        campaign.match_period = data.get('matchPeriod', campaign.match_period)
+        campaign.requirements = data.get('requirements', campaign.requirements)
+        campaign.destination = data.get('destination', campaign.destination)
+        
+        campaign.save()
+        return JsonResponse(serialize_campaign(campaign))
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["PATCH"])
+def campaign_status_view(request, pk):
+    campaign = get_object_or_404(Campaign, pk=pk, is_active=True)
+    try:
+        data = json.loads(request.body)
+        if 'status' in data:
+            campaign.status = data['status']
+            campaign.save()
+            return JsonResponse(serialize_campaign(campaign))
+        return JsonResponse({"error": "Status required"}, status=400)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
 
 
 @require_GET

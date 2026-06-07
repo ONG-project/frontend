@@ -1,3 +1,4 @@
+from datetime import date
 from verification.constants import ALLOCATION_CRITERIA, CAUSE_LABELS
 from verification.models import NGO, Campaign, Bundle
 
@@ -115,6 +116,7 @@ def serialize_ngo_detail(ngo: NGO) -> dict:
             if ngo.last_verified_at
             else ngo.updated_at.strftime('%d/%m/%Y')
         ),
+        'lastExternalAudit': ngo.last_external_audit.strftime('%b %Y').title() if ngo.last_external_audit else None,
         'verification': build_verification_payload(ngo),
     })
     return base
@@ -137,8 +139,14 @@ def serialize_campaign(campaign: Campaign) -> dict:
         'causeLabel': CAUSE_LABELS.get(cause, cause.replace('-', ' ').title()),
         'targetAmount': float(campaign.target_amount),
         'raisedAmount': float(campaign.raised_amount),
+        'status': campaign.status,
+        'daysLeft': max((campaign.end_date - date.today()).days, 0) if campaign.end_date else 0,
         'matchMultiplier': campaign.match_multiplier,
         'matchSponsor': campaign.match_sponsor,
+        'matchCap': float(campaign.match_cap) if campaign.match_cap else None,
+        'matchPeriod': campaign.match_period,
+        'requirements': campaign.requirements,
+        'destination': campaign.destination,
         'location': campaign.location or '',
         'score': _score_int(ngo),
     }

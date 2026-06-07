@@ -2,7 +2,7 @@
 
 Este guia descreve como configurar e executar localmente o **ONG+**, composto por backend Django e frontend React + Vite.
 
-Ultima atualizacao: 2026-06-02.
+Ultima atualizacao: 2026-06-07.
 
 ## Pre-requisitos
 
@@ -99,13 +99,86 @@ Com o ambiente virtual ativado e o PostgreSQL disponivel:
 python manage.py migrate
 ```
 
-### 7. Inicie o servidor de desenvolvimento
+### 7. Popular o banco com dados de teste (Seed)
+
+Para popular o banco com ONGs, Campanhas e Bundles fictícios para desenvolvimento:
+
+```bash
+python manage.py seed_demo_ngos
+```
+
+A saída esperada indicará as criações e atualizações. O comando é idempotente, então executá-lo novamente apenas atualizará os registros existentes sem duplicá-los.
+
+### 8. Inicie o servidor de desenvolvimento
 
 ```bash
 python manage.py runserver
 ```
 
 O backend ficara disponivel em `http://localhost:8000/`.
+
+## Executando com Docker Compose (Recomendado)
+
+O projeto possui um arquivo `docker-compose.yml` na raiz que orquestra o banco de dados, o backend e o frontend.
+
+Para iniciar tudo:
+
+```bash
+docker compose up --build -d
+```
+
+Para aplicar as migrações no container do backend:
+
+```bash
+docker compose exec backend python manage.py migrate
+```
+
+Para popular o banco com dados de teste (seed):
+
+```bash
+docker compose exec backend python manage.py seed_demo_ngos
+```
+
+### Visualizar o banco de dados PostgreSQL (via Docker)
+
+Se você iniciou os serviços com `docker compose up`, o serviço do banco está disponível como `db` (container `ongplus_db`) e a base de dados padrão é `ongplus_db` com usuário `postgres` conforme o `docker-compose.yml` do projeto.
+
+Opções rápidas para inspecionar o banco:
+
+- Abrir um shell `psql` dentro do container (recomendado quando não há cliente `psql` local):
+
+```bash
+# Abre um shell psql interativo dentro do container do serviço db
+docker compose exec db psql -U postgres -d ongplus_db
+
+# Agora no prompt psql, listar tabelas:
+\dt
+
+# Consultar algumas linhas de uma tabela (ex: auth_user):
+SELECT * FROM auth_user LIMIT 10;
+```
+
+- Conectar a partir da máquina host (se tiver `psql` instalado):
+
+```bash
+psql "host=localhost port=5432 dbname=ongplus_db user=postgres password=postgrespassword"
+```
+
+- Usar uma interface web rápida (Adminer) sem alterar o compose atual:
+
+```bash
+# Executa temporariamente um container Adminer ligado à mesma rede do compose
+docker run --rm --link ongplus_db:db -p 8080:8080 adminer
+
+# Abra http://localhost:8080 e conecte com:
+# System: PostgreSQL
+# Server: db
+# Username: postgres
+# Password: postgrespassword
+# Database: ongplus_db
+```
+
+Observação: os valores de conexão (usuário, senha e nome do banco) podem ser verificados em `docker-compose.yml`.
 
 ## Passo 3: configurar e executar o frontend React + Vite
 

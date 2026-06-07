@@ -28,3 +28,21 @@ export async function apiPost(path, body) {
   });
   return parseResponse(res);
 }
+
+export async function apiPut(path, body) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return parseResponse(res);
+}
+
+export async function apiPatch(path, body) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return parseResponse(res);
+}

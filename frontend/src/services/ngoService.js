@@ -1,4 +1,4 @@
-import { apiGet, apiPost } from './apiClient';
+import { apiGet, apiPost, apiPut, apiPatch } from './apiClient';
 
 export const ngoService = {
   async list() {
@@ -19,6 +19,22 @@ export const ngoService = {
 
   async listCampaigns() {
     return apiGet('/v1/campaigns/');
+  },
+
+  async getNgoCampaigns(ngoId) {
+    return apiGet(`/v1/ngos/${ngoId}/campaigns/`);
+  },
+
+  async createCampaign(ngoId, payload) {
+    return apiPost(`/v1/ngos/${ngoId}/campaigns/`, payload);
+  },
+
+  async updateCampaign(campaignId, payload) {
+    return apiPut(`/v1/campaigns/${campaignId}/`, payload);
+  },
+
+  async updateCampaignStatus(campaignId, status) {
+    return apiPatch(`/v1/campaigns/${campaignId}/status/`, { status });
   },
 
   async listBundles() {

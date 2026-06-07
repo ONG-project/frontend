@@ -1,5 +1,8 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
+from datetime import timedelta, date
+import uuid
+import json
 
 from verification.models import NGO, Campaign, Bundle
 
@@ -117,10 +120,16 @@ class Command(BaseCommand):
                     'com o plantio planejado de 10 mil mudas de espécies nativas.'
                 ),
                 'cause': 'meio-ambiente',
+                'status': 'publicada',
                 'target_amount': 20000,
                 'raised_amount': 14200,
+                'end_date': date.today() + timedelta(days=12),
                 'match_multiplier': 3,
                 'match_sponsor': 'BioCorp S.A.',
+                'match_cap': 30000.00,
+                'match_period': 'Junho a Agosto de 2026',
+                'requirements': 'As mudas devem ser apenas de espécies nativas da Amazônia.',
+                'destination': 'Compra das mudas e contratação de mão-de-obra local.',
                 'location': 'Manaus, AM',
             },
             {
@@ -131,8 +140,10 @@ class Command(BaseCommand):
                     '12 escolas públicas ribeirinhas na região do Baixo Amazonas.'
                 ),
                 'cause': 'saude',
+                'status': 'publicada',
                 'target_amount': 35000,
                 'raised_amount': 18000,
+                'end_date': date.today() + timedelta(days=5),
                 'match_multiplier': 1,
                 'match_sponsor': None,
                 'location': 'Santarém, PA',
@@ -145,10 +156,13 @@ class Command(BaseCommand):
                     'e fornecimento de notebooks para 30 mulheres da periferia paulistana.'
                 ),
                 'cause': 'educacao',
+                'status': 'publicada',
                 'target_amount': 50000,
                 'raised_amount': 42000,
+                'end_date': date.today() + timedelta(days=22),
                 'match_multiplier': 2,
                 'match_sponsor': 'TechFund Brasil',
+                'match_cap': 25000.00,
                 'location': 'São Paulo, SP',
             },
         ]
@@ -159,7 +173,22 @@ class Command(BaseCommand):
             _, was_created = Campaign.objects.update_or_create(
                 name=data['name'],
                 ngo=data['ngo'],
-                defaults={**data, 'is_active': True},
+                defaults={
+                    'description': data['description'],
+                    'cause': data['cause'],
+                    'status': data.get('status', 'rascunho'),
+                    'target_amount': data['target_amount'],
+                    'raised_amount': data['raised_amount'],
+                    'end_date': data.get('end_date'),
+                    'match_multiplier': data['match_multiplier'],
+                    'match_sponsor': data['match_sponsor'],
+                    'match_cap': data.get('match_cap'),
+                    'match_period': data.get('match_period', ''),
+                    'requirements': data.get('requirements', ''),
+                    'destination': data.get('destination', ''),
+                    'location': data['location'],
+                    'is_active': True,
+                }
             )
             if was_created:
                 camp_created += 1

@@ -61,6 +61,11 @@ class NGO(models.Model):
         null=True,
         help_text="Current evaluation score (0-100)",
     )
+    last_external_audit = models.DateField(
+        blank=True,
+        null=True,
+        help_text="Date of the last external audit",
+    )
     years_operating = models.PositiveIntegerField(
         default=0,
         help_text="Years of operation based on CNPJ opening date",
@@ -113,6 +118,15 @@ class NGO(models.Model):
 class Campaign(models.Model):
     """An individual fundraising campaign run by a single NGO."""
 
+    class Status(models.TextChoices):
+        DRAFT = 'rascunho', 'Rascunho'
+        IN_REVIEW = 'em-revisao', 'Em Revisão'
+        APPROVED = 'aprovada', 'Aprovada'
+        PUBLISHED = 'publicada', 'Publicada'
+        REJECTED = 'recusada', 'Recusada'
+        ENDED = 'encerrada', 'Encerrada'
+        ARCHIVED = 'arquivada', 'Arquivada'
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -130,13 +144,26 @@ class Campaign(models.Model):
         max_length=50,
         help_text="Cause slug, e.g. 'meio-ambiente'",
     )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.DRAFT,
+    )
     target_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    end_date = models.DateField(blank=True, null=True, help_text="Campaign expiration date")
+    
     match_multiplier = models.PositiveSmallIntegerField(
         default=1,
         help_text="Matchfunding multiplier (1 = no match)",
     )
     match_sponsor = models.CharField(max_length=255, blank=True, null=True)
+    match_cap = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Maximum matchfunding amount limit")
+    match_period = models.CharField(max_length=100, blank=True, null=True, help_text="E.g., 'Jun-Ago 2026'")
+    
+    requirements = models.TextField(blank=True, null=True, help_text="Specific requirements for the campaign")
+    destination = models.TextField(blank=True, null=True, help_text="How the funds will be used")
+    
     location = models.CharField(max_length=255, blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

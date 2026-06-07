@@ -23,7 +23,7 @@ import ConsistencyPanel from '../components/transparency/ConsistencyPanel';
 import ValidationActions from '../components/transparency/ValidationActions';
 import VerificationStatus from '../components/transparency/VerificationStatus';
 
-export default function NgoTransparencyPage({ ong }) {
+export default function NgoTransparencyPage({ ong, onNavigate }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const role = searchParams.get('role') || 'DONOR';

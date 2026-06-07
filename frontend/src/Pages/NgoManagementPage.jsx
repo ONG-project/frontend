@@ -39,42 +39,28 @@ import Footer from '../components/Footer';
 export default function NgoManagementPage({ onNavigate }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const ngoId = user?.ngoId ?? 1;
   const ngoName = user?.ngoName ?? 'Instituto Rebrota';
+  // Always start as null — UUID is resolved from the API below to avoid stale integer IDs from localStorage
+  const [ngoId, setNgoId] = useState(null);
   const [ngoScore, setNgoScore] = useState(0);
 
-  useEffect(() => {
-    ngoService.list()
-      .then((list) => {
-        const match = list.find((item) => item.name === ngoName) || list[0];
-        if (match) setNgoScore(match.score);
-      })
-      .catch(() => {});
-  }, [ngoName]);
+  const [ngoDetails, setNgoDetails] = useState(null);
+  const [myCampaigns, setMyCampaigns] = useState([]);
+  const [myBundles, setMyBundles] = useState([]);
 
   const tabFromUrl = searchParams.get('tab');
   const [activeSubTab, setActiveSubTab] = useState(tabFromUrl || 'visao-geral');
   const [urgencyView, setUrgencyView] = useState('list');
   const [urgencyRequestId, setUrgencyRequestId] = useState(null);
+  const [campaignTab, setCampaignTab] = useState('ativas');
+  const [donorSection, setDonorSection] = useState('doadores');
 
-  useEffect(() => {
-    if (tabFromUrl) setActiveSubTab(tabFromUrl);
-  }, [tabFromUrl]);
-
-  const handleTabChange = (tabId) => {
-    setActiveSubTab(tabId);
-    setSearchParams(tabId === 'visao-geral' ? {} : { tab: tabId });
-    setIsCreatingCampaign(false);
-  };
-  const [campaignTab, setCampaignTab] = useState('ativas'); // 'ativas', 'encerradas', 'rascunhos', 'impacto'
-  const [donorSection, setDonorSection] = useState('doadores'); // 'doadores', 'campanhas', 'relatorios', 'retencao'
-  
   // Doadores tab states
-  const [donorFilter, setDonorFilter] = useState('Todos'); // 'Todos', 'Mensais', 'Eventuais'
+  const [donorFilter, setDonorFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Relatorios tab states
-  const [period, setPeriod] = useState('30-days'); // '30-days', '3-months', 'custom'
+  const [period, setPeriod] = useState('30-days');
   const [includeFinance, setIncludeFinance] = useState(true);
   const [includeDonors, setIncludeDonors] = useState(true);
   const [includeCampaigns, setIncludeCampaigns] = useState(false);
@@ -100,81 +86,51 @@ export default function NgoManagementPage({ onNavigate }) {
   const [formMatchCap, setFormMatchCap] = useState('');
   const [formMatchPeriod, setFormMatchPeriod] = useState('');
 
-  // Campaigns state
-  const [myCampaigns, setMyCampaigns] = useState([
-    {
-      id: 'c1',
-      name: 'Projeto Verde Urbe',
-      description: 'Implantação de hortas comunitárias em coberturas de prédios públicos para segurança alimentar no centro urbano.',
-      targetAmount: 50000,
-      raisedAmount: 45000,
-      status: 'publicada', // 'rascunho' | 'em-revisao' | 'aprovada' | 'publicada' | 'recusada' | 'encerrada' | 'arquivada'
-      cause: 'meio-ambiente',
-      causeLabel: 'Meio ambiente',
-      daysLeft: 12,
-      cover: verdeUrbeGarden,
-      matchMultiplier: 1,
-      matchSponsor: null,
-      matchCap: null,
-      matchPeriod: null,
-      requirements: 'Autorização estrutural de prédios públicos selecionados.',
-      destination: 'Hortas comunitárias municipais.'
-    },
-    {
-      id: 'c2',
-      name: 'Refloresta SP: Mata Atlântica',
-      description: 'Plantio planejado de 5.000 mudas de espécies nativas em áreas de preservação permanente no cinturão verde.',
-      targetAmount: 120000,
-      raisedAmount: 50400,
-      status: 'publicada',
-      cause: 'meio-ambiente',
-      causeLabel: 'Meio ambiente',
-      daysLeft: 45,
-      cover: reflorestaSeedling,
-      matchMultiplier: 2,
-      matchSponsor: 'EcoFund Brasil',
-      matchCap: 50000,
-      matchPeriod: 'Jun-Ago 2026',
-      requirements: 'Laudo de solo e fornecedores de mudas cadastrados.',
-      destination: 'Reflorestamento de encostas.'
-    },
-    {
-      id: 'c3',
-      name: 'Hortas Escolares 2026',
-      description: 'Criação de hortas comunitárias de aprendizado prático em escolas públicas da periferia.',
-      targetAmount: 35000,
-      raisedAmount: 0,
-      status: 'rascunho',
-      cause: 'educacao',
-      causeLabel: 'Educação',
-      daysLeft: 60,
-      cover: loginBgPlant,
-      matchMultiplier: 1,
-      matchSponsor: null,
-      matchCap: null,
-      matchPeriod: null,
-      requirements: 'Contrato de adesão das escolas parceiras.',
-      destination: 'Fornecimento de insumos e monitoramento.'
-    },
-    {
-      id: 'c4',
-      name: 'Mutirão Água Limpa',
-      description: 'Mutirão voluntário para remoção de detritos e revegetação de matas ciliares no córrego local.',
-      targetAmount: 25000,
-      raisedAmount: 0,
-      status: 'em-revisao',
-      cause: 'saude',
-      causeLabel: 'Saúde',
-      daysLeft: 30,
-      cover: genericImage,
-      matchMultiplier: 1,
-      matchSponsor: null,
-      matchCap: null,
-      matchPeriod: null,
-      requirements: 'Aprovação da Secretaria Municipal do Verde e Meio Ambiente.',
-      destination: 'Materiais de proteção e ferramentas.'
-    }
-  ]);
+  useEffect(() => {
+    // Resolve the real UUID from the API — never use user.ngoId directly
+    // because it may be a stale integer from a previous session/mock
+    ngoService.list()
+      .then((list) => {
+        const match = list.find((item) => item.name === ngoName) || list[0];
+        if (match) {
+          setNgoScore(match.score);
+          setNgoId(match.id); // Always use UUID from API
+        }
+      })
+      .catch(console.error);
+  }, [ngoName]);
+
+  useEffect(() => {
+    if (tabFromUrl) setActiveSubTab(tabFromUrl);
+  }, [tabFromUrl]);
+
+  const handleTabChange = (tabId) => {
+    setActiveSubTab(tabId);
+    setSearchParams(tabId === 'visao-geral' ? {} : { tab: tabId });
+    setIsCreatingCampaign(false);
+  };
+
+  useEffect(() => {
+    if (!ngoId) return;
+
+    // Fetch NGO Details
+    ngoService.getById(ngoId)
+      .then(setNgoDetails)
+      .catch(console.error);
+    
+    // Fetch NGO Campaigns
+    ngoService.getNgoCampaigns(ngoId)
+      .then(setMyCampaigns)
+      .catch(console.error);
+
+    // Fetch NGO Bundles
+    ngoService.listBundles()
+      .then(bundles => {
+        const participating = bundles.filter(b => b.ongs && b.ongs.some(n => n.id === ngoId));
+        setMyBundles(participating);
+      })
+      .catch(console.error);
+  }, [ngoId]);
 
   const donorRows = [
     { initials: 'AS', color: 'bg-[#B2E4E1] text-[#0A665C]', name: 'Alice Schmidt', email: 'alice.schmidt@email.com', value: 'R$ 450,00', frequency: 'Mensal', date: '12 Out, 2024', status: 'Ativo' },
@@ -226,67 +182,80 @@ export default function NgoManagementPage({ onNavigate }) {
     setMenuOpenCampaignId(null);
   };
 
-  const handleSaveCampaign = (status = 'rascunho') => {
+  const handleSaveCampaign = async (status = 'rascunho') => {
     if (!formName.trim() || !formTarget.trim()) {
       alert('Por favor, preencha o Nome e a Meta de Arrecadação.');
       return;
     }
 
-    const causeLabels = {
-      'meio-ambiente': 'Meio ambiente',
-      'educacao': 'Educação',
-      'saude': 'Saúde',
-      'direitos-humanos': 'Direitos humanos'
-    };
-
-    const newCampaign = {
-      id: editingCampaign ? editingCampaign.id : 'c_' + Date.now(),
+    const payload = {
       name: formName,
       description: formDescription,
       cause: formCause,
-      causeLabel: causeLabels[formCause] || 'Outros',
       targetAmount: parseFloat(formTarget) || 10000,
-      raisedAmount: editingCampaign ? editingCampaign.raisedAmount : 0,
       status: status,
       daysLeft: parseInt(formDays) || 30,
-      cover: editingCampaign ? editingCampaign.cover : genericImage,
-      matchMultiplier: editingCampaign ? editingCampaign.matchMultiplier : 1,
-      matchSponsor: editingCampaign ? editingCampaign.matchSponsor : null,
-      matchCap: editingCampaign ? editingCampaign.matchCap : null,
-      matchPeriod: editingCampaign ? editingCampaign.matchPeriod : null,
+      matchMultiplier: hasMatch ? parseInt(formMatchMultiplier) || 1 : 1,
+      matchSponsor: hasMatch ? formMatchSponsor : null,
+      matchCap: hasMatch && formMatchCap ? parseFloat(formMatchCap) : null,
+      matchPeriod: hasMatch ? formMatchPeriod : null,
       requirements: formRequirements,
       destination: formDestination
     };
 
-    if (editingCampaign) {
-      setMyCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? newCampaign : c));
-      alert(`Campanha "${formName}" atualizada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
-    } else {
-      setMyCampaigns(prev => [...prev, newCampaign]);
-      alert(`Campanha "${formName}" criada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
+    try {
+      if (editingCampaign) {
+        const updated = await ngoService.updateCampaign(editingCampaign.id, payload);
+        setMyCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? updated : c));
+        alert(`Campanha "${formName}" atualizada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
+      } else {
+        const created = await ngoService.createCampaign(ngoId, payload);
+        setMyCampaigns(prev => [created, ...prev]);
+        alert(`Campanha "${formName}" criada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
+      }
+      setIsCreatingCampaign(false);
+      setEditingCampaign(null);
+    } catch (error) {
+      alert(`Erro ao salvar campanha: ${error.message}`);
     }
-
-    setIsCreatingCampaign(false);
-    setEditingCampaign(null);
   };
 
-  const handleDuplicate = (campaign) => {
-    const duplicated = {
-      ...campaign,
-      id: 'c_' + Date.now(),
-      name: campaign.name + ' (Cópia)',
-      raisedAmount: 0,
-      status: 'rascunho'
-    };
-    setMyCampaigns(prev => [...prev, duplicated]);
-    alert(`Campanha "${campaign.name}" duplicada como rascunho com sucesso.`);
-    setMenuOpenCampaignId(null);
+  const handleDuplicate = async (campaign) => {
+    try {
+      const payload = {
+        name: campaign.name + ' (Cópia)',
+        description: campaign.description,
+        cause: campaign.cause,
+        targetAmount: campaign.targetAmount,
+        status: 'rascunho',
+        daysLeft: campaign.daysLeft,
+        matchMultiplier: campaign.matchMultiplier,
+        matchSponsor: campaign.matchSponsor,
+        matchCap: campaign.matchCap,
+        matchPeriod: campaign.matchPeriod,
+        requirements: campaign.requirements,
+        destination: campaign.destination
+      };
+      const duplicated = await ngoService.createCampaign(ngoId, payload);
+      setMyCampaigns(prev => [duplicated, ...prev]);
+      alert(`Campanha "${campaign.name}" duplicada como rascunho com sucesso.`);
+    } catch (error) {
+      alert(`Erro ao duplicar campanha: ${error.message}`);
+    } finally {
+      setMenuOpenCampaignId(null);
+    }
   };
 
-  const handleChangeStatus = (campaignId, newStatus) => {
-    setMyCampaigns(prev => prev.map(c => c.id === campaignId ? { ...c, status: newStatus } : c));
-    alert(`Status da campanha atualizado para: ${newStatus}`);
-    setMenuOpenCampaignId(null);
+  const handleChangeStatus = async (campaignId, newStatus) => {
+    try {
+      const updated = await ngoService.updateCampaignStatus(campaignId, newStatus);
+      setMyCampaigns(prev => prev.map(c => c.id === campaignId ? updated : c));
+      alert(`Status da campanha atualizado para: ${newStatus}`);
+    } catch (error) {
+      alert(`Erro ao atualizar status: ${error.message}`);
+    } finally {
+      setMenuOpenCampaignId(null);
+    }
   };
 
   return (
@@ -305,13 +274,13 @@ export default function NgoManagementPage({ onNavigate }) {
                 <span>Painel de Gestão</span>
               </span>
               <span className="text-xs font-semibold text-gray-500">
-                CNPJ: 12.345.678/0001-90
+                CNPJ: {ngoDetails?.cnpj || '12.345.678/0001-90'}
               </span>
             </div>
 
             {/* NGO Title */}
             <h1 className="text-4xl font-extrabold text-[#0A3D36] tracking-tight">
-              Instituto Rebrota
+              {ngoDetails?.name || ngoName}
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
               Bem-vindo de volta. Aqui você pode gerenciar suas campanhas, monitorar doações e exportar relatórios de impacto.
@@ -383,7 +352,7 @@ export default function NgoManagementPage({ onNavigate }) {
               {/* Bottom details & Button */}
               <div className="w-full space-y-4">
                 <p className="text-xs font-medium text-gray-500">
-                  Última auditoria externa: <span className="font-bold text-gray-700">Maio 2026</span>
+                  Última auditoria externa: <span className="font-bold text-gray-700">{ngoDetails?.lastExternalAudit || 'Maio 2026'}</span>
                 </p>
                 
                 <button className="w-full bg-white hover:bg-gray-50 text-[#0A665C] font-bold py-3.5 px-6 rounded-2xl border border-[#EBE9E3] shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer">
@@ -395,36 +364,64 @@ export default function NgoManagementPage({ onNavigate }) {
 
             {/* Right Card - Campaign Progress card */}
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
-              <div className="relative h-72 w-full overflow-hidden bg-gray-100">
-                <img src={verdeUrbeGarden} alt="Projeto Verde Urbe Garden" className="w-full h-full object-cover" />
-                <span className="absolute top-6 left-6 bg-[#0A3D36] text-white text-[10px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
-                  Ativa no Portal
-                </span>
-              </div>
-              <div className="p-8 flex-grow flex flex-col justify-between space-y-6">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-extrabold text-[#0A3D36]">Projeto Verde Urbe</h2>
-                  <p className="text-gray-500 text-sm font-medium">Campanha principal atingindo 90% da meta.</p>
-                </div>
-                <div className="space-y-4">
-                  <div className="w-full bg-[#FAF8F5] rounded-full h-3 overflow-hidden border border-gray-100">
-                    <div className="bg-[#0A665C] h-full rounded-full" style={{ width: '90%' }} />
+              {myCampaigns.length > 0 ? (() => {
+                const topCampaign = myCampaigns[0];
+                const percent = Math.min(Math.round((topCampaign.raisedAmount / topCampaign.targetAmount) * 100) || 0, 100);
+                return (
+                  <>
+                    <div className="relative h-72 w-full overflow-hidden bg-gray-100">
+                      <img src={topCampaign.cover || genericImage} alt={topCampaign.name} className="w-full h-full object-cover" />
+                      <span className="absolute top-6 left-6 bg-[#0A3D36] text-white text-[10px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                        {topCampaign.status === 'publicada' ? 'Ativa no Portal' : topCampaign.status.replace('-', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="p-8 flex-grow flex flex-col justify-between space-y-6">
+                      <div className="space-y-2">
+                        <h2 className="text-3xl font-extrabold text-[#0A3D36]">{topCampaign.name}</h2>
+                        <p className="text-gray-500 text-sm font-medium">Campanha atingindo {percent}% da meta.</p>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="w-full bg-[#FAF8F5] rounded-full h-3 overflow-hidden border border-gray-100">
+                          <div className="bg-[#0A665C] h-full rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold">
+                          <span className="text-gray-700">
+                            R$ {topCampaign.raisedAmount.toLocaleString('pt-BR')} de R$ {topCampaign.targetAmount.toLocaleString('pt-BR')}
+                          </span>
+                          <button 
+                            onClick={() => {
+                              setActiveSubTab('campanhas');
+                              setCampaignTab('ativas');
+                            }}
+                            className="text-[#0A665C] hover:underline flex items-center space-x-1 cursor-pointer"
+                          >
+                            <span>Gerenciar Campanhas</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })() : (
+                <div className="p-8 flex-grow flex flex-col items-center justify-center space-y-4 text-center">
+                  <div className="bg-[#F5F2EC] p-4 rounded-full text-[#0A665C]">
+                    <PlusCircle className="w-8 h-8" />
                   </div>
-                  <div className="flex justify-between items-center text-sm font-bold">
-                    <span className="text-gray-700">R$ 45.000 de R$ 50.000</span>
-                    <button 
-                      onClick={() => {
-                        setActiveSubTab('campanhas');
-                        setCampaignTab('ativas');
-                      }}
-                      className="text-[#0A665C] hover:underline flex items-center space-x-1 cursor-pointer"
-                    >
-                      <span>Gerenciar Campanhas</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <h2 className="text-xl font-bold text-[#0A3D36]">Nenhuma Campanha</h2>
+                  <p className="text-gray-500 text-sm">Crie sua primeira campanha para começar a arrecadar.</p>
+                  <button 
+                    onClick={() => {
+                      setActiveSubTab('campanhas');
+                      setCampaignTab('rascunhos');
+                      handleOpenCreate();
+                    }}
+                    className="mt-4 bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-6 py-2.5 rounded-full flex items-center space-x-2 text-sm shadow-sm transition-colors cursor-pointer"
+                  >
+                    <span>Criar Campanha</span>
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -595,7 +592,7 @@ export default function NgoManagementPage({ onNavigate }) {
 
                 {/* Campaigns List Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {myCampaigns
+                  {[...myCampaigns, ...myBundles.map(b => ({ ...b, isBundle: true, status: 'publicada' }))]
                     .filter(c => {
                       if (campaignTab === 'ativas') return c.status === 'publicada' || c.status === 'aprovada';
                       if (campaignTab === 'rascunhos') return c.status === 'rascunho' || c.status === 'em-revisao' || c.status === 'recusada';
@@ -604,7 +601,7 @@ export default function NgoManagementPage({ onNavigate }) {
                       return false;
                     })
                     .map(campaign => {
-                      const progressPercent = Math.min(Math.round((campaign.raisedAmount / campaign.targetAmount) * 100), 100);
+                      const progressPercent = Math.min(Math.round((campaign.raisedAmount / campaign.targetAmount) * 100) || 0, 100);
                       const isMenuOpen = menuOpenCampaignId === campaign.id;
                       
                       return (
@@ -614,17 +611,24 @@ export default function NgoManagementPage({ onNavigate }) {
                         >
                           {/* Left Cover Image */}
                           <div className="relative w-full md:w-44 h-48 md:h-auto shrink-0 bg-gray-150">
-                            <img src={campaign.cover} alt={campaign.name} className="w-full h-full object-cover" />
+                            <img src={campaign.cover || genericImage} alt={campaign.name} className="w-full h-full object-cover" />
                             
                             {/* Badges for status */}
-                            <span className="absolute top-4 left-4 bg-gray-900/80 text-white text-[9px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider">
-                              {campaign.status === 'em-revisao' && 'EM REVISÃO'}
-                              {campaign.status === 'rascunho' && 'RASCUNHO'}
-                              {campaign.status === 'publicada' && 'EM PROGRESSO'}
-                              {campaign.status === 'recusada' && 'RECUSADA'}
-                              {campaign.status === 'encerrada' && 'CONCLUÍDA'}
-                              {campaign.status === 'arquivada' && 'ARQUIVADA'}
-                            </span>
+                            <div className="absolute top-4 left-4 flex flex-col space-y-1">
+                              {campaign.isBundle && (
+                                <span className="bg-[#6B21A8] text-white text-[9px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider w-fit">
+                                  COLETIVO (BUNDLE)
+                                </span>
+                              )}
+                              <span className="bg-gray-900/80 text-white text-[9px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider w-fit">
+                                {campaign.status === 'em-revisao' && 'EM REVISÃO'}
+                                {campaign.status === 'rascunho' && 'RASCUNHO'}
+                                {campaign.status === 'publicada' && 'EM PROGRESSO'}
+                                {campaign.status === 'recusada' && 'RECUSADA'}
+                                {campaign.status === 'encerrada' && 'CONCLUÍDA'}
+                                {campaign.status === 'arquivada' && 'ARQUIVADA'}
+                              </span>
+                            </div>
                           </div>
 
                           {/* Campaign details */}
@@ -672,17 +676,22 @@ export default function NgoManagementPage({ onNavigate }) {
 
                             {/* Action links & Action menu ••• */}
                             <div className="flex items-center justify-between pt-1">
-                              <button 
-                                onClick={() => handleOpenEdit(campaign)}
-                                className="text-xs font-bold text-[#0A665C] hover:underline"
-                              >
-                                Editar
-                              </button>
+                              {campaign.isBundle ? (
+                                <span className="text-xs font-bold text-gray-400">Edição via Admin</span>
+                              ) : (
+                                <button 
+                                  onClick={() => handleOpenEdit(campaign)}
+                                  className="text-xs font-bold text-[#0A665C] hover:underline"
+                                >
+                                  Editar
+                                </button>
+                              )}
 
                               <div className="relative">
                                 <button 
                                   onClick={() => setMenuOpenCampaignId(isMenuOpen ? null : campaign.id)}
-                                  className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shadow-2xs"
+                                  disabled={campaign.isBundle}
+                                  className={`border border-gray-200 font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shadow-2xs ${campaign.isBundle ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50 text-gray-700'}`}
                                 >
                                   Ações •••
                                 </button>
