@@ -6,15 +6,13 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 
-from .models import NGO, Campaign, Bundle
+from .models import NGO, Campaign
 from .ngo_response import (
     serialize_ngo_list_item,
     serialize_ngo_detail,
     build_verification_payload,
     get_allocation_criteria,
     serialize_campaign,
-    serialize_bundle_list_item,
-    serialize_bundle_detail,
 )
 from .services.validation_service import validate_ngo
 from .services.cnpj_service import ExternalApiError
@@ -165,14 +163,3 @@ def campaign_status_view(request, pk):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-
-@require_GET
-def list_bundles_view(request):
-    bundles = Bundle.objects.filter(is_active=True).prefetch_related('ngos').order_by('-created_at')
-    return JsonResponse([serialize_bundle_list_item(b) for b in bundles], safe=False)
-
-
-@require_GET
-def bundle_detail_view(request, pk):
-    bundle = get_object_or_404(Bundle, pk=pk, is_active=True)
-    return JsonResponse(serialize_bundle_detail(bundle))

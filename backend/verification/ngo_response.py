@@ -1,6 +1,6 @@
 from datetime import date
 from verification.constants import ALLOCATION_CRITERIA, CAUSE_LABELS
-from verification.models import NGO, Campaign, Bundle
+from verification.models import NGO, Campaign
 
 
 def _format_cnpj(cnpj: str) -> str:
@@ -151,46 +151,3 @@ def serialize_campaign(campaign: Campaign) -> dict:
         'score': _score_int(ngo),
     }
 
-
-def serialize_bundle_list_item(bundle: Bundle) -> dict:
-    cause = bundle.cause or ''
-    ngo_list = list(bundle.ngos.all())
-    scores = [_score_int(n) for n in ngo_list]
-    transparency_score = (
-        round(sum(scores) / len(scores)) if scores else 0
-    )
-    return {
-        'id': str(bundle.id),
-        'name': bundle.name,
-        'cause': cause,
-        'causeLabel': CAUSE_LABELS.get(cause, cause.replace('-', ' ').title()),
-        'description': bundle.description or '',
-        'targetAmount': float(bundle.target_amount),
-        'raisedAmount': float(bundle.raised_amount),
-        'matchMultiplier': bundle.match_multiplier,
-        'matchSponsor': bundle.match_sponsor,
-        'transparencyScore': transparency_score,
-        'ongs': [
-            {'id': str(n.id), 'name': n.name, 'score': _score_int(n)}
-            for n in ngo_list
-        ],
-    }
-
-
-def serialize_bundle_detail(bundle: Bundle) -> dict:
-    base = serialize_bundle_list_item(bundle)
-    ngo_list = list(bundle.ngos.all())
-    base.update({
-        'eligibilityRules': bundle.eligibility_rules or [],
-        'distributionRules': bundle.distribution_rules or '',
-        'ongs': [
-            {
-                'id': str(n.id),
-                'name': n.name,
-                'score': _score_int(n),
-                'location': _location(n),
-            }
-            for n in ngo_list
-        ],
-    })
-    return base

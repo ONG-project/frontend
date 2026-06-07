@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     # Aplicativos locais (Monolito Modular)
     'ai_assistant',
     'authentication',
+    'bundles',
     'financial',
     'transparency',
     'verification',
@@ -92,7 +93,7 @@ WSGI_APPLICATION = 'ong_plus.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql',  # continua igual, Django suporta psycopg3
         'NAME': config('DB_NAME'),
         'USER': config('DB_USER'),
         'PASSWORD': config('DB_PASSWORD'),

@@ -4,7 +4,8 @@ from datetime import timedelta, date
 import uuid
 import json
 
-from verification.models import NGO, Campaign, Bundle
+from verification.models import NGO, Campaign
+from bundles.models import Bundle
 
 
 DEMO_NGOS = [
