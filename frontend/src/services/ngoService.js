@@ -16,4 +16,16 @@ export const ngoService = {
   async validateCnpj(cnpj) {
     return apiPost('/ong-validation/', { cnpj });
   },
+
+  async listCampaigns() {
+    return apiGet('/v1/campaigns/');
+  },
+
+  async listBundles() {
+    return apiGet('/v1/bundles/');
+  },
+
+  async getBundleById(id) {
+    return apiGet(`/v1/bundles/${id}/`);
+  },
 };

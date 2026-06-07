@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ngoService } from '../services/ngoService';
 import { 
   Sparkles,
   GraduationCap, 
@@ -24,6 +25,42 @@ export default function DonationPage({ onGoHome }) {
   const routeState = location.state || {}; // contains ngoId, ngoName, campaignId, campaignName, bundleId, bundleName, type
   
   const [donationStep, setDonationStep] = useState(1); // 1 = Form, 3 = Confirmation
+  const [ngoScore, setNgoScore] = useState(routeState.score || null);
+
+  useEffect(() => {
+    if (routeState.type === 'ngo' || routeState.type === 'campaign') {
+      const targetNgoId = routeState.ngoId;
+      if (targetNgoId && !ngoScore) {
+        ngoService.getById(targetNgoId)
+          .then(data => {
+            if (data && data.score !== undefined) {
+              setNgoScore(data.score);
+            }
+          })
+          .catch(err => console.error("Error loading NGO score:", err));
+      }
+    } else if (routeState.type === 'bundle') {
+      if (!ngoScore) {
+        setNgoScore(95); // Default bundle score
+      }
+    } else {
+      if (!ngoScore) {
+        ngoService.list()
+          .then(data => {
+            if (data && data.length > 0) {
+              const total = data.reduce((sum, item) => sum + (item.score || 0), 0);
+              setNgoScore(Math.round(total / data.length));
+            } else {
+              setNgoScore(95);
+            }
+          })
+          .catch(err => {
+            console.error("Error loading all NGOs for average score:", err);
+            setNgoScore(95);
+          });
+      }
+    }
+  }, [routeState.ngoId, routeState.type, ngoScore]);
 
   if (user?.role === 'ong') {
     return (
@@ -552,10 +589,10 @@ export default function DonationPage({ onGoHome }) {
                 <span className="text-xs font-bold uppercase tracking-wider">Transparência</span>
               </div>
               <div className="text-teal-900 font-extrabold text-sm">
-                SCORE 100/100
+                SCORE {ngoScore !== null ? `${ngoScore}/100` : 'Carregando...'}
               </div>
               <p className="text-gray-600 text-xs leading-relaxed">
-                Score calculado via verificação automatizada de CNPJ, endereço e tempo de atuação. 100% dos recursos são aplicados diretamente no projeto escolhido.
+                Score calculado via verificação automatizada de CNPJ, endereço e tempo de atuação.
               </p>
             </div>
 

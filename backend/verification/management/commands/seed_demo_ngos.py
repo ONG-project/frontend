@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from verification.models import NGO
+from verification.models import NGO, Campaign, Bundle
 
 
 DEMO_NGOS = [
@@ -79,31 +79,167 @@ DEMO_NGOS = [
 
 
 class Command(BaseCommand):
-    help = 'Seeds demo NGOs with scores for local development'
+    help = 'Seeds demo NGOs, Campaigns and Bundles for local development'
 
     def handle(self, *args, **options):
         now = timezone.now()
-        created = 0
-        updated = 0
+        ngo_created = 0
+        ngo_updated = 0
 
+        # ── 1. Seed NGOs ─────────────────────────────────────────────────────
+        ngo_map = {}
         for data in DEMO_NGOS:
-            defaults = {
-                **data,
-                'is_active': True,
-                'last_verified_at': now,
-            }
+            defaults = {**data, 'is_active': True, 'last_verified_at': now}
             cnpj = data['cnpj']
-            _, was_created = NGO.objects.update_or_create(
+            ngo, was_created = NGO.objects.update_or_create(
                 cnpj=cnpj,
                 defaults=defaults,
             )
+            ngo_map[data['name']] = ngo
             if was_created:
-                created += 1
+                ngo_created += 1
             else:
-                updated += 1
+                ngo_updated += 1
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'Demo NGOs ready: {created} created, {updated} updated.'
+                f'NGOs ready: {ngo_created} created, {ngo_updated} updated.'
+            )
+        )
+
+        # ── 2. Seed Campaigns ────────────────────────────────────────────────
+        DEMO_CAMPAIGNS = [
+            {
+                'name': 'Reflorestamento de Nascentes',
+                'ngo': ngo_map['Instituto Rebrota'],
+                'description': (
+                    'Recuperação direta de 5 nascentes degradadas no entorno urbano de Manaus '
+                    'com o plantio planejado de 10 mil mudas de espécies nativas.'
+                ),
+                'cause': 'meio-ambiente',
+                'target_amount': 20000,
+                'raised_amount': 14200,
+                'match_multiplier': 3,
+                'match_sponsor': 'BioCorp S.A.',
+                'location': 'Manaus, AM',
+            },
+            {
+                'name': 'Água Saudável nas Escolas',
+                'ngo': ngo_map['Águas Limpas Brasil'],
+                'description': (
+                    'Instalação de filtros de carvão ativo e reservatórios higienizados em '
+                    '12 escolas públicas ribeirinhas na região do Baixo Amazonas.'
+                ),
+                'cause': 'saude',
+                'target_amount': 35000,
+                'raised_amount': 18000,
+                'match_multiplier': 1,
+                'match_sponsor': None,
+                'location': 'Santarém, PA',
+            },
+            {
+                'name': 'Bolsas para Desenvolvedoras',
+                'ngo': ngo_map['Educação Sem Fronteiras'],
+                'description': (
+                    'Financiamento completo de cursos intensivos de desenvolvimento de software '
+                    'e fornecimento de notebooks para 30 mulheres da periferia paulistana.'
+                ),
+                'cause': 'educacao',
+                'target_amount': 50000,
+                'raised_amount': 42000,
+                'match_multiplier': 2,
+                'match_sponsor': 'TechFund Brasil',
+                'location': 'São Paulo, SP',
+            },
+        ]
+
+        camp_created = 0
+        camp_updated = 0
+        for data in DEMO_CAMPAIGNS:
+            _, was_created = Campaign.objects.update_or_create(
+                name=data['name'],
+                ngo=data['ngo'],
+                defaults={**data, 'is_active': True},
+            )
+            if was_created:
+                camp_created += 1
+            else:
+                camp_updated += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Campaigns ready: {camp_created} created, {camp_updated} updated.'
+            )
+        )
+
+        # ── 3. Seed Bundles ──────────────────────────────────────────────────
+        DEMO_BUNDLES = [
+            {
+                'name': 'Aliança Amazônia Viva',
+                'cause': 'meio-ambiente',
+                'description': (
+                    'Um esforço conjunto para restaurar áreas degradadas, combater queimadas e '
+                    'capacitar comunidades tradicionais na bioeconomia florestal. Unindo a expertise '
+                    'de organizações líderes em conservação ativa.'
+                ),
+                'target_amount': 150000,
+                'raised_amount': 98400,
+                'match_multiplier': 3,
+                'match_sponsor': 'Fundação Clima Global',
+                'eligibility_rules': [
+                    'Atuação comprovada de no mínimo 3 anos na Bacia Amazônica.',
+                    'Score de transparência na plataforma superior a 90/100.',
+                    'Apresentação de relatórios trimestrais de impacto socioambiental.',
+                    'Adesão ao código de ética e conduta da plataforma ONG+.',
+                ],
+                'distribution_rules': (
+                    'Os recursos deste bundle são distribuídos de forma paritária (50% para cada ONG '
+                    'participante). Os repasses ocorrem mensalmente sob condição de entrega das '
+                    'prestações de contas parciais e relatórios de atividades.'
+                ),
+                'ngo_names': ['Instituto Rebrota', 'Águas Limpas Brasil'],
+            },
+            {
+                'name': 'Futuro Brilhante',
+                'cause': 'educacao',
+                'description': (
+                    'Fundo coletivo destinado a equipar escolas comunitárias de periferias com '
+                    'laboratórios de informática, além de oferecer bolsas de estudos de programação '
+                    'para jovens talentos.'
+                ),
+                'target_amount': 80000,
+                'raised_amount': 32000,
+                'match_multiplier': 1,
+                'match_sponsor': None,
+                'eligibility_rules': [
+                    'Foco direto em educação básica ou capacitação tecnológica profissional.',
+                    'Score de transparência na plataforma superior a 85/100.',
+                    'Demonstração financeira anual auditada externamente.',
+                ],
+                'distribution_rules': (
+                    'A distribuição é proporcional ao score de transparência das organizações '
+                    'participantes, otimizando o repasse em favor da excelência na prestação de contas.'
+                ),
+                'ngo_names': ['Educação Sem Fronteiras', 'Vozes da Comunidade'],
+            },
+        ]
+
+        bundle_created = 0
+        bundle_updated = 0
+        for data in DEMO_BUNDLES:
+            ngo_names = data.pop('ngo_names')
+            bundle, was_created = Bundle.objects.update_or_create(
+                name=data['name'],
+                defaults={**data, 'is_active': True},
+            )
+            bundle.ngos.set([ngo_map[n] for n in ngo_names if n in ngo_map])
+            if was_created:
+                bundle_created += 1
+            else:
+                bundle_updated += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Bundles ready: {bundle_created} created, {bundle_updated} updated.'
             )
         )
