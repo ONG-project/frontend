@@ -1,7 +1,5 @@
-import { apiGet } from './apiClient';
+import { apiGet, apiPost } from './apiClient';
 import { ngoService } from './ngoService';
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function mapProfile(detail) {
   return {
@@ -33,39 +31,32 @@ export const transparencyService = {
     return ngoService.getVerification(id);
   },
 
-  async getFinancialData() {
-    await delay(300);
-    return {};
+  async getFinancialData(id) {
+    return apiGet(`/v1/transparency/ngos/${id}/financial-data/`);
   },
 
   async getCampaignHistory(id) {
     return ngoService.getNgoCampaigns(id);
   },
 
-  async getChangeHistory() {
-    return [];
+  async getChangeHistory(id) {
+    return apiGet(`/v1/transparency/ngos/${id}/change-history/`);
   },
 
-  async getPendingRequests() {
-    return [];
+  async getPendingRequests(id) {
+    return apiGet(`/v1/transparency/ngos/${id}/pending-requests/`);
   },
 
-  async submitChangeRequest(data) {
-    await delay(800);
-    console.log('Change request submitted:', data);
-    return { success: true };
+  async submitChangeRequest(ongId, data) {
+    return apiPost(`/v1/transparency/ngos/${ongId}/requests/`, data);
   },
 
   async approveChangeRequest(id) {
-    await delay(800);
-    console.log('Change request approved:', id);
-    return { success: true };
+    return apiPost(`/v1/transparency/requests/${id}/approve/`, {});
   },
 
   async rejectChangeRequest(id) {
-    await delay(800);
-    console.log('Change request rejected:', id);
-    return { success: true };
+    return apiPost(`/v1/transparency/requests/${id}/reject/`, {});
   },
 };
 
