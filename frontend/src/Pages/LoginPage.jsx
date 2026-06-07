@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
 import { useAuth } from '../contexts/AuthContext';
