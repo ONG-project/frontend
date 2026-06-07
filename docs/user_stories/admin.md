@@ -1,31 +1,45 @@
-### “Como administrador, quero integrar dados públicos das ONGs via API para exibir informações confiáveis e aumentar a transparência do sistema.”
+# User story: administrador
 
-### Critérios de aceitação
+## Historia principal
 
-O usuário deve conseguir visualizar informações da ONG.
+Como administrador, quero validar ONGs, documentos, campanhas, bundles, solicitacoes de urgencia, informacoes publicas e score de confiabilidade para garantir que apenas conteudos confiaveis sejam publicados no ONG+.
 
-O usuário deve visualizar metas e arrecadações.
+## Criterios de aceitacao
 
-O usuário deve conseguir verificar evidências de confiabilidade.
+- O admin deve conseguir visualizar a lista de ONGs cadastradas e seus status.
+- O admin deve conseguir avaliar documentos recebidos por ONGs.
+- O admin deve conseguir validar redes sociais e comprovantes de autenticidade.
+- O admin deve conseguir revisar dados provenientes de APIs externas.
+- O admin deve conseguir marcar inconsistencias com justificativa.
+- O admin deve conseguir aprovar, rejeitar ou solicitar ajustes no cadastro de uma ONG.
+- O admin deve conseguir calcular ou revisar o score estimado da ONG.
+- O admin deve conseguir validar campanhas individuais.
+- O admin deve conseguir validar bundles/campanhas coletivas.
+- O admin deve conseguir validar solicitacoes de urgencia.
+- O admin deve conseguir moderar conteudo publicado.
+- O admin deve conseguir consultar historico de decisoes administrativas.
 
-O usuário deve visualizar histórico de campanhas.
+## Regras funcionais
 
-### Regras funcionais
+- Apenas administradores autenticados podem acessar a area administrativa.
+- Toda decisao administrativa deve registrar responsavel, data, status e justificativa.
+- Dados de CNPJ devem ser validados antes da exibicao publica.
+- Informacoes inconsistentes devem ser sinalizadas antes de aprovacao.
+- Campanhas e bundles devem passar por validacao antes de publicacao.
+- Solicitacoes de urgencia devem passar por validacao antes de se tornarem publicas ou captarem recursos.
+- O score deve combinar fatores objetivos e revisao administrativa quando necessario.
 
-Apenas dados provenientes de APIs confiáveis devem ser utilizados.
-O CNPJ deve ser validado antes da exibição pública.
-Informações inconsistentes devem ser sinalizadas.
-O usuário deve conseguir verificar se as informações foram alteradas desde a última verificação.
+## Regras de negocio
 
-### Regras de negócio
+- O admin deve conseguir ver CNPJ, metas, arrecadacoes, campanhas, bundles, documentos e evidencias da ONG.
+- O admin deve validar se uma ONG pode receber doacoes.
+- O admin deve validar se uma ONG pode participar de bundles.
+- O admin deve validar se uma campanha pode receber matchfunding.
+- O admin deve validar se uma solicitacao de urgencia pode aparecer no perfil da ONG ou na transparencia.
 
-O admin deve conseguir ver o CNPJ da ONG.
-O admin deve conseguir ver as metas da ONG.
-O admin deve conseguir ver as arrecadações da ONG.
-O admin deve conseguir ver as campanhas da ONG.
+## Regras de interface
 
-### Regras de interface
-
-Deve ser possível ver a fonte dos dados.
-Deve ser possível ver a data da última atualização.
-Deve ser possível ver se as informações estão consistentes.
+- A area administrativa deve ter filas separadas por tipo: ONGs, documentos, campanhas, bundles, urgencias, score e moderacao.
+- Cada fila deve exibir status, prioridade, data de envio e responsavel pela ultima acao.
+- Deve ser possivel ver fonte dos dados, data da ultima atualizacao e consistencia das informacoes.
+- Deve existir uma tela de detalhe para revisar evidencias antes de decidir.

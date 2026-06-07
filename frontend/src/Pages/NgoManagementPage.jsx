@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { ngoService } from '../services/ngoService';
+import UrgencyRequestsDashboard from '../components/urgency/UrgencyRequestsDashboard';
+import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 import { 
   UploadCloud, 
   ChevronRight, 
@@ -13,25 +18,245 @@ import {
   Mail,
   FileText,
   FileDown,
-  Check
+  Check,
+  Heart,
+  Percent,
+  Info,
+  Archive,
+  Eye,
+  CheckCircle,
+  XCircle,
+  Edit,
+  Trash2,
+  Copy
 } from 'lucide-react';
 import verdeUrbeGarden from '../assets/verde_urbe_garden.png';
 import reflorestaSeedling from '../assets/refloresta_seedling.png';
+import loginBgPlant from '../assets/login_bg_plant.png';
+import genericImage from '../assets/imagem_generica.jpg';
 import Footer from '../components/Footer';
 
 export default function NgoManagementPage({ onNavigate }) {
-  const [activeSubTab, setActiveSubTab] = useState('visao-geral'); // 'visao-geral', 'campanhas', 'doadores', 'relatorios'
-  
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const ngoName = user?.ngoName ?? 'Instituto Rebrota';
+  // Always start as null — UUID is resolved from the API below to avoid stale integer IDs from localStorage
+  const [ngoId, setNgoId] = useState(null);
+  const [ngoScore, setNgoScore] = useState(0);
+
+  const [ngoDetails, setNgoDetails] = useState(null);
+  const [myCampaigns, setMyCampaigns] = useState([]);
+  const [myBundles, setMyBundles] = useState([]);
+
+  const tabFromUrl = searchParams.get('tab');
+  const [activeSubTab, setActiveSubTab] = useState(tabFromUrl || 'visao-geral');
+  const [urgencyView, setUrgencyView] = useState('list');
+  const [urgencyRequestId, setUrgencyRequestId] = useState(null);
+  const [campaignTab, setCampaignTab] = useState('ativas');
+  const [donorSection, setDonorSection] = useState('doadores');
+
   // Doadores tab states
-  const [donorFilter, setDonorFilter] = useState('Todos'); // 'Todos', 'Mensais', 'Eventuais'
+  const [donorFilter, setDonorFilter] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Relatorios tab states
-  const [period, setPeriod] = useState('30-days'); // '30-days', '3-months', 'custom'
+  const [period, setPeriod] = useState('30-days');
   const [includeFinance, setIncludeFinance] = useState(true);
   const [includeDonors, setIncludeDonors] = useState(true);
   const [includeCampaigns, setIncludeCampaigns] = useState(false);
   const [includeCnpj, setIncludeCnpj] = useState(true);
+
+  // States for campaign management
+  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
+  const [editingCampaign, setEditingCampaign] = useState(null);
+  const [menuOpenCampaignId, setMenuOpenCampaignId] = useState(null);
+
+  // Form states for campaign
+  const [formName, setFormName] = useState('');
+  const [formDescription, setFormDescription] = useState('');
+  const [formCause, setFormCause] = useState('meio-ambiente');
+  const [formTarget, setFormTarget] = useState('');
+  const [formDays, setFormDays] = useState('30');
+  const [formRequirements, setFormRequirements] = useState('');
+  const [formDestination, setFormDestination] = useState('');
+  // Matchfunding form states
+  const [hasMatch, setHasMatch] = useState(false);
+  const [formMatchMultiplier, setFormMatchMultiplier] = useState('2');
+  const [formMatchSponsor, setFormMatchSponsor] = useState('');
+  const [formMatchCap, setFormMatchCap] = useState('');
+  const [formMatchPeriod, setFormMatchPeriod] = useState('');
+
+  useEffect(() => {
+    // Resolve the real UUID from the API — never use user.ngoId directly
+    // because it may be a stale integer from a previous session/mock
+    ngoService.list()
+      .then((list) => {
+        const match = list.find((item) => item.name === ngoName) || list[0];
+        if (match) {
+          setNgoScore(match.score);
+          setNgoId(match.id); // Always use UUID from API
+        }
+      })
+      .catch(console.error);
+  }, [ngoName]);
+
+  useEffect(() => {
+    if (tabFromUrl) setActiveSubTab(tabFromUrl);
+  }, [tabFromUrl]);
+
+  const handleTabChange = (tabId) => {
+    setActiveSubTab(tabId);
+    setSearchParams(tabId === 'visao-geral' ? {} : { tab: tabId });
+    setIsCreatingCampaign(false);
+  };
+
+  useEffect(() => {
+    if (!ngoId) return;
+
+    // Fetch NGO Details
+    ngoService.getById(ngoId)
+      .then(setNgoDetails)
+      .catch(console.error);
+    
+    // Fetch NGO Campaigns
+    ngoService.getNgoCampaigns(ngoId)
+      .then(setMyCampaigns)
+      .catch(console.error);
+
+    // Fetch NGO Bundles
+    ngoService.listBundles()
+      .then(bundles => {
+        const participating = bundles.filter(b => b.ongs && b.ongs.some(n => n.id === ngoId));
+        setMyBundles(participating);
+      })
+      .catch(console.error);
+  }, [ngoId]);
+
+  const donorRows = [
+    { initials: 'AS', color: 'bg-[#B2E4E1] text-[#0A665C]', name: 'Alice Schmidt', email: 'alice.schmidt@email.com', value: 'R$ 450,00', frequency: 'Mensal', date: '12 Out, 2024', status: 'Ativo' },
+    { initials: 'RM', color: 'bg-[#CBD9ED] text-indigo-700', name: 'Ricardo Mendes', email: 'mendes.r@provedor.net', value: 'R$ 1.200,00', frequency: 'Eventual', date: '08 Out, 2024', status: 'Ativo' },
+    { initials: 'HB', color: 'bg-gray-200 text-gray-600', name: 'Helena Barbosa', email: 'helena.b@site.com', value: 'R$ 75,00', frequency: 'Mensal', date: '05 Out, 2024', status: 'Pendente' },
+    { initials: 'CP', color: 'bg-[#DCEDC8] text-[#0A665C]', name: 'Clara Peroli', email: 'clara.peroli@gmail.com', value: 'R$ 300,00', frequency: 'Mensal', date: '28 Set, 2024', status: 'Ativo' }
+  ];
+
+  const filteredDonors = donorRows.filter((donor) => {
+    const matchesFilter = donorFilter === 'Todos' || donor.frequency === donorFilter;
+    const query = searchQuery.toLowerCase();
+    const matchesQuery = donor.name.toLowerCase().includes(query) || donor.email.toLowerCase().includes(query);
+    return matchesFilter && matchesQuery;
+  });
+
+  // Action handlers
+  const handleOpenCreate = () => {
+    setEditingCampaign(null);
+    setFormName('');
+    setFormDescription('');
+    setFormCause('meio-ambiente');
+    setFormTarget('');
+    setFormDays('30');
+    setFormRequirements('');
+    setFormDestination('');
+    setHasMatch(false);
+    setFormMatchMultiplier('2');
+    setFormMatchSponsor('');
+    setFormMatchCap('');
+    setFormMatchPeriod('');
+    setIsCreatingCampaign(true);
+  };
+
+  const handleOpenEdit = (campaign) => {
+    setEditingCampaign(campaign);
+    setFormName(campaign.name);
+    setFormDescription(campaign.description);
+    setFormCause(campaign.cause);
+    setFormTarget(campaign.targetAmount.toString());
+    setFormDays(campaign.daysLeft.toString());
+    setFormRequirements(campaign.requirements || '');
+    setFormDestination(campaign.destination || '');
+    setHasMatch(campaign.matchMultiplier > 1);
+    setFormMatchMultiplier((campaign.matchMultiplier || 2).toString());
+    setFormMatchSponsor(campaign.matchSponsor || '');
+    setFormMatchCap(campaign.matchCap ? campaign.matchCap.toString() : '');
+    setFormMatchPeriod(campaign.matchPeriod || '');
+    setIsCreatingCampaign(true);
+    setMenuOpenCampaignId(null);
+  };
+
+  const handleSaveCampaign = async (status = 'rascunho') => {
+    if (!formName.trim() || !formTarget.trim()) {
+      alert('Por favor, preencha o Nome e a Meta de Arrecadação.');
+      return;
+    }
+
+    const payload = {
+      name: formName,
+      description: formDescription,
+      cause: formCause,
+      targetAmount: parseFloat(formTarget) || 10000,
+      status: status,
+      daysLeft: parseInt(formDays) || 30,
+      matchMultiplier: hasMatch ? parseInt(formMatchMultiplier) || 1 : 1,
+      matchSponsor: hasMatch ? formMatchSponsor : null,
+      matchCap: hasMatch && formMatchCap ? parseFloat(formMatchCap) : null,
+      matchPeriod: hasMatch ? formMatchPeriod : null,
+      requirements: formRequirements,
+      destination: formDestination
+    };
+
+    try {
+      if (editingCampaign) {
+        const updated = await ngoService.updateCampaign(editingCampaign.id, payload);
+        setMyCampaigns(prev => prev.map(c => c.id === editingCampaign.id ? updated : c));
+        alert(`Campanha "${formName}" atualizada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
+      } else {
+        const created = await ngoService.createCampaign(ngoId, payload);
+        setMyCampaigns(prev => [created, ...prev]);
+        alert(`Campanha "${formName}" criada no estado: ${status === 'em-revisao' ? 'Enviada para Revisão' : 'Rascunho salvo'}`);
+      }
+      setIsCreatingCampaign(false);
+      setEditingCampaign(null);
+    } catch (error) {
+      alert(`Erro ao salvar campanha: ${error.message}`);
+    }
+  };
+
+  const handleDuplicate = async (campaign) => {
+    try {
+      const payload = {
+        name: campaign.name + ' (Cópia)',
+        description: campaign.description,
+        cause: campaign.cause,
+        targetAmount: campaign.targetAmount,
+        status: 'rascunho',
+        daysLeft: campaign.daysLeft,
+        matchMultiplier: campaign.matchMultiplier,
+        matchSponsor: campaign.matchSponsor,
+        matchCap: campaign.matchCap,
+        matchPeriod: campaign.matchPeriod,
+        requirements: campaign.requirements,
+        destination: campaign.destination
+      };
+      const duplicated = await ngoService.createCampaign(ngoId, payload);
+      setMyCampaigns(prev => [duplicated, ...prev]);
+      alert(`Campanha "${campaign.name}" duplicada como rascunho com sucesso.`);
+    } catch (error) {
+      alert(`Erro ao duplicar campanha: ${error.message}`);
+    } finally {
+      setMenuOpenCampaignId(null);
+    }
+  };
+
+  const handleChangeStatus = async (campaignId, newStatus) => {
+    try {
+      const updated = await ngoService.updateCampaignStatus(campaignId, newStatus);
+      setMyCampaigns(prev => prev.map(c => c.id === campaignId ? updated : c));
+      alert(`Status da campanha atualizado para: ${newStatus}`);
+    } catch (error) {
+      alert(`Erro ao atualizar status: ${error.message}`);
+    } finally {
+      setMenuOpenCampaignId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col font-sans">
@@ -49,20 +274,20 @@ export default function NgoManagementPage({ onNavigate }) {
                 <span>Painel de Gestão</span>
               </span>
               <span className="text-xs font-semibold text-gray-500">
-                CNPJ: 12.345.678/0001-90
+                CNPJ: {ngoDetails?.cnpj || '12.345.678/0001-90'}
               </span>
             </div>
 
             {/* NGO Title */}
             <h1 className="text-4xl font-extrabold text-[#0A3D36] tracking-tight">
-              Instituto Rebrota
+              {ngoDetails?.name || ngoName}
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
               Bem-vindo de volta. Aqui você pode gerenciar suas campanhas, monitorar doações e exportar relatórios de impacto.
             </p>
           </div>
 
-          {/* Brand/Logo Card right side */}
+          {/* Brand/Logo Card */}
           <div className="mt-6 md:mt-0 w-20 h-20 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center p-3">
             <div className="w-full h-full bg-[#EAE8E3] rounded-lg flex flex-col items-center justify-center text-gray-400 font-bold text-xs uppercase tracking-tighter">
               <div className="w-6 h-6 border-2 border-gray-400 rounded-full flex items-center justify-center font-bold text-[10px]">
@@ -78,13 +303,14 @@ export default function NgoManagementPage({ onNavigate }) {
             { id: 'visao-geral', label: 'Visão Geral & Transparência' },
             { id: 'campanhas', label: 'Minhas Campanhas' },
             { id: 'doadores', label: 'Doadores' },
-            { id: 'relatorios', label: 'Relatórios' }
+            { id: 'relatorios', label: 'Relatórios' },
+            { id: 'cadastro', label: 'Alterações Cadastrais' }
           ].map((subTab) => {
             const isActive = activeSubTab === subTab.id;
             return (
               <button
                 key={subTab.id}
-                onClick={() => setActiveSubTab(subTab.id)}
+                onClick={() => handleTabChange(subTab.id)}
                 className={`pb-3 text-xs font-bold uppercase tracking-wider transition-all relative cursor-pointer ${
                   isActive 
                     ? 'text-[#0A665C] border-b-2 border-[#0A665C]' 
@@ -97,8 +323,6 @@ export default function NgoManagementPage({ onNavigate }) {
           })}
         </div>
 
-        {/* Dynamic Subsection Views */}
-        
         {/* VIEW 1: Visão Geral & Transparência */}
         {activeSubTab === 'visao-geral' && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_2.2fr] gap-8">
@@ -115,12 +339,12 @@ export default function NgoManagementPage({ onNavigate }) {
                     <circle cx="50" cy="50" r="40" className="stroke-[#E0DBD3]" strokeWidth="8.5" fill="transparent" />
                     <circle
                       cx="50" cy="50" r="40" className="stroke-[#0A665C]" strokeWidth="8.5" fill="transparent"
-                      strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - 9.8 / 10)} strokeLinecap="round"
+                      strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - ngoScore / 100)} strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center">
-                    <span className="text-4xl font-extrabold text-[#0A3D36]">9.8</span>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Pontuação</span>
+                    <span className="text-4xl font-extrabold text-[#0A3D36]">{ngoScore}</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">de 100</span>
                   </div>
                 </div>
               </div>
@@ -128,7 +352,7 @@ export default function NgoManagementPage({ onNavigate }) {
               {/* Bottom details & Button */}
               <div className="w-full space-y-4">
                 <p className="text-xs font-medium text-gray-500">
-                  Última auditoria externa: <span className="font-bold text-gray-700">Maio 2026</span>
+                  Última auditoria externa: <span className="font-bold text-gray-700">{ngoDetails?.lastExternalAudit || 'Maio 2026'}</span>
                 </p>
                 
                 <button className="w-full bg-white hover:bg-gray-50 text-[#0A665C] font-bold py-3.5 px-6 rounded-2xl border border-[#EBE9E3] shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer">
@@ -140,30 +364,64 @@ export default function NgoManagementPage({ onNavigate }) {
 
             {/* Right Card - Campaign Progress card */}
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
-              <div className="relative h-72 w-full overflow-hidden bg-gray-100">
-                <img src={verdeUrbeGarden} alt="Projeto Verde Urbe Garden" className="w-full h-full object-cover" />
-                <span className="absolute top-6 left-6 bg-[#0A3D36] text-white text-[10px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
-                  Ativa no Portal
-                </span>
-              </div>
-              <div className="p-8 flex-grow flex flex-col justify-between space-y-6">
-                <div className="space-y-2">
-                  <h2 className="text-3xl font-extrabold text-[#0A3D36]">Projeto Verde Urbe</h2>
-                  <p className="text-gray-500 text-sm font-medium">Campanha principal atingindo 90% da meta.</p>
-                </div>
-                <div className="space-y-4">
-                  <div className="w-full bg-[#FAF8F5] rounded-full h-3 overflow-hidden border border-gray-100">
-                    <div className="bg-[#0A665C] h-full rounded-full" style={{ width: '90%' }} />
+              {myCampaigns.length > 0 ? (() => {
+                const topCampaign = myCampaigns[0];
+                const percent = Math.min(Math.round((topCampaign.raisedAmount / topCampaign.targetAmount) * 100) || 0, 100);
+                return (
+                  <>
+                    <div className="relative h-72 w-full overflow-hidden bg-gray-100">
+                      <img src={topCampaign.cover || genericImage} alt={topCampaign.name} className="w-full h-full object-cover" />
+                      <span className="absolute top-6 left-6 bg-[#0A3D36] text-white text-[10px] font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider">
+                        {topCampaign.status === 'publicada' ? 'Ativa no Portal' : topCampaign.status.replace('-', ' ').toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="p-8 flex-grow flex flex-col justify-between space-y-6">
+                      <div className="space-y-2">
+                        <h2 className="text-3xl font-extrabold text-[#0A3D36]">{topCampaign.name}</h2>
+                        <p className="text-gray-500 text-sm font-medium">Campanha atingindo {percent}% da meta.</p>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="w-full bg-[#FAF8F5] rounded-full h-3 overflow-hidden border border-gray-100">
+                          <div className="bg-[#0A665C] h-full rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold">
+                          <span className="text-gray-700">
+                            R$ {topCampaign.raisedAmount.toLocaleString('pt-BR')} de R$ {topCampaign.targetAmount.toLocaleString('pt-BR')}
+                          </span>
+                          <button 
+                            onClick={() => {
+                              setActiveSubTab('campanhas');
+                              setCampaignTab('ativas');
+                            }}
+                            className="text-[#0A665C] hover:underline flex items-center space-x-1 cursor-pointer"
+                          >
+                            <span>Gerenciar Campanhas</span>
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                );
+              })() : (
+                <div className="p-8 flex-grow flex flex-col items-center justify-center space-y-4 text-center">
+                  <div className="bg-[#F5F2EC] p-4 rounded-full text-[#0A665C]">
+                    <PlusCircle className="w-8 h-8" />
                   </div>
-                  <div className="flex justify-between items-center text-sm font-bold">
-                    <span className="text-gray-700">R$ 45.000 de R$ 50.000</span>
-                    <button className="text-[#0A665C] hover:underline flex items-center space-x-1 cursor-pointer">
-                      <span>Editar Campanha</span>
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <h2 className="text-xl font-bold text-[#0A3D36]">Nenhuma Campanha</h2>
+                  <p className="text-gray-500 text-sm">Crie sua primeira campanha para começar a arrecadar.</p>
+                  <button 
+                    onClick={() => {
+                      setActiveSubTab('campanhas');
+                      setCampaignTab('rascunhos');
+                      handleOpenCreate();
+                    }}
+                    className="mt-4 bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-6 py-2.5 rounded-full flex items-center space-x-2 text-sm shadow-sm transition-colors cursor-pointer"
+                  >
+                    <span>Criar Campanha</span>
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         )}
@@ -171,183 +429,333 @@ export default function NgoManagementPage({ onNavigate }) {
         {/* VIEW 2: Minhas Campanhas */}
         {activeSubTab === 'campanhas' && (
           <div className="space-y-10">
-            {/* Header section inside subtab */}
+            {/* Header section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h2 className="text-3xl font-extrabold text-[#0A3D36]">Minhas Campanhas</h2>
                 <p className="text-gray-500 text-xs mt-1.5">
-                  Gerencie o impacto do Instituto Rebrota. Acompanhe a arrecadação em tempo real e crie novas iniciativas para transformar o cenário ambiental urbano.
+                  Gerencie o impacto do Instituto Rebrota. Acompanhe a arrecadação em tempo real e crie novas iniciativas.
                 </p>
               </div>
-              <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-6 py-3 rounded-full flex items-center space-x-2 text-sm shadow-md transition-colors cursor-pointer shrink-0">
-                <PlusCircle className="w-4.5 h-4.5" />
-                <span>Criar Nova Campanha</span>
-              </button>
-            </div>
-
-            {/* Campaign sub-sub-tabs */}
-            <div className="flex space-x-6 border-b border-gray-100 pb-1">
-              {['Campanhas Ativas', 'Campanhas Encerradas', 'Rascunhos', 'Relatórios de Impacto'].map((tab, idx) => (
-                <button
-                  key={tab}
-                  className={`pb-3 text-xs font-bold uppercase tracking-wider ${
-                    idx === 0 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
-                  }`}
+              {!isCreatingCampaign && (
+                <button 
+                  onClick={handleOpenCreate}
+                  className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-6 py-3 rounded-full flex items-center space-x-2 text-sm shadow-md transition-colors cursor-pointer shrink-0"
                 >
-                  {tab}
+                  <PlusCircle className="w-4.5 h-4.5" />
+                  <span>Criar Nova Campanha</span>
                 </button>
-              ))}
+              )}
             </div>
 
-            {/* Active Campaigns Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Campaign 1: Projeto Verde Urbe */}
-              <div className="bg-white rounded-[2rem] border border-gray-150 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                <div className="relative w-full md:w-44 h-48 md:h-full shrink-0">
-                  <img src={verdeUrbeGarden} alt="Verde Urbe" className="w-full h-full object-cover" />
-                  <span className="absolute top-4 left-4 bg-[#0A3D36]/90 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                    EM PROGRESSO
-                  </span>
-                </div>
-                <div className="p-6 flex flex-col justify-between flex-grow space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-gray-900">Projeto Verde Urbe</h3>
-                    <p className="text-gray-500 text-[11px] leading-relaxed max-w-[240px]">
-                      Implantação de hortas comunitárias em coberturas de prédios públicos para...
-                    </p>
+            {/* CREATE / EDIT FORM */}
+            {isCreatingCampaign ? (
+              <div className="bg-white rounded-[2.5rem] border border-gray-150 p-8 shadow-sm space-y-6 max-w-3xl">
+                <h3 className="text-xl font-bold text-gray-900 border-b border-gray-150 pb-4">
+                  {editingCampaign ? 'Editar Campanha' : 'Criar Nova Campanha'}
+                </h3>
+
+                <form className="space-y-6">
+                  {/* Basic fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome da Campanha</label>
+                      <input 
+                        type="text" 
+                        value={formName}
+                        onChange={(e) => setFormName(e.target.value)}
+                        placeholder="Ex: Reflorestamento de Encostas" 
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" 
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Causa Relacionada</label>
+                      <select
+                        value={formCause}
+                        onChange={(e) => setFormCause(e.target.value)}
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                      >
+                        <option value="meio-ambiente">Meio ambiente</option>
+                        <option value="educacao">Educação</option>
+                        <option value="saude">Saúde</option>
+                        <option value="direitos-humanos">Direitos humanos</option>
+                      </select>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end text-xs">
-                      <span className="text-[#0A665C] font-extrabold text-sm">90%</span>
-                      <span className="text-gray-400 font-semibold uppercase text-[9px]">META: R$ 50.000</span>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descrição do Objetivo</label>
+                    <textarea 
+                      value={formDescription}
+                      onChange={(e) => setFormDescription(e.target.value)}
+                      placeholder="Descreva o propósito da campanha e qual será o impacto gerado..."
+                      rows="3" 
+                      className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Meta de Arrecadação (R$)</label>
+                      <input 
+                        type="number" 
+                        value={formTarget}
+                        onChange={(e) => setFormTarget(e.target.value)}
+                        placeholder="Ex: 50000" 
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" 
+                      />
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div className="bg-[#0A665C] h-full rounded-full" style={{ width: '90%' }} />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-gray-400 font-semibold">
-                      <span>R$ 45.000 arrecadados</span>
-                      <span className="text-red-500">12 dias restantes</span>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Prazo de Duração (dias)</label>
+                      <input 
+                        type="number" 
+                        value={formDays}
+                        onChange={(e) => setFormDays(e.target.value)}
+                        placeholder="Ex: 30" 
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" 
+                      />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2 pt-1">
-                    <button className="flex-grow bg-[#EAE8E3] hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg text-xs transition-colors cursor-pointer">
-                      Editar Campanha
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Requisitos da Campanha</label>
+                      <input 
+                        type="text" 
+                        value={formRequirements}
+                        onChange={(e) => setFormRequirements(e.target.value)}
+                        placeholder="Ex: Laudo e autorizações prévias" 
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" 
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Destino dos Recursos</label>
+                      <input 
+                        type="text" 
+                        value={formDestination}
+                        onChange={(e) => setFormDestination(e.target.value)}
+                        placeholder="Ex: Aquisição de mudas e insumos de plantio" 
+                        className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" 
+                      />
+                    </div>
+                  </div>
+
+
+
+                  {/* Actions buttons */}
+                  <div className="flex justify-end space-x-3 pt-2">
+                    <button 
+                      type="button"
+                      onClick={() => setIsCreatingCampaign(false)}
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-6 rounded-full font-bold text-xs"
+                    >
+                      Cancelar
                     </button>
-                    <button className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold px-3 py-2 rounded-lg text-xs cursor-pointer">
-                      •••
+                    <button 
+                      type="button"
+                      onClick={() => handleSaveCampaign('rascunho')}
+                      className="bg-[#FAF2E8] hover:bg-[#ebdcc8] text-[#8C6D3F] py-3 px-6 rounded-full font-bold text-xs"
+                    >
+                      Salvar como Rascunho
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleSaveCampaign('em-revisao')}
+                      className="bg-[#0A665C] hover:bg-[#08524a] text-white py-3 px-6 rounded-full font-bold text-xs"
+                    >
+                      Solicitar Publicação
                     </button>
                   </div>
-                </div>
+                </form>
               </div>
-
-              {/* Campaign 2: Refloresta SP */}
-              <div className="bg-white rounded-[2rem] border border-gray-150 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                <div className="relative w-full md:w-44 h-48 md:h-full shrink-0">
-                  <img src={reflorestaSeedling} alt="Refloresta SP" className="w-full h-full object-cover" />
-                  <span className="absolute top-4 left-4 bg-[#0A3D36]/90 text-white text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                    EM PROGRESSO
-                  </span>
-                </div>
-                <div className="p-6 flex flex-col justify-between flex-grow space-y-4">
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-gray-900">Refloresta SP: Mata Atlântica</h3>
-                    <p className="text-gray-500 text-[11px] leading-relaxed max-w-[240px]">
-                      Plantio de 5.000 mudas nativas em áreas de preservação permanente no cinturão...
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end text-xs">
-                      <span className="text-[#0A665C] font-extrabold text-sm">42%</span>
-                      <span className="text-gray-400 font-semibold uppercase text-[9px]">META: R$ 120.000</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div className="bg-[#0A665C] h-full rounded-full" style={{ width: '42%' }} />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-gray-400 font-semibold">
-                      <span>R$ 50.400 arrecadados</span>
-                      <span className="text-gray-500">45 dias restantes</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 pt-1">
-                    <button className="flex-grow bg-[#EAE8E3] hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-lg text-xs transition-colors cursor-pointer">
-                      Editar Campanha
+            ) : (
+              <>
+                {/* Campaign sub-sub-tabs selection */}
+                <div className="flex space-x-6 border-b border-gray-100 pb-1">
+                  {[
+                    { id: 'ativas', label: 'Ativas' },
+                    { id: 'rascunhos', label: 'Rascunhos & Em Revisão' },
+                    { id: 'encerradas', label: 'Encerradas' },
+                    { id: 'arquivadas', label: 'Arquivadas' }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setCampaignTab(tab.id)}
+                      className={`pb-3 text-xs font-bold uppercase tracking-wider relative cursor-pointer ${
+                        campaignTab === tab.id ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
+                      }`}
+                    >
+                      {tab.label}
                     </button>
-                    <button className="bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 font-bold px-3 py-2 rounded-lg text-xs cursor-pointer">
-                      •••
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Campaign Encerradas section */}
-            <div className="space-y-6 pt-4">
-              <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-                <h3 className="text-xl font-extrabold text-[#0A3D36]">Campanhas Encerradas</h3>
-                <a href="#" className="text-xs font-bold text-[#0A665C] hover:underline">Ver Histórico Completo →</a>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1.2fr_1fr] gap-6">
-                {/* Past Campaign 1 */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-48">
-                  <div className="flex justify-between items-start">
-                    <span className="bg-[#DDF3E8] text-[#0A665C] text-[9px] font-bold px-2 py-0.5 rounded flex items-center uppercase tracking-wider">
-                      ✓ Ciclo Água Viva
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-semibold">JUNHO 2023</span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[#0A665C] font-extrabold text-lg">R$ 82.400</div>
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">103% da meta alcançada</div>
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-normal">
-                    Instalação de 15 sistemas de captação de água da chuva em escolas municipais da periferia de Osasco.
-                  </p>
-                  <div className="text-[10px] font-bold text-[#0A665C] uppercase tracking-wide bg-[#EAF5F2] py-1 px-2.5 rounded-lg w-fit">
-                    Impacto: 4.500 alunos beneficiados.
-                  </div>
+                  ))}
                 </div>
 
-                {/* Past Campaign 2 */}
-                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between h-48">
-                  <div className="flex justify-between items-start">
-                    <span className="bg-[#DDF3E8] text-[#0A665C] text-[9px] font-bold px-2 py-0.5 rounded flex items-center uppercase tracking-wider">
-                      ✓ Energia do Bem
-                    </span>
-                    <span className="text-[10px] text-gray-400 font-semibold">MARÇO 2023</span>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-[#0A665C] font-extrabold text-lg">R$ 145.000</div>
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">100% da meta alcançada</div>
-                  </div>
-                  <p className="text-[11px] text-gray-500 leading-normal">
-                    Painéis fotovoltaicos para a sede administrativa da ONG e centros de reciclagem parceiros.
-                  </p>
-                  <div className="text-[10px] font-bold text-[#0A665C] uppercase tracking-wide bg-[#EAF5F2] py-1 px-2.5 rounded-lg w-fit">
-                    Impacto: Redução de 70% nos custos fixos.
-                  </div>
-                </div>
+                {/* Campaigns List Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {[...myCampaigns, ...myBundles.map(b => ({ ...b, isBundle: true, status: 'publicada' }))]
+                    .filter(c => {
+                      if (campaignTab === 'ativas') return c.status === 'publicada' || c.status === 'aprovada';
+                      if (campaignTab === 'rascunhos') return c.status === 'rascunho' || c.status === 'em-revisao' || c.status === 'recusada';
+                      if (campaignTab === 'encerradas') return c.status === 'encerrada';
+                      if (campaignTab === 'arquivadas') return c.status === 'arquivada';
+                      return false;
+                    })
+                    .map(campaign => {
+                      const progressPercent = Math.min(Math.round((campaign.raisedAmount / campaign.targetAmount) * 100) || 0, 100);
+                      const isMenuOpen = menuOpenCampaignId === campaign.id;
+                      
+                      return (
+                        <div 
+                          key={campaign.id} 
+                          className="bg-white rounded-[2rem] border border-gray-150 shadow-sm overflow-hidden flex flex-col md:flex-row relative"
+                        >
+                          {/* Left Cover Image */}
+                          <div className="relative w-full md:w-44 h-48 md:h-auto shrink-0 bg-gray-150">
+                            <img src={campaign.cover || genericImage} alt={campaign.name} className="w-full h-full object-cover" />
+                            
+                            {/* Badges for status */}
+                            <div className="absolute top-4 left-4 flex flex-col space-y-1">
+                              {campaign.isBundle && (
+                                <span className="bg-[#6B21A8] text-white text-[9px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider w-fit">
+                                  COLETIVO (BUNDLE)
+                                </span>
+                              )}
+                              <span className="bg-gray-900/80 text-white text-[9px] font-extrabold px-2.5 py-1 rounded uppercase tracking-wider w-fit">
+                                {campaign.status === 'em-revisao' && 'EM REVISÃO'}
+                                {campaign.status === 'rascunho' && 'RASCUNHO'}
+                                {campaign.status === 'publicada' && 'EM PROGRESSO'}
+                                {campaign.status === 'recusada' && 'RECUSADA'}
+                                {campaign.status === 'encerrada' && 'CONCLUÍDA'}
+                                {campaign.status === 'arquivada' && 'ARQUIVADA'}
+                              </span>
+                            </div>
+                          </div>
 
-                {/* Summary card */}
-                <div className="bg-[#0A665C] text-white p-6 rounded-2xl flex flex-col justify-between h-48 shadow-md">
-                  <div className="text-[10px] font-bold text-teal-100 uppercase tracking-widest">
-                    Resumo de 2023
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="text-[9px] font-bold text-teal-200 uppercase tracking-wider">Total Arrecadado</div>
-                      <div className="text-2xl font-extrabold">R$ 542.800</div>
-                    </div>
-                    <div>
-                      <div className="text-[9px] font-bold text-teal-200 uppercase tracking-wider">Campanhas Concluídas</div>
-                      <div className="text-base font-extrabold">12 Projetos</div>
-                    </div>
-                  </div>
+                          {/* Campaign details */}
+                          <div className="p-6 flex flex-col justify-between flex-grow space-y-4 relative">
+                            {/* Alert for administrative review validation */}
+                            {campaign.status === 'em-revisao' && (
+                              <div className="bg-amber-50 text-amber-800 text-[9px] font-bold px-2 py-1 rounded border border-amber-100 flex items-center space-x-1 w-fit">
+                                <Info className="w-3 h-3 text-amber-700" />
+                                <span>Depende de validação administrativa</span>
+                              </div>
+                            )}
+
+                            <div className="space-y-1">
+                              <h3 className="text-base font-extrabold text-gray-900 leading-tight pr-6">{campaign.name}</h3>
+                              <p className="text-gray-500 text-[10px] leading-relaxed line-clamp-2">
+                                {campaign.description}
+                              </p>
+                            </div>
+
+                            {/* Matchfunding indicators */}
+                            {campaign.matchMultiplier > 1 && (
+                              <div className="bg-emerald-50 text-emerald-800 p-2 rounded-xl border border-emerald-100 text-[9px] font-semibold space-y-0.5">
+                                <div className="flex items-center space-x-1">
+                                  <Percent className="w-3 h-3 text-emerald-600" />
+                                  <span className="font-extrabold">Matchfunding {campaign.matchMultiplier}x ativo</span>
+                                </div>
+                                <p className="text-gray-500 font-medium">Parceiro: {campaign.matchSponsor} (Teto: R$ {campaign.matchCap?.toLocaleString('pt-BR')})</p>
+                              </div>
+                            )}
+
+                            {/* Progress bar info */}
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-end text-[10px] font-bold">
+                                <span className="text-[#0A665C] font-extrabold">{progressPercent}%</span>
+                                <span className="text-gray-400 uppercase tracking-widest">META: R$ {campaign.targetAmount.toLocaleString('pt-BR')}</span>
+                              </div>
+                              <div className="w-full bg-gray-150 rounded-full h-1.5 overflow-hidden">
+                                <div className="bg-[#0A665C] h-full rounded-full" style={{ width: `${progressPercent}%` }} />
+                              </div>
+                              <div className="flex justify-between text-[9px] text-gray-400 font-bold uppercase tracking-wider">
+                                <span>R$ {campaign.raisedAmount.toLocaleString('pt-BR')} arrecadados</span>
+                                <span>{campaign.daysLeft} dias restantes</span>
+                              </div>
+                            </div>
+
+                            {/* Action links & Action menu ••• */}
+                            <div className="flex items-center justify-between pt-1">
+                              {campaign.isBundle ? (
+                                <span className="text-xs font-bold text-gray-400">Edição via Admin</span>
+                              ) : (
+                                <button 
+                                  onClick={() => handleOpenEdit(campaign)}
+                                  className="text-xs font-bold text-[#0A665C] hover:underline"
+                                >
+                                  Editar
+                                </button>
+                              )}
+
+                              <div className="relative">
+                                <button 
+                                  onClick={() => setMenuOpenCampaignId(isMenuOpen ? null : campaign.id)}
+                                  disabled={campaign.isBundle}
+                                  className={`border border-gray-200 font-bold px-3 py-1.5 rounded-lg text-xs cursor-pointer shadow-2xs ${campaign.isBundle ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white hover:bg-gray-50 text-gray-700'}`}
+                                >
+                                  Ações •••
+                                </button>
+
+                                {isMenuOpen && (
+                                  <div className="absolute right-0 bottom-full mb-2 w-44 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-20">
+                                    {campaign.status === 'rascunho' && (
+                                      <button 
+                                        onClick={() => handleChangeStatus(campaign.id, 'em-revisao')}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition text-left"
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5 text-gray-400" />
+                                        <span>Solicitar Publicação</span>
+                                      </button>
+                                    )}
+                                    {campaign.status === 'publicada' && (
+                                      <button 
+                                        onClick={() => handleChangeStatus(campaign.id, 'encerrada')}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 transition text-left font-bold"
+                                      >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                        <span>Encerrar Campanha</span>
+                                      </button>
+                                    )}
+                                    <button 
+                                      onClick={() => handleDuplicate(campaign)}
+                                      className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition text-left"
+                                    >
+                                      <Copy className="w-3.5 h-3.5 text-gray-400" />
+                                      <span>Duplicar Iniciativa</span>
+                                    </button>
+                                    {campaign.status !== 'arquivada' && (
+                                      <button 
+                                        onClick={() => handleChangeStatus(campaign.id, 'arquivada')}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition text-left"
+                                      >
+                                        <Archive className="w-3.5 h-3.5 text-gray-400" />
+                                        <span>Arquivar</span>
+                                      </button>
+                                    )}
+                                    {campaign.status === 'arquivada' && (
+                                      <button 
+                                        onClick={() => handleChangeStatus(campaign.id, 'rascunho')}
+                                        className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 transition text-left"
+                                      >
+                                        <RefreshCw className="w-3.5 h-3.5 text-gray-400" />
+                                        <span>Restaurar Rascunho</span>
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         )}
+
 
         {/* VIEW 3: Doadores */}
         {activeSubTab === 'doadores' && (
@@ -402,18 +810,26 @@ export default function NgoManagementPage({ onNavigate }) {
 
             {/* Inner sub-tabs list */}
             <div className="flex space-x-6 border-b border-gray-100 pb-1">
-              {['Doadores', 'Campanhas', 'Relatórios', 'Retenção'].map((tab, idx) => (
+              {[
+                { id: 'doadores', label: 'Doadores' },
+                { id: 'campanhas', label: 'Campanhas' },
+                { id: 'relatorios', label: 'Relatórios' },
+                { id: 'retencao', label: 'Retenção' }
+              ].map((tab) => (
                 <button
-                  key={tab}
+                  key={tab.id}
+                  onClick={() => setDonorSection(tab.id)}
                   className={`pb-3 text-xs font-bold uppercase tracking-wider ${
-                    idx === 0 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
+                    donorSection === tab.id ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
-                  {tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
 
+            {donorSection === 'doadores' && (
+            <>
             {/* Donors Table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
@@ -429,148 +845,45 @@ export default function NgoManagementPage({ onNavigate }) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-150 text-xs font-medium text-gray-700">
-                    {/* Row 1 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#B2E4E1] text-[#0A665C] flex items-center justify-center font-bold text-xs shrink-0">
-                          AS
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Alice Schmidt</div>
-                          <div className="text-gray-400 text-[10px]">alice.schmidt@email.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 450,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">12 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 2 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#CBD9ED] text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0">
-                          RM
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Ricardo Mendes</div>
-                          <div className="text-gray-400 text-[10px]">mendes.r@provedor.net</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 1.200,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <Calendar className="w-3 h-3" />
-                          <span>Única</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">08 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 3 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-xs shrink-0">
-                          HB
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Helena Barbosa</div>
-                          <div className="text-gray-400 text-[10px]">helena.b@site.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 75,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">05 Out, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-gray-100 text-gray-500 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Pendente
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
-
-                    {/* Row 4 */}
-                    <tr>
-                      <td className="py-4 px-6 flex items-center space-x-3.5">
-                        <div className="w-9 h-9 rounded-full bg-[#DCEDC8] text-light-green-800 flex items-center justify-center font-bold text-xs shrink-0">
-                          CP
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">Clara Peroli</div>
-                          <div className="text-gray-400 text-[10px]">clara.peroli@gmail.com</div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">
-                        R$ 300,00
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Mensal</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-gray-500 font-semibold">28 Set, 2024</td>
-                      <td className="py-4 px-6">
-                        <span className="bg-[#CBDDCD]/60 text-[#0A3D36] font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide">
-                          ● Ativo
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-center">
-                        <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                          <Mail className="w-3 h-3" />
-                          <span>Enviar Mensagem</span>
-                        </button>
-                      </td>
-                    </tr>
+                    {filteredDonors.map((donor) => (
+                      <tr key={donor.email}>
+                        <td className="py-4 px-6 flex items-center space-x-3.5">
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${donor.color}`}>
+                            {donor.initials}
+                          </div>
+                          <div>
+                            <div className="font-bold text-gray-900">{donor.name}</div>
+                            <div className="text-gray-400 text-[10px]">{donor.email}</div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">{donor.value}</td>
+                        <td className="py-4 px-6">
+                          <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
+                            {donor.frequency === 'Mensal' ? <RefreshCw className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
+                            <span>{donor.frequency === 'Eventual' ? 'Única' : donor.frequency}</span>
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-gray-500 font-semibold">{donor.date}</td>
+                        <td className="py-4 px-6">
+                          <span className={`font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide ${donor.status === 'Ativo' ? 'bg-[#CBDDCD]/60 text-[#0A3D36]' : 'bg-gray-100 text-gray-500'}`}>
+                            ● {donor.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-center">
+                          <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
+                            <Mail className="w-3 h-3" />
+                            <span>Enviar Mensagem</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
 
               {/* Table pagination */}
               <div className="flex items-center justify-between border-t border-gray-150 px-6 py-4 text-xs font-semibold text-gray-500">
-                <span>Mostrando 4 de 1.240 doadores ativos</span>
+                <span>Mostrando {filteredDonors.length} de 1.240 doadores ativos</span>
                 <div className="flex items-center space-x-1">
                   <button className="p-1.5 rounded-md hover:bg-gray-100 transition"><ChevronLeft className="w-4 h-4" /></button>
                   <button className="w-7 h-7 bg-[#0A665C] text-white rounded-md flex items-center justify-center font-bold">1</button>
@@ -620,6 +933,55 @@ export default function NgoManagementPage({ onNavigate }) {
                 </p>
               </div>
             </div>
+            </>
+            )}
+
+            {donorSection === 'campanhas' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[
+                  { title: 'Projeto Verde Urbe', value: 'R$ 45.000', donors: '188 doadores' },
+                  { title: 'Refloresta SP', value: 'R$ 50.400', donors: '121 doadores' },
+                  { title: 'Ciclo Água Viva', value: 'R$ 82.400', donors: '267 doadores' }
+                ].map((item) => (
+                  <div key={item.title} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-2">
+                    <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
+                    <p className="text-2xl font-extrabold text-[#0A665C]">{item.value}</p>
+                    <p className="text-xs text-gray-500">{item.donors}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {donorSection === 'relatorios' && (
+              <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                <h4 className="text-sm font-bold text-gray-900 mb-4">Relatórios da Base de Doadores</h4>
+                <div className="space-y-3">
+                  {['Relatório Mensal de Retenção', 'Ticket Médio por Campanha', 'Doadores Inativos 90+ dias'].map((report) => (
+                    <div key={report} className="flex items-center justify-between bg-[#FAF8F5] border border-gray-100 rounded-xl px-4 py-3">
+                      <span className="text-xs font-semibold text-gray-700">{report}</span>
+                      <button className="text-xs font-bold text-[#0A665C]">Baixar</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {donorSection === 'retencao' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Retenção 30 dias</p>
+                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">82%</p>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Retenção 90 dias</p>
+                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">67%</p>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                  <p className="text-xs text-gray-500">Risco de churn</p>
+                  <p className="text-3xl font-extrabold text-[#A14E3B] mt-2">14%</p>
+                </div>
+              </div>
+            )}
 
           </div>
         )}
@@ -638,19 +1000,6 @@ export default function NgoManagementPage({ onNavigate }) {
                   </span>
                   <span className="text-xs text-gray-500 font-semibold">12.345.678/0001-90</span>
                 </div>
-              </div>
-              
-              <div className="flex space-x-4 border-b border-transparent pb-1">
-                {['Perfil', 'Documentos', 'Relatórios', 'Segurança'].map((tab, idx) => (
-                  <button
-                    key={tab}
-                    className={`pb-2 text-xs font-bold uppercase tracking-wider transition-all relative ${
-                      idx === 2 ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
-                    }`}
-                  >
-                    {tab}
-                  </button>
-                ))}
               </div>
             </div>
 
@@ -758,46 +1107,8 @@ export default function NgoManagementPage({ onNavigate }) {
                         {includeDonors && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                       </div>
                       <div>
-                        <h5 className="text-xs font-bold text-gray-900">Lista de Doadores</h5>
-                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Nomes, datas e valores totais</p>
-                      </div>
-                    </button>
-
-                    {/* Option 3 */}
-                    <button
-                      type="button"
-                      onClick={() => setIncludeCampaigns(!includeCampaigns)}
-                      className={`flex items-start text-left p-4 bg-white border rounded-xl transition-all cursor-pointer ${
-                        includeCampaigns ? 'border-[#0A665C]' : 'border-gray-150 hover:border-gray-200'
-                      }`}
-                    >
-                      <div className={`w-4.5 h-4.5 rounded border flex items-center justify-center mr-3 mt-0.5 shrink-0 ${
-                        includeCampaigns ? 'bg-[#0A665C] border-[#0A665C] text-white' : 'border-gray-300'
-                      }`}>
-                        {includeCampaigns && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold text-gray-900">Impacto de Campanhas</h5>
-                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Métricas de alcance e conversão</p>
-                      </div>
-                    </button>
-
-                    {/* Option 4 */}
-                    <button
-                      type="button"
-                      onClick={() => setIncludeCnpj(!includeCnpj)}
-                      className={`flex items-start text-left p-4 bg-white border rounded-xl transition-all cursor-pointer ${
-                        includeCnpj ? 'border-[#0A665C]' : 'border-gray-150 hover:border-gray-200'
-                      }`}
-                    >
-                      <div className={`w-4.5 h-4.5 rounded border flex items-center justify-center mr-3 mt-0.5 shrink-0 ${
-                        includeCnpj ? 'bg-[#0A665C] border-[#0A665C] text-white' : 'border-gray-300'
-                      }`}>
-                        {includeCnpj && <Check className="w-3.5 h-3.5 stroke-[3]" />}
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold text-gray-900">Auditoria de CNPJ</h5>
-                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Status jurídico e certidões</p>
+                        <h5 className="text-xs font-bold text-gray-900">Doadores</h5>
+                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Fidelidade e novos ingressos</p>
                       </div>
                     </button>
                   </div>
@@ -860,16 +1171,16 @@ export default function NgoManagementPage({ onNavigate }) {
                       <circle cx="50" cy="50" r="40" className="stroke-[#EAE8E3]" strokeWidth="10" fill="transparent" />
                       <circle
                         cx="50" cy="50" r="40" className="stroke-[#0A665C]" strokeWidth="10" fill="transparent"
-                        strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - 9.0 / 10)} strokeLinecap="round"
+                        strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - ngoScore / 100)} strokeLinecap="round"
                       />
                     </svg>
-                    <span className="absolute text-base font-extrabold text-[#0A3D36]">9.0</span>
+                    <span className="absolute text-base font-extrabold text-[#0A3D36]">{ngoScore}</span>
                   </div>
                   <div>
                     <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Impacto & Transparência</h5>
-                    <h6 className="text-xs font-bold text-gray-900 mt-0.5">Score Rebrota</h6>
+                    <h6 className="text-xs font-bold text-gray-900 mt-0.5">Score de Confiança</h6>
                     <p className="text-[11px] text-gray-500 mt-1 leading-normal">
-                      Sua ONG cumpre 90% dos critérios de governança editorial e fiscal.
+                      Sua ONG possui {ngoScore} pontos nos critérios de verificação automatizada.
                     </p>
                   </div>
                 </div>
@@ -877,6 +1188,85 @@ export default function NgoManagementPage({ onNavigate }) {
 
             </div>
 
+          </div>
+        )}
+
+        {/* VIEW 5: Alterações Cadastrais */}
+        {activeSubTab === 'cadastro' && (
+          <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-12 animate-fadeIn">
+            {/* Form */}
+            <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6">
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-gray-900">Solicitar Alteração Cadastral</h3>
+                <p className="text-xs text-gray-400">
+                  Envie novas informações cadastrais para revisão administrativa. As alterações serão publicadas após validação dos documentos pela equipe do ONG+.
+                </p>
+              </div>
+
+              <form className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Razão Social</label>
+                    <input type="text" placeholder="Instituto Rebrota de Preservação Ambiental" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Fantasia / Público</label>
+                    <input type="text" placeholder="Instituto Rebrota" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Endereço Principal / Sede</label>
+                  <input type="text" placeholder="Rua das Palmeiras, 102, Manaus, AM" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descrição Institucional</label>
+                  <textarea rows="4" placeholder="Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana..." className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documento Comprovatório (PDF)</label>
+                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-[#FAF8F5] transition cursor-pointer">
+                    <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <span className="text-xs font-bold text-[#0A665C] block">Fazer upload do Estatuto ou Ata de Eleição</span>
+                    <span className="text-[10px] text-gray-400">PDF de até 10MB</span>
+                  </div>
+                </div>
+
+                <button type="submit" className="bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs tracking-wider transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); alert('Solicitação de alteração cadastral enviada para moderação!'); }}>
+                  Enviar para Análise
+                </button>
+              </form>
+            </div>
+
+            {/* Request feedback section */}
+            <div className="space-y-6">
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6">
+                <h4 className="text-sm font-bold text-gray-900">Histórico de Solicitações</h4>
+                
+                <div className="space-y-4">
+                  {[
+                    { type: 'Endereço & Nome Fantasia', date: '02 Jun, 2026', status: 'Pendente', color: 'bg-amber-100 text-amber-800 border-amber-200', notes: 'Aguardando validação da equipe interna.' },
+                    { type: 'Estatuto de Fundação', date: '14 Abr, 2026', status: 'Aprovada', color: 'bg-[#CBDDCD] text-[#0A3D36] border-[#CBDDCD]', notes: 'Documento homologado com sucesso.' },
+                    { type: 'Razão Social', date: '10 Mar, 2026', status: 'Recusada', color: 'bg-red-50 text-red-700 border-red-100', notes: 'Cópia do CNPJ incorreta ou desatualizada.' }
+                  ].map((req, idx) => (
+                    <div key={idx} className="p-4 rounded-2xl bg-[#FAF8F5] border border-gray-50 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-bold text-gray-900">{req.type}</span>
+                        <span className={`text-[9px] font-extrabold border px-2 py-0.5 rounded-full uppercase tracking-wider ${req.color}`}>
+                          {req.status}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-gray-400 font-semibold">Solicitado em: {req.date}</div>
+                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed bg-white p-2 rounded-lg border border-gray-100/50">
+                        {req.notes}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

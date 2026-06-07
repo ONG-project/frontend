@@ -1,16 +1,33 @@
-# React + Vite
+# Frontend ONG+
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SPA em React + Vite responsavel pela experiencia publica, area do doador, area da ONG e area administrativa do ONG+.
 
-Currently, two official plugins are available:
+## Escopo de Interface
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Cadastro separado por perfil: **Sou doador** e **Sou ONG**.
+- Login, recuperacao de senha e sessao persistente.
+- Controle de acesso para visitante, doador, ONG e administrador.
+- Tela de causas com ONGs individuais, campanhas e bundles.
+- Perfil publico de ONG com score, transparencia, campanhas e evidencias.
+- Fluxo de doacao para ONG, campanha individual, fundo/causa e bundle.
+- Area do doador com historico, recibos, preferencias e impacto.
+- Area de gestao da ONG com perfil, documentos, redes sociais, campanhas, doadores, relatorios e solicitacoes de urgencia.
+- Area administrativa para validar documentos, ONGs, campanhas, conteudo, score e solicitacoes.
+- Tela de transparencia refeita para exibir dados verificaveis por ONG, campanha, bundle e urgencia.
+- Tela Sobre refeita para explicar projeto, matchfunding, score, verificacao e funcionamento das doacoes.
 
-## React Compiler
+## Comandos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+```
 
-## Expanding the ESLint configuration
+## Documentacao Relacionada
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- [Backlog frontend](../docs/backlog/frontend.md)
+- [Backlog de integracao e produto](../docs/backlog/integracao-produto.md)
+- [Workflow do doador](../docs/workflow/client_workflow.md)
+- [Workflow da ONG](../docs/workflow/ong_workflow.md)

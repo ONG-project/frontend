@@ -1,4 +1,5 @@
-import { CheckCircle, Users, HandHeart, ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, Users, HandHeart, ArrowRight, AlertTriangle } from 'lucide-react';
 import imagemGenerica from '../assets/imagem_generica.jpg';
 import Footer from '../components/Footer';
 
@@ -105,24 +106,24 @@ const HowItWorks = () => (
 
       <Step
         number="1"
-        title="Doe para o fundo de apoio"
-        description="Sua contribuição vai para um fundo gerenciado por nós. Assim, podemos direcionar os recursos com mais estratégia e continuidade."
+        title="Escolha uma campanha coletiva"
+        description="Sua contribuição vai para causas temáticas (como meio ambiente ou educação) que reúnem diversas ONGs parceiras verificadas de uma vez."
       />
       <Step
         number="2"
-        title="Gestão e alocação responsável"
-        description="Analisamos cada ONG, sua transparência e impacto. Gerimos o dinheiro das doações para liberar quando e onde houver maior necessidade e confiança."
+        title="Rateio e distribuição transparente"
+        description="O valor arrecadado é distribuído proporcionalmente entre as ONGs participantes da campanha, seguindo regras claras de divisão pública."
       />
       <Step
         number="3"
-        title="Fale com a equipe"
-        description="Você não escolhe diretamente a ONG, mas pode sugerir causas, regiões ou organizações que conhece. Sua opinião orienta nossa decisão."
+        title="Multiplicação com Matchfunding"
+        description="Muitas campanhas contam com marcas parceiras que multiplicam cada real doado por você, dobrando o impacto gerado na ponta."
       />
     </div>
   </section>
 );
 
-const CTA = ({ onExploreCauses }) => (
+const CTA = ({ onExploreCauses, onNavigate }) => (
   <section className="px-8 pb-24 max-w-6xl mx-auto">
     <div className="bg-[#147B72] rounded-[2.5rem] p-12 md:p-16 text-center text-white flex flex-col items-center shadow-lg">
       <h2 className="text-3xl md:text-4xl font-bold mb-4">Pronto para fazer a diferença?</h2>
@@ -130,7 +131,10 @@ const CTA = ({ onExploreCauses }) => (
         Junte-se à nossa comunidade de doadores e comece a apoiar causas que transformam vidas hoje mesmo.
       </p>
       <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-        <button className="bg-white text-teal-800 font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 transition shadow-sm w-full sm:w-auto">
+        <button
+          onClick={() => onNavigate && onNavigate('/doacao')}
+          className="bg-white text-teal-800 font-semibold px-8 py-3.5 rounded-full hover:bg-gray-50 transition shadow-sm w-full sm:w-auto"
+        >
           Doar Agora
         </button>
         <button 
@@ -145,15 +149,51 @@ const CTA = ({ onExploreCauses }) => (
 );
 
 export default function LandingPage({ onExploreCauses, onNavigate }) {
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('ongplus_warning_dismissed');
+    if (!dismissed) {
+      setShowWarning(true);
+    }
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem('ongplus_warning_dismissed', 'true');
+    setShowWarning(false);
+  };
+
   return (
     <>
       <main className="flex-grow">
         <Hero onExploreCauses={onExploreCauses} />
         <Features />
         <HowItWorks />
-        <CTA onExploreCauses={onExploreCauses} />
+        <CTA onExploreCauses={onExploreCauses} onNavigate={onNavigate} />
       </main>
       <Footer onNavigate={onNavigate} />
+
+      {showWarning && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl border border-gray-100 relative overflow-hidden flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-6">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Aviso Importante</h2>
+            <p className="text-gray-600 text-sm leading-relaxed mb-6">
+              Esta plataforma é um <strong>projeto de software em desenvolvimento (protótipo)</strong> para fins acadêmicos e demonstrativos.
+              <br /><br />
+              O serviço <strong>NÃO está ativo</strong> e, por enquanto, <strong>NÃO deve ser utilizado</strong> para fins reais. Por favor, <strong>NÃO realize doações reais</strong> nem insira dados reais de pagamento.
+            </p>
+            <button
+              onClick={handleDismiss}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 rounded-full transition shadow-sm"
+            >
+              Entendi e declaro ciente
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

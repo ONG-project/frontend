@@ -1,21 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  MapPin, 
-  Building2, 
-  ShieldCheck, 
-  FileText, 
-  Target, 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  MapPin,
+  Building2,
+  ShieldCheck,
+  FileText,
+  Target,
   ArrowLeft,
   CreditCard,
   QrCode,
   Wallet,
-  Heart
+  Heart,
+  Clock,
+  CheckCircle,
+  TrendingUp,
+  Calendar
 } from 'lucide-react';
 import reflorestaSeedling from '../assets/refloresta_seedling.png';
+import Footer from '../components/Footer';
+import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 
 export default function NgoProfilePage({ ong, onNavigate }) {
   // Configuração padrão caso nenhuma ong seja passada via props
   const currentOng = ong || {
+    id: 1,
     name: 'Instituto Rebrota',
     cnpj: '12.345.678/0001-90',
     location: 'Manaus, AM',
@@ -23,18 +32,30 @@ export default function NgoProfilePage({ ong, onNavigate }) {
     score: 96
   };
 
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
   // Estados para o formulário interativo de doação
   const [frequency, setFrequency] = useState('mensal'); // 'mensal', 'unica'
   const [amount, setAmount] = useState('100'); // '50', '100', '200', 'custom'
   const [customAmount, setCustomAmount] = useState('');
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const handleCompleteDonation = (e) => {
     e.preventDefault();
-    setPaymentSuccess(true);
-    setTimeout(() => {
-      setPaymentSuccess(false);
-    }, 5000);
+    if (!user) {
+      navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
+      return;
+    }
+    const selectedAmount = amount === 'custom' ? customAmount : amount;
+    navigate('/doacao', {
+      state: {
+        ngoId: currentOng.id,
+        ngoName: currentOng.name,
+        type: 'ngo',
+        amount: selectedAmount,
+        frequency
+      }
+    });
   };
 
   return (
@@ -59,10 +80,16 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           
           {/* Informações Principais da ONG */}
           <div className="space-y-6">
-            <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
-              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-              <span>Parceiro Verificado</span>
-            </span>
+            {currentOng.verified !== false ? (
+              <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
+                <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                <span>Parceiro Verificado</span>
+              </span>
+            ) : (
+              <span className="bg-gray-150 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1 w-fit">
+                <span>Aguardando Verificação</span>
+              </span>
+            )}
 
             <h1 className="text-5xl font-extrabold text-[#0A3D36] tracking-tight leading-none">
               {currentOng.name}
@@ -79,20 +106,35 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               </span>
             </div>
 
+            <div className="flex flex-wrap items-center gap-4 text-gray-400 text-[10px] font-semibold">
+              <span>Fonte dos dados: Receita Federal & Auditoria Interna</span>
+              <span>•</span>
+              <span>Última atualização: {currentOng.lastUpdated || currentOng.scoreUpdatedAt?.slice(0, 10) || '—'}</span>
+              <span>•</span>
+              {currentOng.verified !== false ? (
+                <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
+              ) : (
+                <span className="text-amber-600">Consistência de dados: Sob análise documental</span>
+              )}
+            </div>
+
             <p className="text-gray-600 text-base leading-relaxed max-w-2xl font-medium pt-2">
               {currentOng.description}
             </p>
           </div>
 
           {/* Card Transparência */}
-          <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex flex-col justify-between items-center text-center space-y-6">
+          <div 
+            onClick={() => onNavigate && onNavigate('ong-transparency', currentOng)}
+            className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:border-[#0A665C]/20 transition-all flex flex-col justify-between items-center text-center space-y-6 cursor-pointer group"
+          >
             <div className="w-full space-y-4">
-              <h3 className="text-xs font-extrabold text-[#0A3D36] uppercase tracking-widest">
+              <h3 className="text-xs font-extrabold text-[#0A3D36] uppercase tracking-widest group-hover:text-[#0A665C] transition-colors">
                 Transparência
               </h3>
               
               {/* Circular Dial Gauge */}
-              <div className="relative w-36 h-36 flex items-center justify-center mx-auto">
+              <div className="relative w-36 h-36 flex items-center justify-center mx-auto transition-transform group-hover:scale-105 duration-300">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" className="stroke-[#EBE9E3]" strokeWidth="7.5" fill="transparent" />
                   <circle
@@ -107,9 +149,14 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               </div>
             </div>
 
-            <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[240px]">
-              Pontuação máxima em saúde financeira e prestação de contas.
-            </p>
+            <div className="space-y-3">
+              <p className="text-xs font-medium text-gray-500 leading-relaxed max-w-[240px]">
+                Pontuação máxima em saúde financeira e prestação de contas.
+              </p>
+              <span className="inline-flex items-center text-[#0A665C] group-hover:text-[#08524a] text-xs font-bold transition hover:underline">
+                Ver Transparência Pública &rarr;
+              </span>
+            </div>
           </div>
 
         </div>
@@ -199,23 +246,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           {/* Direita: Checkout Card */}
           <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_30px_rgba(0,0,0,0.02)] space-y-6 relative">
             
-            {paymentSuccess && (
-              <div className="absolute inset-0 bg-white/95 rounded-[2rem] flex flex-col items-center justify-center p-8 space-y-4 z-10 transition-all">
-                <div className="w-14 h-14 bg-[#E4F2EE] text-[#0A665C] rounded-full flex items-center justify-center">
-                  <ShieldCheck className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-bold text-[#0A3D36]">Doação Concluída!</h4>
-                <p className="text-xs text-gray-500 text-center max-w-[240px]">
-                  Muito obrigado por apoiar o {currentOng.name}. Seu impacto ambiental começará hoje mesmo.
-                </p>
-                <button 
-                  onClick={() => setPaymentSuccess(false)}
-                  className="bg-[#0A665C] text-white px-5 py-2 rounded-full font-bold text-xs"
-                >
-                  Fechar
-                </button>
-              </div>
-            )}
+
 
             {/* Toggle de Frequência */}
             <div className="bg-[#FAF8F5] p-1 rounded-full flex border border-gray-100">
@@ -288,7 +319,7 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               onClick={handleCompleteDonation}
               className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-4.5 rounded-xl font-bold text-sm tracking-wide shadow-md transition-colors cursor-pointer text-center"
             >
-              Completar Doação
+              {user ? 'Completar Doação' : 'Entrar para Doar'}
             </button>
 
             {/* Payment Method Icons below button */}
@@ -302,8 +333,162 @@ export default function NgoProfilePage({ ong, onNavigate }) {
 
         </div>
 
-      </main>
+        <UrgencyPublicSection
+          ngoId={currentOng.id ?? 1}
+          title="Apoio Emergencial desta ONG"
+          description="Solicitações de urgência aprovadas e publicadas, com transparência sobre a crise e o plano de uso dos recursos."
+        />
 
+        {/* Campanhas Ativas */}
+        <div className="space-y-6 pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">Campanhas Ativas</h2>
+              <p className="text-gray-500 text-sm mt-1">Iniciações em andamento — apoie uma causa específica.</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              {
+                id: 1,
+                title: 'Micro-florestas Urbanas 2026',
+                desc: 'Plantação de 50.000 mudas em 8 municípios do Amazonas até dezembro de 2026.',
+                meta: 120000,
+                arrecadado: 87400,
+                prazo: 'Dez 2026',
+                status: 'Ativa',
+                match: true,
+                matchLabel: '1x — Patrocinádor: EcoFund'
+              },
+              {
+                id: 2,
+                title: 'Corredores Biológicos Norte',
+                desc: 'Conectar áreas de preservação fragmentadas no Pará e Roraima com faixas de reflorestamento.',
+                meta: 80000,
+                arrecadado: 31200,
+                prazo: 'Mar 2027',
+                status: 'Ativa',
+                match: false,
+                matchLabel: null
+              },
+            ].map((camp) => {
+              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
+              return (
+                <div key={camp.id} className="bg-white rounded-[1.5rem] p-7 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4 hover:shadow-[0_4px_30px_rgba(0,0,0,0.04)] transition-all">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2.5 py-0.5 rounded-full">{camp.status}</span>
+                        {camp.match && (
+                          <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                            <TrendingUp className="w-3 h-3" />
+                            <span>Match {camp.matchLabel}</span>
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-gray-900 text-base">{camp.title}</h3>
+                      <p className="text-gray-500 text-xs leading-relaxed">{camp.desc}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-semibold text-gray-700">
+                      <span>R$ {camp.arrecadado.toLocaleString('pt-BR')} arrecadados</span>
+                      <span>{pct}% da meta</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-teal-500 to-teal-700 h-2 rounded-full"
+                        style={{ width: `${Math.min(pct, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-gray-400">
+                      <span>Meta: R$ {camp.meta.toLocaleString('pt-BR')}</span>
+                      <span className="flex items-center space-x-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>Prazo: {camp.prazo}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
+                      } else {
+                        navigate('/doacao', {
+                          state: {
+                            campaignId: camp.id,
+                            campaignName: camp.title,
+                            ngoId: currentOng.id,
+                            type: 'campaign'
+                          }
+                        });
+                      }
+                    }}
+                    className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
+                  >
+                    {user ? 'Apoiar esta Campanha' : 'Entrar para Apoiar'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Histórico de Campanhas */}
+        <div className="space-y-6 pt-4">
+          <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">Histórico de Campanhas</h2>
+          <div className="space-y-4">
+            {[
+              { title: 'Sementes do Futuro 2025', meta: 60000, arrecadado: 63500, prazo: 'Jun 2025', status: 'Encerrada' },
+              { title: 'Refloresta Paraá 2024', meta: 45000, arrecadado: 45000, prazo: 'Dez 2024', status: 'Meta atingida' },
+              { title: 'Hortas Comunitárias AM 2024', meta: 30000, arrecadado: 29100, prazo: 'Set 2024', status: 'Encerrada' },
+            ].map((camp, idx) => {
+              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
+              const isComplete = camp.arrecadado >= camp.meta;
+              return (
+                <div key={idx} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center gap-2">
+                      {isComplete
+                        ? <CheckCircle className="w-4 h-4 text-teal-600 shrink-0" />
+                        : <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+                      }
+                      <p className="font-bold text-gray-900 text-sm">{camp.title}</p>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        isComplete ? 'bg-[#CBDDCD] text-[#0A3D36]' : 'bg-gray-100 text-gray-600'
+                      }`}>{camp.status}</span>
+                    </div>
+                    <p className="text-gray-400 text-xs pl-6">
+                      R$ {camp.arrecadado.toLocaleString('pt-BR')} / R$ {camp.meta.toLocaleString('pt-BR')} &middot; {camp.prazo}
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-3 shrink-0">
+                    <div className="w-24">
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full ${ isComplete ? 'bg-teal-500' : 'bg-gray-300' }`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-gray-600">{pct}%</span>
+                     <button
+                       title="Relatórios disponíveis em breve"
+                       disabled
+                       className="text-gray-300 text-xs font-bold cursor-not-allowed"
+                     >
+                       Relatório
+                     </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </main>
+      
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }
