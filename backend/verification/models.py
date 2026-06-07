@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.conf import settings
 
 
 class NGO(models.Model):
@@ -14,6 +15,20 @@ class NGO(models.Model):
         default=uuid.uuid4,
         editable=False,
         help_text="Primary key (UUID) for the NGO",
+    )
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ngo_profile',
+        null=True,
+        blank=True,
+        help_text="User account associated with this NGO",
+    )
+    pix_key = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Chave PIX da ONG",
     )
     external_api_id = models.CharField(
         max_length=255,

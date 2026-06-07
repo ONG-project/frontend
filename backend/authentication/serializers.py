@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import CustomUser
+from verification.models import NGO
 
 
 class DonorRegisterSerializer(serializers.ModelSerializer):
@@ -36,10 +37,13 @@ class OngRegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True)
     cnpj = serializers.CharField(max_length=18)
     organization_name = serializers.CharField(max_length=255)
+    pix_key = serializers.CharField(max_length=255, required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    focus_area = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'full_name', 'password', 'password_confirm', 'cnpj', 'organization_name')
+        fields = ('email', 'full_name', 'password', 'password_confirm', 'cnpj', 'organization_name', 'pix_key', 'description', 'focus_area')
 
     def validate_cnpj(self, value):
         # Validação básica de formato: 00.000.000/0000-00 ou 14 dígitos
@@ -55,17 +59,27 @@ class OngRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop('password_confirm')
-        # cnpj e organization_name serão usados no perfil de ONG (feature futura)
-        # Por ora, salvamos apenas o usuário base
         cnpj = validated_data.pop('cnpj')
         organization_name = validated_data.pop('organization_name')
+        pix_key = validated_data.pop('pix_key', '')
+        description = validated_data.pop('description', '')
+        focus_area = validated_data.pop('focus_area', '')
+        
         user = CustomUser.objects.create_user(
             email=validated_data['email'],
             full_name=validated_data['full_name'],
             password=validated_data['password'],
             role=CustomUser.Role.ONG,
         )
-        # TODO: Criar perfil de ONG vinculado ao usuário quando o app `verification` estiver pronto
+        
+        NGO.objects.create(
+            user=user,
+            cnpj=cnpj,
+            name=organization_name,
+            pix_key=pix_key,
+            description=description,
+            focus_area=focus_area
+        )
         return user
 
 
