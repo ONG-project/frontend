@@ -1,8 +1,9 @@
 import React from 'react';
 import { Activity, AlertTriangle, CheckCircle } from 'lucide-react';
 
-export default function ConsistencyPanel({ verification }) {
+export default function ConsistencyPanel({ verification, score }) {
   const isConsistent = verification?.consistencyStatus === 'consistent';
+  const displayScore = score ?? verification?.criteria?.score ?? 0;
 
   return (
     <div className="bg-[#111827] rounded-3xl p-8 border border-gray-800 shadow-xl space-y-6">
@@ -29,7 +30,7 @@ export default function ConsistencyPanel({ verification }) {
             </span>
           </div>
           <p className="text-xs text-gray-400 ml-8 leading-relaxed">
-            {isConsistent 
+            {isConsistent
               ? 'Todos os dados cruzados com a Receita Federal e bases públicas batem com as informações fornecidas.'
               : 'Foi detectada uma divergência entre o endereço cadastrado e o registrado na Receita Federal. Requer atenção.'}
           </p>
@@ -38,7 +39,7 @@ export default function ConsistencyPanel({ verification }) {
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-gray-800/50 p-4 rounded-xl">
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Score de Confiança</span>
-            <span className="text-2xl font-extrabold text-white">96/100</span>
+            <span className="text-2xl font-extrabold text-white">{displayScore}/100</span>
           </div>
           <div className="bg-gray-800/50 p-4 rounded-xl">
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Auditoria Ativa</span>

@@ -1,6 +1,19 @@
 from django.urls import path
-from verification.views import validate_ong_view
+
+from verification.views import (
+    health_check_view,
+    list_ngos_view,
+    ngo_detail_view,
+    ngo_verification_view,
+    allocation_criteria_view,
+    validate_ong_view,
+)
 
 urlpatterns = [
+    path('v1/health/', health_check_view, name='health-check'),
+    path('v1/ngos/', list_ngos_view, name='ngo-list'),
+    path('v1/ngos/<uuid:pk>/', ngo_detail_view, name='ngo-detail'),
+    path('v1/ngos/<uuid:pk>/verification/', ngo_verification_view, name='ngo-verification'),
+    path('v1/transparency/allocation-criteria/', allocation_criteria_view, name='allocation-criteria'),
     path('ong-validation/', validate_ong_view, name='ong-validation'),
 ]

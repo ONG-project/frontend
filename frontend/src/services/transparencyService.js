@@ -1,33 +1,7 @@
-// mock data for the transparency module
+import { apiGet } from './apiClient';
+import { ngoService } from './ngoService';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-const mockNgo = {
-  id: 1,
-  name: 'Instituto Terra Viva',
-  logo: 'https://via.placeholder.com/150',
-  description: 'Acreditamos na regeneração ambiental e social através de práticas sustentáveis e educação comunitária.',
-  cnpj: '12.345.678/0001-90',
-  cause: 'Meio Ambiente',
-  city: 'São Paulo',
-  state: 'SP',
-  website: 'www.terraviva.org.br',
-  socialLinks: { instagram: '@terraviva', facebook: '/terraviva' },
-  yearsOperating: 16,
-};
-
-const mockVerification = {
-  status: 'verified', // 'verified', 'analysis', 'pending', 'inconsistent'
-  verifiedAt: '2023-12-15T00:00:00.000Z',
-  lastUpdate: '2024-05-10T00:00:00.000Z',
-  evidenceList: [
-    { label: 'CNPJ validado', status: 'success' },
-    { label: 'Dados conferidos em API pública (Receita)', status: 'success' },
-    { label: 'Documentação aprovada', status: 'success' },
-    { label: 'Relatório atualizado', status: 'success' },
-  ],
-  consistencyStatus: 'consistent', // 'consistent', 'warning', 'inconsistent'
-};
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const mockFinancial = {
   currentGoal: 50000,
@@ -47,37 +21,56 @@ const mockChangeHistory = [
 ];
 
 const mockPendingRequests = [
-  { id: 1, field: 'Descrição', oldValue: 'Texto antigo...', newValue: 'Novo texto atualizado...', justification: 'Mudamos nosso foco de atuação.', status: 'pending', createdAt: '2024-06-01T10:00:00.000Z' }
+  { id: 1, field: 'Descrição', oldValue: 'Texto antigo...', newValue: 'Novo texto atualizado...', justification: 'Mudamos nosso foco de atuação.', status: 'pending', createdAt: '2024-06-01T10:00:00.000Z' },
 ];
+
+function mapProfile(detail) {
+  return {
+    id: detail.id,
+    name: detail.name,
+    logo: detail.logo || '',
+    description: detail.description,
+    cnpj: detail.cnpj,
+    cause: detail.causeLabel || detail.cause,
+    city: detail.city,
+    state: detail.state,
+    location: detail.location,
+    website: detail.website || '',
+    socialLinks: detail.socialLinks || {},
+    yearsOperating: detail.yearsOperating,
+    score: detail.score,
+    verified: detail.verified,
+    lastUpdated: detail.lastUpdated,
+  };
+}
 
 export const transparencyService = {
   async getNGOProfile(id) {
-    await delay(500);
-    return { ...mockNgo, id: Number(id) };
+    const detail = await ngoService.getById(id);
+    return mapProfile(detail);
   },
 
   async getVerificationData(id) {
-    await delay(500);
-    return { ...mockVerification };
+    return ngoService.getVerification(id);
   },
 
-  async getFinancialData(id) {
-    await delay(500);
+  async getFinancialData() {
+    await delay(300);
     return { ...mockFinancial };
   },
 
-  async getCampaignHistory(id) {
-    await delay(500);
+  async getCampaignHistory() {
+    await delay(300);
     return [...mockCampaigns];
   },
 
-  async getChangeHistory(id) {
-    await delay(500);
+  async getChangeHistory() {
+    await delay(300);
     return [...mockChangeHistory];
   },
 
-  async getPendingRequests(id) {
-    await delay(500);
+  async getPendingRequests() {
+    await delay(300);
     return [...mockPendingRequests];
   },
 
@@ -97,5 +90,9 @@ export const transparencyService = {
     await delay(800);
     console.log('Change request rejected:', id);
     return { success: true };
-  }
+  },
 };
+
+export async function getAllocationCriteria() {
+  return apiGet('/v1/transparency/allocation-criteria/');
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ngoService } from '../services/ngoService';
 import UrgencyRequestsDashboard from '../components/urgency/UrgencyRequestsDashboard';
 import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 import { 
@@ -40,6 +41,16 @@ export default function NgoManagementPage({ onNavigate }) {
   const { user } = useAuth();
   const ngoId = user?.ngoId ?? 1;
   const ngoName = user?.ngoName ?? 'Instituto Rebrota';
+  const [ngoScore, setNgoScore] = useState(0);
+
+  useEffect(() => {
+    ngoService.list()
+      .then((list) => {
+        const match = list.find((item) => item.name === ngoName) || list[0];
+        if (match) setNgoScore(match.score);
+      })
+      .catch(() => {});
+  }, [ngoName]);
 
   const tabFromUrl = searchParams.get('tab');
   const [activeSubTab, setActiveSubTab] = useState(tabFromUrl || 'visao-geral');
@@ -371,12 +382,12 @@ export default function NgoManagementPage({ onNavigate }) {
                     <circle cx="50" cy="50" r="40" className="stroke-[#E0DBD3]" strokeWidth="8.5" fill="transparent" />
                     <circle
                       cx="50" cy="50" r="40" className="stroke-[#0A665C]" strokeWidth="8.5" fill="transparent"
-                      strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - 9.8 / 10)} strokeLinecap="round"
+                      strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - ngoScore / 100)} strokeLinecap="round"
                     />
                   </svg>
                   <div className="absolute flex flex-col items-center">
-                    <span className="text-4xl font-extrabold text-[#0A3D36]">9.8</span>
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Pontuação</span>
+                    <span className="text-4xl font-extrabold text-[#0A3D36]">{ngoScore}</span>
+                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">de 100</span>
                   </div>
                 </div>
               </div>
@@ -1221,16 +1232,16 @@ export default function NgoManagementPage({ onNavigate }) {
                       <circle cx="50" cy="50" r="40" className="stroke-[#EAE8E3]" strokeWidth="10" fill="transparent" />
                       <circle
                         cx="50" cy="50" r="40" className="stroke-[#0A665C]" strokeWidth="10" fill="transparent"
-                        strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - 9.0 / 10)} strokeLinecap="round"
+                        strokeDasharray={251.2} strokeDashoffset={251.2 * (1 - ngoScore / 100)} strokeLinecap="round"
                       />
                     </svg>
-                    <span className="absolute text-base font-extrabold text-[#0A3D36]">9.0</span>
+                    <span className="absolute text-base font-extrabold text-[#0A3D36]">{ngoScore}</span>
                   </div>
                   <div>
                     <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Impacto & Transparência</h5>
-                    <h6 className="text-xs font-bold text-gray-900 mt-0.5">Score Rebrota</h6>
+                    <h6 className="text-xs font-bold text-gray-900 mt-0.5">Score de Confiança</h6>
                     <p className="text-[11px] text-gray-500 mt-1 leading-normal">
-                      Sua ONG cumpre 90% dos critérios de governança editorial e fiscal.
+                      Sua ONG possui {ngoScore} pontos nos critérios de verificação automatizada.
                     </p>
                   </div>
                 </div>

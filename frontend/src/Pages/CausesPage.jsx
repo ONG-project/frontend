@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
+import { ngoService } from '../services/ngoService';
 import {
   Search,
   Heart,
@@ -24,59 +26,14 @@ import loginBgPlant from '../assets/login_bg_plant.png';
 import aboutUs from '../assets/about_us.png';
 import genericImage from '../assets/imagem_generica.jpg';
 
-// ONGs catalog
-const initialOngs = [
-  {
-    id: 1,
-    name: 'Instituto Rebrota',
-    cnpj: '12.345.678/0001-90',
-    description: 'Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana. Transformamos espaços cinzas em pulmões vivos, conectando comunidades à regeneração activa da Floresta Amazônica em perímetros municipais.',
-    cause: 'meio-ambiente',
-    causeLabel: 'Meio ambiente',
-    score: 96,
-    icon: 'tree',
-    location: 'Manaus, AM',
-    verified: true
-  },
-  {
-    id: 2,
-    name: 'Águas Limpas Brasil',
-    cnpj: '98.765.432/0001-10',
-    description: 'Projetos de saneamento básico e acesso à água potável em comunidades ribeirinhas do Norte e Nordeste.',
-    cause: 'saude',
-    causeLabel: 'Saúde',
-    score: 92,
-    icon: 'drop',
-    location: 'Santarém, PA',
-    verified: true
-  },
-  {
-    id: 3,
-    name: 'Educação Sem Fronteiras',
-    cnpj: '45.123.890/0001-55',
-    description: 'Promovemos acesso à educação de qualidade para jovens em situação de vulnerabilidade através de bolsas e mentoria educacional.',
-    cause: 'educacao',
-    causeLabel: 'Educação',
-    score: 88,
-    icon: 'pencil',
-    location: 'São Paulo, SP',
-    verified: false
-  },
-  {
-    id: 4,
-    name: 'Vozes da Comunidade',
-    cnpj: '11.222.333/0001-44',
-    description: 'Defesa e fomento dos direitos humanos através de suporte legal, capacitação e denúncia de violações em áreas periféricas.',
-    cause: 'direitos-humanos',
-    causeLabel: 'Direitos humanos',
-    score: 95,
-    icon: 'scale',
-    location: 'Rio de Janeiro, RJ',
-    verified: true
-  }
-];
+// Fallback icons per cause slug
+const CAUSE_ICONS = {
+  'meio-ambiente': 'tree',
+  saude: 'drop',
+  educacao: 'pencil',
+  'direitos-humanos': 'scale',
+};
 
-// Mocked Campaigns with Cover Images
 const initialCampaigns = [
   {
     id: 'c1',
@@ -162,18 +119,41 @@ const initialBundles = [
 
 export default function CausesPage({ onNavigate }) {
   const navigate = useNavigate();
-  // Set default active tab to 'bundles' (Collective Campaigns) for maximum prominence
-  const [activeTab, setActiveTab] = useState('bundles'); 
+  const [ongs, setOngs] = useState([]);
+  const [ongsLoading, setOngsLoading] = useState(true);
+  const [ongsError, setOngsError] = useState(null);
+  const [activeTab, setActiveTab] = useState('bundles');
   const [activeFilter, setActiveFilter] = useState('todas');
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Extra filters
   const [locationFilter, setLocationFilter] = useState('todas');
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minScore, setMinScore] = useState(0);
 
-  // Extracted unique locations for filters
-  const locations = ['Manaus, AM', 'Santarém, PA', 'São Paulo, SP', 'Rio de Janeiro, RJ'];
+  useEffect(() => {
+    let cancelled = false;
+    ngoService.list()
+      .then((data) => {
+        if (!cancelled) {
+          setOngs(
+            data.map((ong) => ({
+              ...ong,
+              icon: CAUSE_ICONS[ong.cause] || 'tree',
+            }))
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setOngsError('Não foi possível carregar as ONGs. Verifique se o backend está ativo.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setOngsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const locations = [...new Set(ongs.map((ong) => ong.location).filter(Boolean))];
 
   const handleGoToBundle = (bundleId) => {
     navigate(`/bundle/${bundleId}`);
@@ -190,7 +170,7 @@ export default function CausesPage({ onNavigate }) {
   };
 
   // Filter logic for ONGs
-  const filteredOngs = initialOngs.filter(ong => {
+  const filteredOngs = ongs.filter(ong => {
     const matchesCause = activeFilter === 'todas' || ong.cause === activeFilter;
     const matchesSearch = 
       ong.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -598,7 +578,14 @@ export default function CausesPage({ onNavigate }) {
 
           {/* ABA ONGS INDIVIDUAIS */}
           {activeTab === 'ongs' && (
-            filteredOngs.length > 0 ? (
+            ongsLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <Loader2 className="w-8 h-8 animate-spin text-[#0A665C] mb-3" />
+                <p className="text-sm font-medium">Carregando ONGs...</p>
+              </div>
+            ) : ongsError ? (
+              <div className="text-center py-20 text-red-500 font-medium">{ongsError}</div>
+            ) : filteredOngs.length > 0 ? (
               filteredOngs.map(ong => (
                 <div 
                   key={ong.id} 

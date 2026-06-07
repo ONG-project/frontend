@@ -1,3 +1,5 @@
+import { getAllocationCriteria as fetchAllocationCriteria } from './transparencyService';
+
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 // Repasses recentes com critérios que embasaram a decisão
@@ -143,48 +145,36 @@ export const globalTransparencyService = {
   },
 
   async getAllocationCriteria() {
-    await delay(300);
-    return [
-      {
-        key: 'score',
-        label: 'Score de Confiança',
-        description:
-          'Índice calculado com base em dados públicos e histórico operacional da ONG. Organizações acima de 80 pontos são elegíveis ao recebimento de repasses.',
-        weight: 35,
-        icon: 'shield',
-      },
-      {
-        key: 'years',
-        label: 'Tempo de Atividade',
-        description:
-          'ONGs com mais de 2 anos de operação comprovada demonstram estabilidade institucional, reduzindo riscos de uso inadequado dos recursos.',
-        weight: 20,
-        icon: 'clock',
-      },
-      {
-        key: 'address',
-        label: 'Consistência de Endereço',
-        description:
-          'O endereço da ONG é cruzado com a base da Receita Federal. Divergências resultam em suspensão temporária dos repasses até regularização.',
-        weight: 15,
-        icon: 'map-pin',
-      },
-      {
-        key: 'cnpj',
-        label: 'CNPJ Ativo e Validado',
-        description:
-          'Verificação automática junto à Receita Federal a cada 30 dias. Qualquer irregularidade interrompe imediatamente o fluxo de recursos.',
-        weight: 20,
-        icon: 'file-check',
-      },
-      {
-        key: 'audit',
-        label: 'Auditoria Financeira Vigente',
-        description:
-          'A ONG deve apresentar auditoria contábil emitida por empresa independente nos últimos 12 meses para se manter elegível.',
-        weight: 10,
-        icon: 'clipboard-check',
-      },
-    ];
+    try {
+      return await fetchAllocationCriteria();
+    } catch {
+      await delay(300);
+      return [
+        {
+          key: 'cnpj',
+          label: 'CNPJ Ativo e Validado',
+          description:
+            'Verificação automática junto à API pública de CNPJ. CNPJs com situação ATIVA recebem 50 pontos no score de confiança.',
+          weight: 50,
+          icon: 'file-check',
+        },
+        {
+          key: 'address',
+          label: 'Consistência de Endereço',
+          description:
+            'O endereço cadastral é cruzado com a base de CEP oficial (ViaCEP/Correios). Endereços consistentes recebem 25 pontos adicionais.',
+          weight: 25,
+          icon: 'map-pin',
+        },
+        {
+          key: 'years',
+          label: 'Tempo de Atividade (> 5 anos)',
+          description:
+            'ONGs com mais de 5 anos de operação comprovada pela data de abertura do CNPJ recebem 25 pontos adicionais, totalizando até 100 pontos.',
+          weight: 25,
+          icon: 'clock',
+        },
+      ];
+    }
   },
 };

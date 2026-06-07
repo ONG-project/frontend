@@ -21,13 +21,13 @@ import FeedbackPanel from '../components/transparency/FeedbackPanel';
 import DataSourceCard from '../components/transparency/DataSourceCard';
 import ConsistencyPanel from '../components/transparency/ConsistencyPanel';
 import ValidationActions from '../components/transparency/ValidationActions';
+import VerificationStatus from '../components/transparency/VerificationStatus';
 
 export default function NgoTransparencyPage({ ong, onNavigate }) {
   const [searchParams] = useSearchParams();
   const role = searchParams.get('role') || 'DONOR';
 
-  // Usando hook para buscar dados dinâmicos do módulo
-  const ongId = ong?.id || 1;
+  const ongId = ong?.id;
   const {
     data,
     loading,
@@ -37,29 +37,22 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
     rejectRequest
   } = useTransparency(ongId);
 
-  // Fallbacks de apresentação visual que mantêm a identidade atual
-  const currentOng = ong || {
-    name: 'Instituto Terra Viva',
-    cnpj: '12.345.678/0001-90',
-    location: 'Av. Paulista, 1000 — SP',
-    operatingSince: 'March 2008 (16 Years)',
-    legalNature: 'Private Association',
-    score: 96,
-    budgetUtilization: 92,
-    lastAudit: 'Dec 2023',
-    auditStatus: 'UNQUALIFIED'
-  };
+  const apiScore = data.verification?.criteria?.score ?? data.profile?.score ?? ong?.score ?? 0;
+  const apiVerified = data.verification?.status === 'verified' || ong?.verified;
 
   const resolvedOng = {
-    name: currentOng.name || 'Instituto Terra Viva',
-    cnpj: currentOng.cnpj || '12.345.678/0001-90',
-    location: currentOng.location || 'Av. Paulista, 1000 — SP',
-    operatingSince: currentOng.operatingSince || (currentOng.id === 1 ? 'March 2008 (16 Years)' : currentOng.id === 2 ? 'July 2012 (12 Years)' : currentOng.id === 3 ? 'Jan 2015 (9 Years)' : 'September 2010 (14 Years)'),
-    legalNature: currentOng.legalNature || 'Private Association',
-    score: currentOng.score || 96,
-    budgetUtilization: currentOng.budgetUtilization || (currentOng.id === 2 ? 88 : currentOng.id === 3 ? 90 : currentOng.id === 4 ? 94 : 92),
-    lastAudit: currentOng.lastAudit || 'Dec 2023',
-    auditStatus: currentOng.auditStatus || 'UNQUALIFIED'
+    name: data.profile?.name || ong?.name || 'Instituto Terra Viva',
+    cnpj: data.profile?.cnpj || ong?.cnpj || '',
+    location: data.profile?.location || ong?.location || '',
+    operatingSince: data.profile?.yearsOperating
+      ? `${data.profile.yearsOperating} anos de operação`
+      : (ong?.operatingSince || '—'),
+    legalNature: ong?.legalNature || 'Private Association',
+    score: apiScore,
+    budgetUtilization: ong?.budgetUtilization || 92,
+    lastAudit: ong?.lastAudit || 'Dec 2023',
+    auditStatus: ong?.auditStatus || 'UNQUALIFIED',
+    verified: apiVerified,
   };
 
   if (loading) {
@@ -79,7 +72,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
         <div className="text-center space-y-4">
           <p className="text-red-500 font-bold">{error}</p>
           <button 
-            onClick={() => onNavigate && onNavigate('ong-profile', currentOng)}
+            onClick={() => onNavigate && onNavigate('ong-profile', ong)}
             className="text-[#0A665C] hover:underline font-medium cursor-pointer"
           >
             Voltar
@@ -95,7 +88,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
       {/* Botão de Voltar */}
       <div className="max-w-7xl w-full mx-auto px-8 md:px-16 pt-6">
         <button 
-          onClick={() => onNavigate && onNavigate('ong-profile', currentOng)}
+          onClick={() => onNavigate && onNavigate('ong-profile', ong)}
           className="flex items-center space-x-2 text-gray-500 hover:text-[#0A665C] transition font-bold text-xs uppercase tracking-wider cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -112,7 +105,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
           <div className="space-y-4 max-w-3xl">
             <span className="bg-[#E4F2EE] text-[#0A665C] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center space-x-1.5 w-fit border border-[#0A665C]/10">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Organização Verificada</span>
+              <span>{resolvedOng.verified ? 'Organização Verificada' : 'Verificação em Andamento'}</span>
             </span>
 
             <h1 className="text-5xl font-extrabold text-[#0A3D36] tracking-tight leading-none">
@@ -145,7 +138,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                 <span>Excelência A+</span>
               </span>
               <p className="text-[10px] text-gray-400 max-w-[120px] font-medium leading-tight">
-                Pontuação máxima em saúde financeira e transparência de relatórios.
+                Score calculado com base em CNPJ ativo, endereço validado e tempo de atuação.
               </p>
             </div>
           </div>
@@ -291,6 +284,10 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
 
         {/* Novas seções integradas do módulo de transparência */}
         <div className="space-y-8">
+          {data.verification && (
+            <VerificationStatus verification={data.verification} />
+          )}
+
           {/* Histórico e Campanhas acessíveis para todos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <CampaignHistoryTable campaigns={data.campaigns} />
@@ -318,7 +315,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-8">
                   <DataSourceCard />
-                  <ConsistencyPanel verification={data.verification} />
+                  <ConsistencyPanel verification={data.verification} score={resolvedOng.score} />
                 </div>
                 <div>
                   <ValidationActions 
