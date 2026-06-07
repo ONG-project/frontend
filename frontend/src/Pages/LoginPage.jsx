@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function LoginPage({ onRegisterClick }) {
   const { login } = useAuth();
@@ -10,21 +10,33 @@ export default function LoginPage({ onRegisterClick }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
+  const location = useLocation();
+  
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setErrorMsg('');
-    
-    try {
-      const user = await login({ email, password });
-      
-      if (user.role === 'donor') navigate('/donor-profile');
-      else if (user.role === 'ong') navigate('/gestao-ong');
-      else navigate('/'); // fallback
-    } catch (err) {
-      setErrorMsg(err.message || 'Credenciais inválidas. Tente novamente.');
+  e.preventDefault();
+  setErrorMsg('');
+
+  try {
+    const user = await login({ email, password });
+
+    const from = location.state?.from;
+
+    if (from) {
+      if (typeof from === 'string') {
+        navigate(from);
+      } else if (from.pathname) {
+        navigate(from.pathname, { state: from.state });
+      }
+      return;
     }
-  };
+
+    if (user.role === 'donor') navigate('/donor-profile');
+    else if (user.role === 'ong') navigate('/gestao-ong');
+    else navigate('/');
+  } catch (err) {
+    setErrorMsg(err.message || 'Credenciais inválidas. Tente novamente.');
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#FCFBF9] font-sans">

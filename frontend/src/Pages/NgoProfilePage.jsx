@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ngoService } from '../services/ngoService';
 import {
   MapPin,
   Building2,
@@ -11,7 +12,6 @@ import {
   CreditCard,
   QrCode,
   Wallet,
-  Heart,
   Clock,
   CheckCircle,
   TrendingUp,
@@ -21,19 +21,76 @@ import reflorestaSeedling from '../assets/refloresta_seedling.png';
 import Footer from '../components/Footer';
 import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 
+const DEFAULT_BENEFITS = [
+  {
+    title: 'Doação Segura',
+    desc: 'Protocolos bancários de alta segurança protegem cada transação financeira.',
+    icon: ShieldCheck
+  },
+  {
+    title: 'Transparência Total',
+    desc: 'Relatórios auditados e disponíveis mensalmente em nossa plataforma.',
+    icon: FileText
+  },
+  {
+    title: 'Impacto Direto',
+    desc: '95% do valor contribuído é investido diretamente nos projetos da organização.',
+    icon: Target
+  }
+];
+
 export default function NgoProfilePage({ ong, onNavigate }) {
-  // Configuração padrão caso nenhuma ong seja passada via props
-  const currentOng = ong || {
-    id: 1,
-    name: 'Instituto Rebrota',
-    cnpj: '12.345.678/0001-90',
-    location: 'Manaus, AM',
-    description: 'Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana. Transformamos espaços cinzas em pulmões vivos, conectando comunidades à regeneração ativa da Floresta Amazônica em perímetros municipais.',
-    score: 96
-  };
+  if (!ong) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center">
+        <p className="text-red-500 font-medium">ONG não encontrada.</p>
+      </div>
+    );
+  }
+  const currentOng = ong;
+
+  const [campaigns, setCampaigns] = useState([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
 
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadCampaigns = async () => {
+      setLoadingCampaigns(true);
+      try {
+        const data = await ngoService.getNgoCampaigns(currentOng.id);
+        if (!cancelled) {
+          setCampaigns(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar campanhas da ONG:', error);
+        if (!cancelled) {
+          setCampaigns([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingCampaigns(false);
+        }
+      }
+    };
+
+    loadCampaigns();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentOng.id]);
+
+  const activeCampaigns = campaigns.filter((campaign) => {
+    return campaign.status?.toLowerCase().includes('publicada') || campaign.daysLeft > 0;
+  });
+
+  const historicalCampaigns = campaigns.filter((campaign) => {
+    return !activeCampaigns.includes(campaign) || campaign.raisedAmount >= campaign.targetAmount;
+  });
 
   // Estados para o formulário interativo de doação
   const [frequency, setFrequency] = useState('mensal'); // 'mensal', 'unica'
@@ -42,20 +99,28 @@ export default function NgoProfilePage({ ong, onNavigate }) {
 
   const handleCompleteDonation = (e) => {
     e.preventDefault();
+    const selectedAmount = amount === 'custom' ? customAmount : amount;
+    const donationState = {
+      ngoId: currentOng.id,
+      ngoName: currentOng.name,
+      type: 'ngo',
+      amount: selectedAmount,
+      frequency
+    };
+
     if (!user) {
-      navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
+      navigate('/login', {
+        state: {
+          from: {
+            pathname: '/doacao',
+            state: donationState
+          }
+        }
+      });
       return;
     }
-    const selectedAmount = amount === 'custom' ? customAmount : amount;
-    navigate('/doacao', {
-      state: {
-        ngoId: currentOng.id,
-        ngoName: currentOng.name,
-        type: 'ngo',
-        amount: selectedAmount,
-        frequency
-      }
-    });
+
+    navigate('/doacao', { state: donationState });
   };
 
   return (
@@ -161,72 +226,38 @@ export default function NgoProfilePage({ ong, onNavigate }) {
 
         </div>
 
-        {/* Impact Block: Vidas Impactadas + Banner de Destaque */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-8 items-stretch">
-          
-          {/* Card Vidas Impactadas */}
-          <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] flex flex-col justify-between space-y-16">
-            <div className="w-10 h-10 bg-[#E4F2EE] text-[#0A665C] rounded-full flex items-center justify-center">
-              <Heart className="w-5 h-5 fill-[#0A665C]/20" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-5xl font-extrabold text-[#0A3D36] tracking-tight">15k+</h2>
-              <h4 className="text-sm font-bold text-gray-900">Vidas Impactadas</h4>
-            </div>
+        {/* Impact Block: Banner de Destaque */}
+        <div className="relative rounded-[2rem] overflow-hidden min-h-[400px] flex items-end">
+          <img 
+            src={reflorestaSeedling} 
+            alt={`Projeto de ${currentOng.name}`} 
+            className="absolute inset-0 w-full h-full object-cover filter brightness-[0.7]" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="relative p-10 text-white space-y-2 max-w-2xl">
+            <h3 className="text-2xl font-extrabold tracking-tight">Impacto real em {currentOng.location}</h3>
+            <p className="text-white/80 text-xs leading-relaxed font-medium">
+              Apoie {currentOng.name} em projetos focados em {currentOng.causeLabel?.toLowerCase() || 'ações sociais'} e acompanhe resultados com transparência.
+            </p>
           </div>
-
-          {/* Banner de Destaque Ilustrado */}
-          <div className="relative rounded-[2rem] overflow-hidden min-h-[300px] flex items-end">
-            <img 
-              src={reflorestaSeedling} 
-              alt="Projeto Construindo Juntos" 
-              className="absolute inset-0 w-full h-full object-cover filter brightness-[0.7]" 
-            />
-            {/* Gradiente sutil */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            
-            <div className="relative p-10 text-white space-y-2 max-w-2xl">
-              <h3 className="text-2xl font-extrabold tracking-tight">Construindo Juntos</h3>
-              <p className="text-white/80 text-xs leading-relaxed font-medium">
-                Unimos saberes ancestrais e tecnologia urbana para criar o maior cinturão de micro-florestas do Norte. Seu apoio é a semente do amanhã.
-              </p>
-            </div>
-          </div>
-
         </div>
 
-        {/* Investment Block: Invista no Impacto + Card Checkout */}
+        {/* Investment Block: Apoie a causa da ONG + Card Checkout */}
         <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-12 pt-6">
           
           {/* Esquerda: Benefícios e Garantias */}
           <div className="space-y-8">
             <div className="space-y-3">
               <h2 className="text-3xl font-extrabold text-[#0A3D36] tracking-tight">
-                Invista no Impacto
+                Apoie a causa de {currentOng.causeLabel || 'impacto social'}
               </h2>
               <p className="text-gray-500 text-sm leading-relaxed max-w-md">
-                Sua doação não é apenas um presente, é um investimento em mudanças reais e mensuráveis. Junte-se a nós para expandir nosso alcance.
+                Concentre sua contribuição em {currentOng.name} e ajude a manter projetos com foco em {currentOng.causeLabel?.toLowerCase() || 'transformação comunitária'}.
               </p>
             </div>
 
             <div className="space-y-6">
-              {[
-                { 
-                  title: 'Doação Segura', 
-                  desc: 'Protocolos bancários de alta segurança protegem cada transação financeira.', 
-                  icon: ShieldCheck 
-                },
-                { 
-                  title: 'Transparência Total', 
-                  desc: 'Relatórios auditados e disponíveis mensalmente em nossa plataforma.', 
-                  icon: FileText 
-                },
-                { 
-                  title: 'Impacto Direto', 
-                  desc: '92% de cada Real investido vai diretamente para as frentes de reflorestamento.', 
-                  icon: Target 
-                }
-              ].map((item, idx) => {
+              {DEFAULT_BENEFITS.map((item, idx) => {
                 const Icon = item.icon;
                 return (
                   <div key={idx} className="flex items-start space-x-4">
@@ -348,89 +379,93 @@ export default function NgoProfilePage({ ong, onNavigate }) {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                id: 1,
-                title: 'Micro-florestas Urbanas 2026',
-                desc: 'Plantação de 50.000 mudas em 8 municípios do Amazonas até dezembro de 2026.',
-                meta: 120000,
-                arrecadado: 87400,
-                prazo: 'Dez 2026',
-                status: 'Ativa',
-                match: true,
-                matchLabel: '1x — Patrocinádor: EcoFund'
-              },
-              {
-                id: 2,
-                title: 'Corredores Biológicos Norte',
-                desc: 'Conectar áreas de preservação fragmentadas no Pará e Roraima com faixas de reflorestamento.',
-                meta: 80000,
-                arrecadado: 31200,
-                prazo: 'Mar 2027',
-                status: 'Ativa',
-                match: false,
-                matchLabel: null
-              },
-            ].map((camp) => {
-              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
-              return (
-                <div key={camp.id} className="bg-white rounded-[1.5rem] p-7 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4 hover:shadow-[0_4px_30px_rgba(0,0,0,0.04)] transition-all">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2.5 py-0.5 rounded-full">{camp.status}</span>
-                        {camp.match && (
-                          <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1">
-                            <TrendingUp className="w-3 h-3" />
-                            <span>Match {camp.matchLabel}</span>
-                          </span>
-                        )}
+            {loadingCampaigns ? (
+              <div className="rounded-[2rem] bg-white p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] text-gray-500 text-sm">
+                Carregando campanhas ativas...
+              </div>
+            ) : activeCampaigns.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {activeCampaigns.map((camp) => {
+                  const pct = camp.targetAmount ? Math.round((camp.raisedAmount / camp.targetAmount) * 100) : 0;
+                  const statusLabel = camp.status?.toLowerCase().includes('publicada') ? 'Ativa' : camp.status;
+                  return (
+                    <div key={camp.id} className="bg-white rounded-[1.5rem] p-7 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4 hover:shadow-[0_4px_30px_rgba(0,0,0,0.04)] transition-all">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="space-y-1 flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="bg-[#CBDDCD] text-[#0A3D36] text-[10px] font-bold px-2.5 py-0.5 rounded-full">{statusLabel}</span>
+                            {camp.matchMultiplier > 1 && (
+                              <span className="bg-amber-50 text-amber-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                                <TrendingUp className="w-3 h-3" />
+                                <span>Match {camp.matchMultiplier}x{camp.matchSponsor ? ` — ${camp.matchSponsor}` : ''}</span>
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="font-bold text-gray-900 text-base">{camp.name}</h3>
+                          <p className="text-gray-500 text-xs leading-relaxed">{camp.description}</p>
+                        </div>
                       </div>
-                      <h3 className="font-bold text-gray-900 text-base">{camp.title}</h3>
-                      <p className="text-gray-500 text-xs leading-relaxed">{camp.desc}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-semibold text-gray-700">
-                      <span>R$ {camp.arrecadado.toLocaleString('pt-BR')} arrecadados</span>
-                      <span>{pct}% da meta</span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-teal-500 to-teal-700 h-2 rounded-full"
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-[10px] text-gray-400">
-                      <span>Meta: R$ {camp.meta.toLocaleString('pt-BR')}</span>
-                      <span className="flex items-center space-x-1">
-                        <Calendar className="w-3 h-3" />
-                        <span>Prazo: {camp.prazo}</span>
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (!user) {
-                        navigate('/login', { state: { from: `/ong/${currentOng.id}` } });
-                      } else {
-                        navigate('/doacao', {
-                          state: {
-                            campaignId: camp.id,
-                            campaignName: camp.title,
-                            ngoId: currentOng.id,
-                            type: 'campaign'
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-semibold text-gray-700">
+                          <span>R$ {camp.raisedAmount.toLocaleString('pt-BR')} arrecadados</span>
+                          <span>{pct}% da meta</span>
+                        </div>
+                        <div className="w-full bg-gray-100 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-teal-500 to-teal-700 h-2 rounded-full"
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-gray-400">
+                          <span>Meta: R$ {camp.targetAmount.toLocaleString('pt-BR')}</span>
+                          <span className="flex items-center space-x-1">
+                            <Calendar className="w-3 h-3" />
+                            <span>Prazo: {camp.daysLeft > 0 ? `${camp.daysLeft} dias` : 'Sem prazo definido'}</span>
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (!user) {
+                            navigate('/login', {
+                              state: {
+                                from: {
+                                  pathname: '/doacao',
+                                  state: {
+                                    campaignId: camp.id,
+                                    campaignName: camp.name,
+                                    ngoId: currentOng.id,
+                                    ngoName: currentOng.name,
+                                    type: 'campaign'
+                                  }
+                                }
+                              }
+                            });
+                          } else {
+                            navigate('/doacao', {
+                              state: {
+                                campaignId: camp.id,
+                                campaignName: camp.name,
+                                ngoId: currentOng.id,
+                                ngoName: currentOng.name,
+                                type: 'campaign'
+                              }
+                            });
                           }
-                        });
-                      }
-                    }}
-                    className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
-                  >
-                    {user ? 'Apoiar esta Campanha' : 'Entrar para Apoiar'}
-                  </button>
-                </div>
-              );
-            })}
+                        }}
+                        className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-2.5 rounded-xl font-bold text-xs transition cursor-pointer"
+                      >
+                        {user ? 'Apoiar esta Campanha' : 'Entrar para Apoiar'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="rounded-[2rem] bg-white p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] text-gray-500 text-sm">
+                Ainda não há campanhas ativas publicadas para {currentOng.name}.
+              </div>
+            )}
           </div>
         </div>
 
@@ -438,51 +473,34 @@ export default function NgoProfilePage({ ong, onNavigate }) {
         <div className="space-y-6 pt-4">
           <h2 className="text-2xl font-extrabold text-[#0A3D36] tracking-tight">Histórico de Campanhas</h2>
           <div className="space-y-4">
-            {[
-              { title: 'Sementes do Futuro 2025', meta: 60000, arrecadado: 63500, prazo: 'Jun 2025', status: 'Encerrada' },
-              { title: 'Refloresta Paraá 2024', meta: 45000, arrecadado: 45000, prazo: 'Dez 2024', status: 'Meta atingida' },
-              { title: 'Hortas Comunitárias AM 2024', meta: 30000, arrecadado: 29100, prazo: 'Set 2024', status: 'Encerrada' },
-            ].map((camp, idx) => {
-              const pct = Math.round((camp.arrecadado / camp.meta) * 100);
-              const isComplete = camp.arrecadado >= camp.meta;
-              return (
-                <div key={idx} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      {isComplete
-                        ? <CheckCircle className="w-4 h-4 text-teal-600 shrink-0" />
-                        : <Clock className="w-4 h-4 text-gray-400 shrink-0" />
-                      }
-                      <p className="font-bold text-gray-900 text-sm">{camp.title}</p>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        isComplete ? 'bg-[#CBDDCD] text-[#0A3D36]' : 'bg-gray-100 text-gray-600'
-                      }`}>{camp.status}</span>
-                    </div>
-                    <p className="text-gray-400 text-xs pl-6">
-                      R$ {camp.arrecadado.toLocaleString('pt-BR')} / R$ {camp.meta.toLocaleString('pt-BR')} &middot; {camp.prazo}
-                    </p>
-                  </div>
-                  <div className="flex items-center space-x-3 shrink-0">
-                    <div className="w-24">
-                      <div className="w-full bg-gray-100 rounded-full h-1.5">
-                        <div
-                          className={`h-1.5 rounded-full ${ isComplete ? 'bg-teal-500' : 'bg-gray-300' }`}
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
+            {historicalCampaigns.length > 0 ? (
+              historicalCampaigns.map((camp) => {
+                const pct = camp.targetAmount ? Math.round((camp.raisedAmount / camp.targetAmount) * 100) : 0;
+                const isComplete = camp.raisedAmount >= camp.targetAmount;
+                return (
+                  <div key={camp.id} className="bg-white rounded-[1.5rem] p-6 border border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div className="space-y-1 flex-1">
+                      <div className="flex items-center gap-2">
+                        {isComplete
+                          ? <CheckCircle className="w-4 h-4 text-teal-600 shrink-0" />
+                          : <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+                        }
+                        <span className="text-sm font-semibold text-gray-700">{camp.name}</span>
                       </div>
+                      <p className="text-xs text-gray-500">{camp.description}</p>
                     </div>
-                    <span className="text-xs font-bold text-gray-600">{pct}%</span>
-                     <button
-                       title="Relatórios disponíveis em breve"
-                       disabled
-                       className="text-gray-300 text-xs font-bold cursor-not-allowed"
-                     >
-                       Relatório
-                     </button>
+                    <div className="text-right space-y-2">
+                      <p className="text-xs text-gray-500">Meta: R$ {camp.targetAmount.toLocaleString('pt-BR')}</p>
+                      <p className="text-xs text-[#0A665C] font-bold">{pct}% concluído</p>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="rounded-[2rem] bg-white p-8 border border-gray-100 shadow-[0_4px_25px_rgba(0,0,0,0.015)] text-gray-500 text-sm">
+                Ainda não há campanhas históricas para {currentOng.name}.
+              </div>
+            )}
           </div>
         </div>
 

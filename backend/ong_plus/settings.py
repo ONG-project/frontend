@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     # Aplicativos locais (Monolito Modular)
-    'ai_assistant',
     'authentication',
     'financial',
     'transparency',
