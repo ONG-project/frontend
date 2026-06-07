@@ -143,9 +143,30 @@ docker compose exec backend python manage.py seed_demo_ngos
 
 Se você iniciou os serviços com `docker compose up`, o serviço do banco está disponível como `db` (container `ongplus_db`) e a base de dados padrão é `ongplus_db` com usuário `postgres` conforme o `docker-compose.yml` do projeto.
 
-Opções rápidas para inspecionar o banco:
+Opções para inspecionar o banco:
 
-- Abrir um shell `psql` dentro do container (recomendado quando não há cliente `psql` local):
+#### 1. Acessando pelo pgAdmin (Integrado no Docker Compose)
+
+Após executar `docker compose up -d`, você pode acessar a interface visual do pgAdmin:
+
+- **URL de acesso:** [http://localhost:5050](http://localhost:5050)
+- **Credenciais de login:**
+  - **E-mail:** `admin@admin.com`
+  - **Senha:** `admin`
+
+Para registrar e visualizar as tabelas do banco de dados no pgAdmin:
+1. No menu principal, clique em **Add New Server**.
+2. Na aba **General**, digite um nome descritivo (ex: `ONG+ DB`).
+3. Na aba **Connection**, preencha:
+   - **Host name/address:** `db`
+   - **Port:** `5432`
+   - **Maintenance database:** `ongplus_db`
+   - **Username:** `postgres`
+   - **Password:** `postgrespassword` (Marque a opção *Save password*).
+4. Clique em **Save**.
+5. No painel lateral esquerdo (Browser), navegue em: **Servers** -> **ONG+ DB** -> **Databases** -> **ongplus_db** -> **Schemas** -> **public** -> **Tables** para ver todas as tabelas.
+
+#### 2. Abrir um shell `psql` dentro do container:
 
 ```bash
 # Abre um shell psql interativo dentro do container do serviço db
@@ -158,13 +179,13 @@ docker compose exec db psql -U postgres -d ongplus_db
 SELECT * FROM auth_user LIMIT 10;
 ```
 
-- Conectar a partir da máquina host (se tiver `psql` instalado):
+#### 3. Conectar a partir da máquina host (se tiver `psql` instalado):
 
 ```bash
 psql "host=localhost port=5432 dbname=ongplus_db user=postgres password=postgrespassword"
 ```
 
-- Usar uma interface web rápida (Adminer) sem alterar o compose atual:
+#### 4. Usar uma interface web rápida temporária (Adminer) sem alterar o compose:
 
 ```bash
 # Executa temporariamente um container Adminer ligado à mesma rede do compose
