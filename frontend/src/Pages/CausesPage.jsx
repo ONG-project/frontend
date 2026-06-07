@@ -171,11 +171,11 @@ export default function CausesPage({ onNavigate }) {
 
   const handleGoToDonate = (item, type) => {
     if (type === 'campaign') {
-      navigate('/doacao', { state: { campaignId: item.id, campaignName: item.name, type: 'campaign' } });
+      navigate('/doacao', { state: { campaignId: item.id, campaignName: item.name, type: 'campaign', score: item.score } });
     } else if (type === 'bundle') {
-      navigate('/doacao', { state: { bundleId: item.id, bundleName: item.name, type: 'bundle' } });
+      navigate('/doacao', { state: { bundleId: item.id, bundleName: item.name, type: 'bundle', score: item.transparencyScore } });
     } else {
-      navigate('/doacao', { state: { ngoId: item.id, ngoName: item.name, type: 'ngo' } });
+      navigate('/doacao', { state: { ngoId: item.id, ngoName: item.name, type: 'ngo', score: item.score } });
     }
   };
 
