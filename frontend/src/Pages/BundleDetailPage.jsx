@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ngoService } from '../services/ngoService';
+import { Loader2 } from 'lucide-react';
 import { 
   Heart, 
   ArrowLeft, 
@@ -12,66 +14,80 @@ import {
   MapPin
 } from 'lucide-react';
 
-// Import local assets for covers
+// Cover image fallbacks pool
 import aboutUs from '../assets/about_us.png';
 import loginBgPlant from '../assets/login_bg_plant.png';
 
-// Dados mockados de Bundles para exibir nos detalhes (coincidem com os de CausesPage)
-const MOCK_BUNDLES = [
-  {
-    id: 'b1',
-    name: 'Aliança Amazônia Viva',
-    cause: 'meio-ambiente',
-    causeLabel: 'Meio ambiente',
-    description: 'Um esforço conjunto para restaurar áreas degradadas, combater queimadas e capacitar comunidades tradicionais na bioeconomia florestal. Unindo a expertise de organizações líderes em conservação ativa.',
-    targetAmount: 150000,
-    raisedAmount: 98400,
-    transparencyScore: 95,
-    cover: aboutUs,
-    ongs: [
-      { id: 1, name: 'Instituto Rebrota', location: 'Manaus, AM', score: 96, icon: 'tree' },
-      { id: 2, name: 'Águas Limpas Brasil', location: 'Santarém, PA', score: 92, icon: 'drop' }
-    ],
-    eligibilityRules: [
-      'Atuação comprovada de no mínimo 3 anos na Bacia Amazônica.',
-      'Score de transparência na plataforma superior a 90/100.',
-      'Apresentação de relatórios trimestrais de impacto socioambiental.',
-      'Adesão ao código de ética e conduta da plataforma ONG+.'
-    ],
-    distributionRules: 'Os recursos deste bundle são distribuídos de forma paritária (50% para cada ONG participante). Os repasses ocorrem mensalmente sob condição de entrega das prestações de contas parciais e relatórios de atividades.'
-  },
-  {
-    id: 'b2',
-    name: 'Futuro Brilhante',
-    cause: 'educacao',
-    causeLabel: 'Educação',
-    description: 'Fundo coletivo destinado a equipar escolas comunitárias de periferias com laboratórios de informática, além de oferecer bolsas de estudos de programação para jovens talentos.',
-    targetAmount: 80000,
-    raisedAmount: 32000,
-    transparencyScore: 91,
-    cover: loginBgPlant,
-    ongs: [
-      { id: 3, name: 'Educação Sem Fronteiras', location: 'São Paulo, SP', score: 88, icon: 'pencil' },
-      { id: 4, name: 'Vozes da Comunidade', location: 'Rio de Janeiro, RJ', score: 95, icon: 'scale' }
-    ],
-    eligibilityRules: [
-      'Foco direto em educação básica ou capacitação tecnológica profissional.',
-      'Score de transparência na plataforma superior a 85/100.',
-      'Demonstração financeira anual auditada externamente.'
-    ],
-    distributionRules: 'A distribuição é proporcional ao score de transparência das organizações participantes (52% para Vozes da Comunidade e 48% para Educação Sem Fronteiras), otimizando o repasse em favor da excelência na prestação de contas.'
-  }
-];
+const COVER_POOL = [aboutUs, loginBgPlant];
 
 export default function BundleDetailPage({ onNavigate }) {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const bundle = MOCK_BUNDLES.find(b => b.id === id) || MOCK_BUNDLES[0];
+  const [bundle, setBundle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    ngoService.getBundleById(id)
+      .then(data => {
+        if (!cancelled) {
+          // Assign a cosmetic cover based on a stable hash of the name
+          const coverIdx = (data.name || '').length % COVER_POOL.length;
+          setBundle({ ...data, cover: COVER_POOL[coverIdx] });
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          console.error("Error loading bundle:", err);
+          setError('Não foi possível carregar os dados do bundle.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 bg-[#FAF8F5] min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-3 text-gray-500">
+          <Loader2 className="w-8 h-8 animate-spin text-[#0A665C]" />
+          <p className="text-sm font-medium">Carregando bundle...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !bundle) {
+    return (
+      <div className="flex-1 bg-[#FAF8F5] min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <p className="text-red-500 font-medium">{error || 'Bundle não encontrado.'}</p>
+          <button
+            onClick={() => navigate('/causas')}
+            className="text-[#0A665C] font-bold text-sm hover:underline"
+          >
+            Voltar para Causas
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const progressPercent = Math.min(Math.round((bundle.raisedAmount / bundle.targetAmount) * 100), 100);
 
   const handleDonate = () => {
-    navigate('/doacao', { state: { bundleId: bundle.id, bundleName: bundle.name, type: 'bundle' } });
+    navigate('/doacao', {
+      state: {
+        bundleId: bundle.id,
+        bundleName: bundle.name,
+        type: 'bundle',
+        score: bundle.transparencyScore,
+      },
+    });
   };
 
   return (
@@ -164,7 +180,7 @@ export default function BundleDetailPage({ onNavigate }) {
               </div>
               
               <div className="space-y-4">
-                {bundle.ongs.map(ong => (
+                {(bundle.ongs || []).map(ong => (
                   <div key={ong.id} className="flex items-center justify-between p-4 rounded-2xl bg-[#FAF8F5] border border-gray-100 hover:border-gray-200 transition">
                     <div className="flex items-center space-x-4">
                       <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-teal-800 border border-gray-100 font-bold text-xs uppercase">
@@ -172,10 +188,12 @@ export default function BundleDetailPage({ onNavigate }) {
                       </div>
                       <div>
                         <h4 className="font-bold text-gray-900 text-sm">{ong.name}</h4>
-                        <div className="flex items-center space-x-1 text-xs text-gray-400">
-                          <MapPin className="w-3 h-3" />
-                          <span>{ong.location}</span>
-                        </div>
+                        {ong.location && (
+                          <div className="flex items-center space-x-1 text-xs text-gray-400">
+                            <MapPin className="w-3 h-3" />
+                            <span>{ong.location}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                     
@@ -197,15 +215,17 @@ export default function BundleDetailPage({ onNavigate }) {
             </div>
 
             {/* Distribution Rules */}
-            <div className="bg-white rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4">
-              <div className="flex items-center space-x-2 pb-4 border-b border-gray-100">
-                <TrendingUp className="w-5 h-5 text-[#0A665C]" />
-                <h2 className="text-lg font-bold text-gray-900">Distribuição dos Recursos</h2>
+            {bundle.distributionRules && (
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4">
+                <div className="flex items-center space-x-2 pb-4 border-b border-gray-100">
+                  <TrendingUp className="w-5 h-5 text-[#0A665C]" />
+                  <h2 className="text-lg font-bold text-gray-900">Distribuição dos Recursos</h2>
+                </div>
+                <p className="text-gray-600 text-xs leading-relaxed font-medium">
+                  {bundle.distributionRules}
+                </p>
               </div>
-              <p className="text-gray-600 text-xs leading-relaxed font-medium">
-                {bundle.distributionRules}
-              </p>
-            </div>
+            )}
 
           </div>
 
@@ -213,21 +233,23 @@ export default function BundleDetailPage({ onNavigate }) {
           <div className="space-y-8">
             
             {/* Eligibility Rules */}
-            <div className="bg-white rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
-              <div className="flex items-center space-x-2 pb-2">
-                <Award className="w-5 h-5 text-[#0A665C]" />
-                <h2 className="text-sm font-bold text-gray-900">Elegibilidade</h2>
+            {(bundle.eligibilityRules || []).length > 0 && (
+              <div className="bg-white rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-6">
+                <div className="flex items-center space-x-2 pb-2">
+                  <Award className="w-5 h-5 text-[#0A665C]" />
+                  <h2 className="text-sm font-bold text-gray-900">Elegibilidade</h2>
+                </div>
+                
+                <ul className="space-y-3.5">
+                  {bundle.eligibilityRules.map((rule, index) => (
+                    <li key={index} className="flex items-start space-x-2 text-xs text-gray-600 leading-relaxed font-medium">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              
-              <ul className="space-y-3.5">
-                {bundle.eligibilityRules.map((rule, index) => (
-                  <li key={index} className="flex items-start space-x-2 text-xs text-gray-600 leading-relaxed font-medium">
-                    <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{rule}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
 
             {/* Aggregated Transparency */}
             <div className="bg-white rounded-[2rem] p-8 border border-gray-100/80 shadow-[0_4px_25px_rgba(0,0,0,0.015)] space-y-4">

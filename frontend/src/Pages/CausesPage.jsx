@@ -35,96 +35,24 @@ const CAUSE_ICONS = {
   'direitos-humanos': 'scale',
 };
 
-const initialCampaigns = [
-  {
-    id: 'c1',
-    name: 'Reflorestamento de Nascentes',
-    ongName: 'Instituto Rebrota',
-    description: 'Recuperação direta de 5 nascentes degradadas no entorno urbano de Manaus com o plantio planejado de 10 mil mudas de espécies nativas.',
-    cause: 'meio-ambiente',
-    causeLabel: 'Meio ambiente',
-    targetAmount: 20000,
-    raisedAmount: 14200,
-    matchMultiplier: 3,
-    matchSponsor: 'BioCorp S.A.',
-    location: 'Manaus, AM',
-    cover: verdeUrbeGarden
-  },
-  {
-    id: 'c2',
-    name: 'Água Saudável nas Escolas',
-    ongName: 'Águas Limpas Brasil',
-    description: 'Instalação de filtros de carvão ativo e reservatórios higienizados em 12 escolas públicas ribeirinhas na região do Baixo Amazonas.',
-    cause: 'saude',
-    causeLabel: 'Saúde',
-    targetAmount: 35000,
-    raisedAmount: 18000,
-    matchMultiplier: 1,
-    matchSponsor: null,
-    location: 'Santarém, PA',
-    cover: genericImage
-  },
-  {
-    id: 'c3',
-    name: 'Bolsas para Desenvolvedoras',
-    ongName: 'Educação Sem Fronteiras',
-    description: 'Financiamento completo de cursos intensivos de desenvolvimento de software e fornecimento de notebooks para 30 mulheres da periferia paulistana.',
-    cause: 'educacao',
-    causeLabel: 'Educação',
-    targetAmount: 50000,
-    raisedAmount: 42000,
-    matchMultiplier: 2,
-    matchSponsor: 'TechFund Brasil',
-    location: 'São Paulo, SP',
-    cover: reflorestaSeedling
-  }
-];
-
-// Mocked Collective Campaigns (Bundles) with Cover Images & Matchfunding support
-const initialBundles = [
-  {
-    id: 'b1',
-    name: 'Aliança Amazônia Viva',
-    cause: 'meio-ambiente',
-    causeLabel: 'Meio ambiente',
-    description: 'Um esforço conjunto para restaurar áreas degradadas, combater queimadas e capacitar comunidades tradicionais na bioeconomia florestal. Unindo a expertise de organizações líderes em conservação ativa.',
-    targetAmount: 150000,
-    raisedAmount: 98400,
-    ongs: [
-      { name: 'Instituto Rebrota', icon: 'tree' },
-      { name: 'Águas Limpas Brasil', icon: 'drop' }
-    ],
-    transparencyScore: 95,
-    cover: aboutUs,
-    matchMultiplier: 3,
-    matchSponsor: 'Fundação Clima Global'
-  },
-  {
-    id: 'b2',
-    name: 'Futuro Brilhante',
-    cause: 'educacao',
-    causeLabel: 'Educação',
-    description: 'Fundo coletivo destinado a equipar escolas comunitárias de periferias com laboratórios de informática, além de oferecer bolsas de estudos de programação para jovens talentos.',
-    targetAmount: 80000,
-    raisedAmount: 32000,
-    ongs: [
-      { name: 'Educação Sem Fronteiras', icon: 'pencil' },
-      { name: 'Vozes da Comunidade', icon: 'scale' }
-    ],
-    transparencyScore: 91,
-    cover: loginBgPlant,
-    matchMultiplier: 1, // sem matchfunding
-    matchSponsor: null
-  }
-];
+// Cover image pool — assigned to campaigns/bundles by index as cosmetic fallbacks
+const CAMPAIGN_COVERS = [verdeUrbeGarden, genericImage, reflorestaSeedling];
+const BUNDLE_COVERS = [aboutUs, loginBgPlant];
 
 export default function CausesPage({ onNavigate }) {
   const navigate = useNavigate();
   const [ongs, setOngs] = useState([]);
   const [ongsLoading, setOngsLoading] = useState(true);
   const [ongsError, setOngsError] = useState(null);
+
+  const [campaigns, setCampaigns] = useState([]);
+  const [campaignsLoading, setCampaignsLoading] = useState(true);
+
+  const [bundles, setBundles] = useState([]);
+  const [bundlesLoading, setBundlesLoading] = useState(true);
+
   // Set default active tab to 'ongs' for maximum prominence and better UX
-  const [activeTab, setActiveTab] = useState('ongs'); 
+  const [activeTab, setActiveTab] = useState('ongs');
   const [activeFilter, setActiveFilter] = useState('todas');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -139,6 +67,7 @@ export default function CausesPage({ onNavigate }) {
   const [onlyVerified, setOnlyVerified] = useState(false);
   const [minScore, setMinScore] = useState(0);
 
+  // Load ONGs
   useEffect(() => {
     let cancelled = false;
     ngoService.list()
@@ -163,6 +92,44 @@ export default function CausesPage({ onNavigate }) {
     return () => { cancelled = true; };
   }, []);
 
+  // Load Campaigns
+  useEffect(() => {
+    let cancelled = false;
+    ngoService.listCampaigns()
+      .then((data) => {
+        if (!cancelled) {
+          setCampaigns(
+            data.map((c, idx) => ({
+              ...c,
+              cover: CAMPAIGN_COVERS[idx % CAMPAIGN_COVERS.length],
+            }))
+          );
+        }
+      })
+      .catch(() => { /* silently fallback to empty */ })
+      .finally(() => { if (!cancelled) setCampaignsLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Load Bundles
+  useEffect(() => {
+    let cancelled = false;
+    ngoService.listBundles()
+      .then((data) => {
+        if (!cancelled) {
+          setBundles(
+            data.map((b, idx) => ({
+              ...b,
+              cover: BUNDLE_COVERS[idx % BUNDLE_COVERS.length],
+            }))
+          );
+        }
+      })
+      .catch(() => { /* silently fallback to empty */ })
+      .finally(() => { if (!cancelled) setBundlesLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   const locations = [...new Set(ongs.map((ong) => ong.location).filter(Boolean))];
 
   const handleGoToBundle = (bundleId) => {
@@ -171,7 +138,7 @@ export default function CausesPage({ onNavigate }) {
 
   const handleGoToDonate = (item, type) => {
     if (type === 'campaign') {
-      navigate('/doacao', { state: { campaignId: item.id, campaignName: item.name, type: 'campaign', score: item.score } });
+      navigate('/doacao', { state: { campaignId: item.id, campaignName: item.name, type: 'campaign', score: item.score, ngoId: item.ngoId } });
     } else if (type === 'bundle') {
       navigate('/doacao', { state: { bundleId: item.id, bundleName: item.name, type: 'bundle', score: item.transparencyScore } });
     } else {
@@ -193,25 +160,23 @@ export default function CausesPage({ onNavigate }) {
     return matchesCause && matchesSearch && matchesLocation && matchesVerified && matchesScore;
   });
 
-  // Filter logic for Campaigns
-  const filteredCampaigns = initialCampaigns.filter(campaign => {
+  // Filter logic for Campaigns (API data — score and ngoId come directly from backend)
+  const filteredCampaigns = campaigns.filter(campaign => {
     const matchesCause = activeFilter === 'todas' || campaign.cause === activeFilter;
-    const matchesSearch = 
+    const matchesSearch =
       campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      campaign.ongName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      campaign.ngoName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       campaign.causeLabel.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLocation = locationFilter === 'todas' || campaign.location === locationFilter;
-    
     return matchesCause && matchesSearch && matchesLocation;
   });
 
-  // Filter logic for Bundles
-  const filteredBundles = initialBundles.filter(bundle => {
+  // Filter logic for Bundles (transparencyScore computed server-side)
+  const filteredBundles = bundles.filter(bundle => {
     const matchesCause = activeFilter === 'todas' || bundle.cause === activeFilter;
-    const matchesSearch = 
+    const matchesSearch =
       bundle.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       bundle.causeLabel.toLowerCase().includes(searchQuery.toLowerCase());
-    
     return matchesCause && matchesSearch;
   });
 
@@ -542,7 +507,7 @@ export default function CausesPage({ onNavigate }) {
                         
                         <div className="space-y-1">
                           <h3 className="text-xl font-bold text-gray-900">{campaign.name}</h3>
-                          <p className="text-xs text-[#0A3D36] font-bold">Por: {campaign.ongName}</p>
+                          <p className="text-xs text-[#0A3D36] font-bold">Por: {campaign.ngoName}</p>
                         </div>
 
                         <p className="text-gray-500 text-xs leading-relaxed max-w-xl font-medium">

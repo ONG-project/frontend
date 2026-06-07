@@ -108,3 +108,81 @@ class NGO(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Campaign(models.Model):
+    """An individual fundraising campaign run by a single NGO."""
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    name = models.CharField(max_length=255)
+    ngo = models.ForeignKey(
+        NGO,
+        on_delete=models.CASCADE,
+        related_name='campaigns',
+        help_text="The NGO running this campaign",
+    )
+    description = models.TextField(blank=True, null=True)
+    cause = models.CharField(
+        max_length=50,
+        help_text="Cause slug, e.g. 'meio-ambiente'",
+    )
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    match_multiplier = models.PositiveSmallIntegerField(
+        default=1,
+        help_text="Matchfunding multiplier (1 = no match)",
+    )
+    match_sponsor = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'campaign'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class Bundle(models.Model):
+    """A collective campaign backed by multiple NGOs."""
+
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
+    name = models.CharField(max_length=255)
+    cause = models.CharField(max_length=50)
+    description = models.TextField(blank=True, null=True)
+    target_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    raised_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    match_multiplier = models.PositiveSmallIntegerField(default=1)
+    match_sponsor = models.CharField(max_length=255, blank=True, null=True)
+    ngos = models.ManyToManyField(
+        NGO,
+        related_name='bundles',
+        blank=True,
+    )
+    eligibility_rules = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of eligibility rule strings",
+    )
+    distribution_rules = models.TextField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'bundle'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name

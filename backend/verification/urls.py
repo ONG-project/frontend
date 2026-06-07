@@ -7,6 +7,9 @@ from verification.views import (
     ngo_verification_view,
     allocation_criteria_view,
     validate_ong_view,
+    list_campaigns_view,
+    list_bundles_view,
+    bundle_detail_view,
 )
 
 urlpatterns = [
@@ -16,4 +19,7 @@ urlpatterns = [
     path('v1/ngos/<uuid:pk>/verification/', ngo_verification_view, name='ngo-verification'),
     path('v1/transparency/allocation-criteria/', allocation_criteria_view, name='allocation-criteria'),
     path('ong-validation/', validate_ong_view, name='ong-validation'),
+    path('v1/campaigns/', list_campaigns_view, name='campaign-list'),
+    path('v1/bundles/', list_bundles_view, name='bundle-list'),
+    path('v1/bundles/<uuid:pk>/', bundle_detail_view, name='bundle-detail'),
 ]
