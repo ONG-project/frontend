@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     # Aplicativos locais (Monolito Modular)
     'authentication',
     'financial',
-    'transparency',
     'verification',
 ]
 
