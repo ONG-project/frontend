@@ -96,3 +96,62 @@ class CurrentUserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['email'], 'eu@teste.com')
         self.assertEqual(response.data['role'], 'donor')
+
+
+class ChangePasswordTests(APITestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            email='senha@teste.com',
+            full_name='Usuário Senha',
+            password='Senha@Forte123',
+            role='donor',
+        )
+        login_response = self.client.post(
+            reverse('login'),
+            {'email': 'senha@teste.com', 'password': 'Senha@Forte123'},
+        )
+        self.token = login_response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
+
+    def test_alterar_senha_com_dados_validos_retorna_200(self):
+        url = reverse('change-password')
+        data = {
+            'current_password': 'Senha@Forte123',
+            'new_password': 'NovaSenha@456',
+            'new_password_confirm': 'NovaSenha@456',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('NovaSenha@456'))
+
+    def test_alterar_senha_senha_atual_incorreta_retorna_400(self):
+        url = reverse('change-password')
+        data = {
+            'current_password': 'SenhaErrada',
+            'new_password': 'NovaSenha@456',
+            'new_password_confirm': 'NovaSenha@456',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_alterar_senha_confirmacao_divergente_retorna_400(self):
+        url = reverse('change-password')
+        data = {
+            'current_password': 'Senha@Forte123',
+            'new_password': 'NovaSenha@456',
+            'new_password_confirm': 'OutraSenha@789',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_alterar_senha_sem_token_retorna_401(self):
+        self.client.credentials()
+        url = reverse('change-password')
+        data = {
+            'current_password': 'Senha@Forte123',
+            'new_password': 'NovaSenha@456',
+            'new_password_confirm': 'NovaSenha@456',
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
