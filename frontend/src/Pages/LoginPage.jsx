@@ -70,7 +70,13 @@ export default function LoginPage({ onRegisterClick }) {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
+            {errorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {errorMsg}
+              </div>
+            )}
+
             {/* E-mail */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-gray-800">E-mail corporativo ou pessoal</label>
@@ -80,6 +86,9 @@ export default function LoginPage({ onRegisterClick }) {
                 </span>
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   placeholder="nome@exemplo.com"
                   className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
                 />
@@ -98,6 +107,9 @@ export default function LoginPage({ onRegisterClick }) {
                 </span>
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   placeholder="••••••••"
                   className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
                 />
