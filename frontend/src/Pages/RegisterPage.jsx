@@ -16,11 +16,41 @@ const CAUSES = [
 function DonorForm({ onLoginClick }) {
   const [selectedCauses, setSelectedCauses] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const toggleCause = (id) => {
     setSelectedCauses(prev =>
       prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
     );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (password !== passwordConfirm) {
+      setErrorMsg('As senhas não coincidem.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { apiPost } = await import('../services/apiClient');
+      await apiPost('/v1/auth/register/donor/', {
+        full_name: fullName,
+        email,
+        password,
+        password_confirm: passwordConfirm,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrorMsg(err.message || 'Erro ao criar conta. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -44,12 +74,19 @@ function DonorForm({ onLoginClick }) {
   }
 
   return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+    <form className="space-y-5" onSubmit={handleSubmit}>
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+          {errorMsg}
+        </div>
+      )}
       <div className="space-y-2">
         <label className="block text-sm font-bold text-gray-800">Nome Completo</label>
         <input
           type="text"
           required
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
           placeholder="Seu nome completo"
           className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
         />
@@ -59,6 +96,8 @@ function DonorForm({ onLoginClick }) {
         <input
           type="email"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           placeholder="seu@email.com"
           className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
         />
@@ -69,6 +108,8 @@ function DonorForm({ onLoginClick }) {
           <input
             type="password"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
           />
@@ -78,6 +119,8 @@ function DonorForm({ onLoginClick }) {
           <input
             type="password"
             required
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
             placeholder="••••••••"
             className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
           />
@@ -107,8 +150,12 @@ function DonorForm({ onLoginClick }) {
         </div>
       </div>
       <div className="pt-4 space-y-3">
-        <button type="submit" className="w-full bg-[#147B72] hover:bg-teal-800 text-white font-bold py-4 rounded-full transition shadow-md">
-          Criar Conta de Doador
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#147B72] hover:bg-teal-800 disabled:opacity-60 text-white font-bold py-4 rounded-full transition shadow-md"
+        >
+          {loading ? 'Criando conta...' : 'Criar Conta de Doador'}
         </button>
         <p className="text-center text-sm text-gray-600 pt-1">
           Já tem uma conta?{' '}
@@ -123,6 +170,42 @@ function DonorForm({ onLoginClick }) {
 
 function OngForm({ onLoginClick }) {
   const [submitted, setSubmitted] = useState(false);
+  const [cnpj, setCnpj] = useState('');
+  const [razaoSocial, setRazaoSocial] = useState('');
+  const [nomePublico, setNomePublico] = useState('');
+  const [focusArea, setFocusArea] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+    if (password !== passwordConfirm) {
+      setErrorMsg('As senhas não coincidem.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { apiPost } = await import('../services/apiClient');
+      await apiPost('/v1/auth/register/ong/', {
+        full_name: nomePublico,
+        email,
+        password,
+        password_confirm: passwordConfirm,
+        cnpj,
+        organization_name: razaoSocial,
+        focus_area: focusArea,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setErrorMsg(err.message || 'Erro ao enviar cadastro. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (submitted) {
     return (
@@ -139,13 +222,20 @@ function OngForm({ onLoginClick }) {
   }
 
   return (
-    <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+    <form className="space-y-5" onSubmit={handleSubmit}>
+      {errorMsg && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+          {errorMsg}
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="block text-sm font-bold text-gray-800">CNPJ</label>
           <input
             type="text"
             required
+            value={cnpj}
+            onChange={(e) => setCnpj(e.target.value)}
             placeholder="00.000.000/0001-00"
             className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
           />
@@ -155,6 +245,8 @@ function OngForm({ onLoginClick }) {
           <input
             type="text"
             required
+            value={razaoSocial}
+            onChange={(e) => setRazaoSocial(e.target.value)}
             placeholder="Nome oficial da organização"
             className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
           />
@@ -165,6 +257,8 @@ function OngForm({ onLoginClick }) {
         <input
           type="text"
           required
+          value={nomePublico}
+          onChange={(e) => setNomePublico(e.target.value)}
           placeholder="Como sua ONG é conhecida pelo público"
           className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
         />
@@ -174,6 +268,8 @@ function OngForm({ onLoginClick }) {
           <label className="block text-sm font-bold text-gray-800">Área de Atuação</label>
           <select
             required
+            value={focusArea}
+            onChange={(e) => setFocusArea(e.target.value)}
             className="w-full bg-[#EAE8E3] text-gray-800 rounded-lg px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition appearance-none"
           >
             <option value="">Selecione...</option>
@@ -184,28 +280,18 @@ function OngForm({ onLoginClick }) {
           </select>
         </div>
         <div className="space-y-2">
-          <label className="block text-sm font-bold text-gray-800">Localidade</label>
+          <label className="block text-sm font-bold text-gray-800">E-mail de Contato</label>
           <div className="relative">
-            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
-              type="text"
+              type="email"
               required
-              placeholder="Cidade, Estado"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="contato@suaong.org.br"
               className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-10 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
             />
           </div>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <label className="block text-sm font-bold text-gray-800">E-mail de Contato</label>
-        <div className="relative">
-          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="email"
-            required
-            placeholder="contato@suaong.org.br"
-            className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-10 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-          />
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,6 +302,8 @@ function OngForm({ onLoginClick }) {
             <input
               type="password"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-10 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
             />
@@ -228,6 +316,8 @@ function OngForm({ onLoginClick }) {
             <input
               type="password"
               required
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
               placeholder="••••••••"
               className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-10 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
             />
@@ -238,9 +328,13 @@ function OngForm({ onLoginClick }) {
         Após o cadastro, nossa equipe irá verificar os documentos e dados da organização antes de ativá-la na plataforma.
       </p>
       <div className="pt-2 space-y-3">
-        <button type="submit" className="w-full bg-[#147B72] hover:bg-teal-800 text-white font-bold py-4 rounded-full transition shadow-md flex items-center justify-center space-x-2">
-          <span>Solicitar Cadastro da ONG</span>
-          <ArrowRight className="w-4 h-4" />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-[#147B72] hover:bg-teal-800 disabled:opacity-60 text-white font-bold py-4 rounded-full transition shadow-md flex items-center justify-center space-x-2"
+        >
+          <span>{loading ? 'Enviando...' : 'Solicitar Cadastro da ONG'}</span>
+          {!loading && <ArrowRight className="w-4 h-4" />}
         </button>
         <p className="text-center text-sm text-gray-600 pt-1">
           Já tem uma conta?{' '}

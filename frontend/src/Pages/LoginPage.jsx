@@ -1,55 +1,51 @@
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function LoginPage({ onRegisterClick }) {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const handleLogin = async (role) => {
-    const mockUser = {
-      name: role === 'donor' ? 'João Silva' : 'Instituto Rebrota',
-      email: 'exemplo@email.com',
-      role: role,
-      ...(role === 'ong' ? { ngoName: 'Instituto Rebrota' } : {}),
-    };
-    await login(mockUser);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-    const from = location.state?.from;
-    if (from) {
-      if (typeof from === 'string') {
-        navigate(from);
-      } else if (from.pathname) {
-        navigate(from.pathname, { state: from.state });
-      }
-      return;
-    }
-
-    if (role === 'donor') navigate('/donor-profile');
-    if (role === 'ong') navigate('/gestao-ong');
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    handleLogin('donor');
+    setErrorMsg('');
+
+    try {
+      const user = await login({ email, password });
+
+      if (user.role === 'donor') {
+        navigate('/donor-profile');
+      } else if (user.role === 'ong') {
+        navigate('/gestao-ong');
+      } else {
+        navigate('/'); // fallback
+      }
+    } catch (err) {
+      setErrorMsg(
+        err.message || 'Credenciais inválidas. Tente novamente.'
+      );
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#FCFBF9] font-sans">
-      
+
       {/* Left Column - Image & Branding */}
       <div className="relative w-full lg:w-1/2 h-64 lg:h-auto bg-cover bg-center" style={{ backgroundImage: `url(${loginBg})` }}>
         {/* Overlay for contrast if needed, but keeping it light if the image is light */}
         <div className="absolute inset-0 bg-black/40"></div>
-        
+
         <div className="relative h-full flex flex-col justify-between p-8 lg:p-16">
           {/* Logo */}
           <div className="text-white font-bold text-xl tracking-widest uppercase flex items-center">
-             <span className="text-2xl mr-1">✦</span> ONG+
+            <span className="text-2xl mr-1">✦</span> ONG+
           </div>
-          
+
           {/* Text at bottom */}
           <div className="max-w-[450px] mb-8 lg:mb-0">
             <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-4">
@@ -65,7 +61,7 @@ export default function LoginPage({ onRegisterClick }) {
       {/* Right Column - Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-16">
         <div className="max-w-[400px] w-full">
-          
+
           <div className="mb-10">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo de volta</h2>
             <p className="text-gray-500 text-sm">
@@ -108,8 +104,8 @@ export default function LoginPage({ onRegisterClick }) {
             </div>
 
             {/* Submit Button */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="w-full bg-[#147B72] hover:bg-teal-800 text-white font-bold py-4 rounded-full transition shadow-md cursor-pointer"
             >
               Entrar
@@ -123,8 +119,8 @@ export default function LoginPage({ onRegisterClick }) {
             </div>
 
             {/* Google Login */}
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => handleLogin('donor')}
               className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-full transition flex items-center justify-center space-x-3 shadow-sm cursor-pointer"
             >
@@ -160,12 +156,12 @@ export default function LoginPage({ onRegisterClick }) {
                 Cadastre-se
               </button>
             </p>
-            
+
             {/* Link temporário para simular acesso ONG */}
             <div className="text-center mt-4">
-               <button type="button" onClick={() => handleLogin('ong')} className="text-xs text-gray-400 hover:text-gray-600 underline">
-                 [Dev] Simular Login ONG
-               </button>
+              <button type="button" onClick={() => handleLogin('ong')} className="text-xs text-gray-400 hover:text-gray-600 underline">
+                [Dev] Simular Login ONG
+              </button>
             </div>
           </form>
         </div>

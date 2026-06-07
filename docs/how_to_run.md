@@ -119,6 +119,10 @@ O backend ficara disponivel em `http://localhost:8000/`.
 
 ## Executando com Docker Compose (Recomendado)
 
+> [!IMPORTANT]
+> **O Docker Desktop precisa estar em execução.**
+> Antes de executar os comandos abaixo, certifique-se de que o aplicativo Docker Desktop esteja aberto e com o motor rodando (ícone verde). Caso contrário, você verá um erro de conexão ("failed to connect to the docker API").
+
 O projeto possui um arquivo `docker-compose.yml` na raiz que orquestra o banco de dados, o backend e o frontend.
 
 Para iniciar tudo:
