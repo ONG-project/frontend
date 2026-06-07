@@ -1,11 +1,12 @@
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function LoginPage({ onRegisterClick }) {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogin = async (role) => {
     const mockUser = {
@@ -15,7 +16,17 @@ export default function LoginPage({ onRegisterClick }) {
       ...(role === 'ong' ? { ngoName: 'Instituto Rebrota' } : {}),
     };
     await login(mockUser);
-    
+
+    const from = location.state?.from;
+    if (from) {
+      if (typeof from === 'string') {
+        navigate(from);
+      } else if (from.pathname) {
+        navigate(from.pathname, { state: from.state });
+      }
+      return;
+    }
+
     if (role === 'donor') navigate('/donor-profile');
     if (role === 'ong') navigate('/gestao-ong');
   };

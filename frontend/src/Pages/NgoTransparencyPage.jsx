@@ -42,17 +42,17 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
   const apiVerified = data.verification?.status === 'verified' || ong?.verified;
 
   const resolvedOng = {
-    name: data.profile?.name || ong?.name || 'Instituto Terra Viva',
+    name: data.profile?.name || ong?.name || '—',
     cnpj: data.profile?.cnpj || ong?.cnpj || '',
     location: data.profile?.location || ong?.location || '',
     operatingSince: data.profile?.yearsOperating
       ? `${data.profile.yearsOperating} anos de operação`
       : (ong?.operatingSince || '—'),
-    legalNature: ong?.legalNature || 'Private Association',
+    legalNature: ong?.legalNature || '',
     score: apiScore,
-    budgetUtilization: ong?.budgetUtilization || 92,
-    lastAudit: ong?.lastAudit || 'Dec 2023',
-    auditStatus: ong?.auditStatus || 'UNQUALIFIED',
+    budgetUtilization: data.financial?.budgetUtilization ?? ong?.budgetUtilization ?? 0,
+    lastAudit: data.profile?.lastExternalAudit || ong?.lastAudit || '—',
+    auditStatus: data.verification?.status || ong?.auditStatus || '—',
     verified: apiVerified,
   };
 
@@ -199,16 +199,21 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   <Scale className="w-4 h-4 text-gray-400" />
                 </div>
                 <div className="space-y-4">
-                  {[
-                    { label: 'Certidão Negativa Federal', status: 'NEGATIVA' },
-                    { label: 'Certidão Negativa Estadual', status: 'NEGATIVA' },
-                    { label: 'Regularidade Trabalhista (CNDT)', status: 'NEGATIVA' }
-                  ].map((cert, idx) => (
+                  {(data.verification?.evidenceList || []).map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between py-1 border-b border-gray-50 last:border-0">
-                      <span className="text-xs font-semibold text-gray-600">{cert.label}</span>
-                      <span className="bg-[#E4F2EE] text-[#0A665C] text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border border-[#0A665C]/10 tracking-wider">{cert.status}</span>
+                      <span className="text-xs font-semibold text-gray-600">{item.label}</span>
+                      <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider ${
+                          item.status === 'success'
+                            ? 'bg-[#E4F2EE] text-[#0A665C] border border-[#0A665C]/10'
+                            : 'bg-amber-50 text-amber-700 border border-amber-100'
+                        }`}>
+                        {item.status?.toUpperCase()}
+                      </span>
                     </div>
                   ))}
+                  {(!data.verification?.evidenceList || data.verification.evidenceList.length === 0) && (
+                    <p className="text-xs text-gray-400">Dados de conformidade não disponíveis.</p>
+                  )}
                 </div>
               </div>
 

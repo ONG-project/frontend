@@ -81,9 +81,13 @@ export default function DonationPage({ onGoHome }) {
       </div>
     );
   }
-  const [frequency, setFrequency] = useState('Mensal'); // 'Única', 'Mensal'
-  const [selectedAmount, setSelectedAmount] = useState(50);
-  const [customAmount, setCustomAmount] = useState('');
+  const [frequency, setFrequency] = useState(routeState.frequency || 'Mensal'); // 'Única', 'Mensal'
+  const [selectedAmount, setSelectedAmount] = useState(routeState.amount ? Number(routeState.amount) : 50);
+  const [customAmount, setCustomAmount] = useState(
+    routeState.amount && ![50, 100, 200].includes(Number(routeState.amount))
+      ? String(routeState.amount)
+      : ''
+  );
   const [selectedCause, setSelectedCause] = useState(() => {
     if (routeState.type === 'bundle') return `Bundle: ${routeState.bundleName}`;
     if (routeState.type === 'campaign') return `Campanha: ${routeState.campaignName}`;
@@ -99,15 +103,8 @@ export default function DonationPage({ onGoHome }) {
 
   const displayAmount = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
 
-  const matchMultiplier = routeState.type === 'bundle' && routeState.bundleId === 'b1' ? 3 
-    : routeState.type === 'campaign' && routeState.campaignId === 'c1' ? 3
-    : routeState.type === 'campaign' && (routeState.campaignId === 'c3' || routeState.campaignId === 'c3 (Cópia)') ? 2
-    : 1;
-
-  const matchSponsor = routeState.type === 'bundle' && routeState.bundleId === 'b1' ? 'Fundação Clima Global'
-    : routeState.type === 'campaign' && routeState.campaignId === 'c1' ? 'BioCorp S.A.'
-    : routeState.type === 'campaign' && (routeState.campaignId === 'c3' || routeState.campaignId === 'c3 (Cópia)') ? 'TechFund Brasil'
-    : null;
+  const matchMultiplier = routeState.matchMultiplier || 1;
+  const matchSponsor = routeState.matchSponsor || null;
 
   const combinedAmount = displayAmount * matchMultiplier;
 
