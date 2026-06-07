@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Mail, Lock } from 'lucide-react';
 import loginBg from '../assets/login_bg_plant.png';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,23 +7,23 @@ import { useNavigate } from 'react-router-dom';
 export default function LoginPage({ onRegisterClick }) {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = async (role) => {
-    const mockUser = {
-      name: role === 'donor' ? 'João Silva' : 'Instituto Rebrota',
-      email: 'exemplo@email.com',
-      role: role,
-      ...(role === 'ong' ? { ngoName: 'Instituto Rebrota' } : {}),
-    };
-    await login(mockUser);
-    
-    if (role === 'donor') navigate('/donor-profile');
-    if (role === 'ong') navigate('/gestao-ong');
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    handleLogin('donor');
+    setErrorMsg('');
+    
+    try {
+      const user = await login({ email, password });
+      
+      if (user.role === 'donor') navigate('/donor-profile');
+      else if (user.role === 'ong') navigate('/gestao-ong');
+      else navigate('/'); // fallback
+    } catch (err) {
+      setErrorMsg(err.message || 'Credenciais inválidas. Tente novamente.');
+    }
   };
 
   return (
@@ -30,16 +31,13 @@ export default function LoginPage({ onRegisterClick }) {
       
       {/* Left Column - Image & Branding */}
       <div className="relative w-full lg:w-1/2 h-64 lg:h-auto bg-cover bg-center" style={{ backgroundImage: `url(${loginBg})` }}>
-        {/* Overlay for contrast if needed, but keeping it light if the image is light */}
         <div className="absolute inset-0 bg-black/40"></div>
         
         <div className="relative h-full flex flex-col justify-between p-8 lg:p-16">
-          {/* Logo */}
           <div className="text-white font-bold text-xl tracking-widest uppercase flex items-center">
              <span className="text-2xl mr-1">✦</span> ONG+
           </div>
           
-          {/* Text at bottom */}
           <div className="max-w-[450px] mb-8 lg:mb-0">
             <h1 className="text-3xl lg:text-4xl font-extrabold text-white leading-tight mb-4">
               Continue seu impacto curado.
@@ -62,7 +60,13 @@ export default function LoginPage({ onRegisterClick }) {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6">
+            {errorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {errorMsg}
+              </div>
+            )}
+
             {/* E-mail */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-gray-800">E-mail corporativo ou pessoal</label>
@@ -72,6 +76,9 @@ export default function LoginPage({ onRegisterClick }) {
                 </span>
                 <input
                   type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                   placeholder="nome@exemplo.com"
                   className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
                 />
@@ -90,6 +97,9 @@ export default function LoginPage({ onRegisterClick }) {
                 </span>
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                   placeholder="••••••••"
                   className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
                 />
@@ -114,7 +124,6 @@ export default function LoginPage({ onRegisterClick }) {
             {/* Google Login */}
             <button 
               type="button" 
-              onClick={() => handleLogin('donor')}
               className="w-full bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-bold py-4 rounded-full transition flex items-center justify-center space-x-3 shadow-sm cursor-pointer"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -149,13 +158,6 @@ export default function LoginPage({ onRegisterClick }) {
                 Cadastre-se
               </button>
             </p>
-            
-            {/* Link temporário para simular acesso ONG */}
-            <div className="text-center mt-4">
-               <button type="button" onClick={() => handleLogin('ong')} className="text-xs text-gray-400 hover:text-gray-600 underline">
-                 [Dev] Simular Login ONG
-               </button>
-            </div>
           </form>
         </div>
       </div>

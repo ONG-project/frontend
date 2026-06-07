@@ -19,9 +19,9 @@ async function parseResponse(res) {
   }
   if (!res.ok) {
     if (res.status === 401) {
-       localStorage.removeItem('@ongplus:token');
-       localStorage.removeItem('@ongplus:refresh_token');
-       localStorage.removeItem('@ongplus:user');
+      localStorage.removeItem('@ongplus:token');
+      localStorage.removeItem('@ongplus:refresh_token');
+      localStorage.removeItem('@ongplus:user');
     }
     const message = data?.error || data?.detail || `Erro ${res.status} na API`;
     throw new Error(message);

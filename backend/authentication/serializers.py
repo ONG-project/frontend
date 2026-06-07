@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import CustomUser
+from .models import CustomUser, DonorProfile
 from verification.models import NGO
 
 
@@ -29,6 +29,7 @@ class DonorRegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             role=CustomUser.Role.DONOR,
         )
+        DonorProfile.objects.create(user=user)
         return user
 
 
