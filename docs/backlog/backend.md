@@ -11,14 +11,14 @@ Prioridade para MVP 09/06: criar API minima de healthcheck, ONGs e transparencia
 ## Itens ja iniciados
 
 - Estrutura Django base em `backend/ong_plus`.
-- Apps de dominio criados como pacotes: `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`, alem de duplicatas sob `backend/apps`.
+- Apps de dominio criados como pacotes: `authentication`, `financial`, `transparency`, `verification` e `urgency_request`, alem de duplicatas sob `backend/apps`.
 - Modelo `NGO` inicial no app `verification`, com campos como nome, CNPJ, area de atuacao, score e status ativo.
 - Configuracao inicial de CORS para o frontend Vite.
 - Rota padrao do Django Admin disponivel em `/admin/`.
 
 ## Estrutura de API e projeto
 
-- [ ] Completar models, serializers, views e urls para os apps `authentication`, `financial`, `transparency`, `verification`, `ai_assistant` e `urgency_request`.
+- [ ] Completar models, serializers, views e urls para os apps `authentication`, `financial`, `transparency`, `verification` e `urgency_request`.
 - [ ] Remover duplicidade entre apps na raiz do backend e apps dentro de `backend/apps`, ou padronizar uma unica estrutura. **P0 MVP**
 - [ ] Adicionar Django REST Framework, caso a API REST seja o caminho escolhido. **P0 MVP**
 - [ ] Criar endpoints versionados, por exemplo `/api/v1/...`. **P0 MVP**

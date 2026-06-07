@@ -113,7 +113,6 @@ O backend segue uma organizacao de monolito modular em Django. Os dominios previ
 - `financial`: doacoes, pagamentos, recibos, matchfunding e repasses.
 - `transparency`: relatorios, evidencias, metricas de impacto e dados publicos.
 - `urgency_request`: solicitacoes emergenciais e workflow de aprovacao.
-- `ai_assistant`: apoio inteligente para duvidas e navegacao assistida.
 
 ### Frontend
 
