@@ -3,6 +3,16 @@ import { apiPost, apiGet } from '../services/apiClient';
 
 const AuthContext = createContext({});
 
+function normalizeUser(userData) {
+  if (!userData) return null;
+  return {
+    id: userData.id,
+    name: userData.full_name || userData.name || '',
+    email: userData.email || '',
+    role: userData.role || 'visitor',
+  };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,8 +23,9 @@ export function AuthProvider({ children }) {
     if (token) {
       apiGet('/v1/auth/me/')
         .then((userData) => {
-           setUser(userData);
-           localStorage.setItem('@ongplus:user', JSON.stringify(userData));
+           const normalized = normalizeUser(userData);
+           setUser(normalized);
+           localStorage.setItem('@ongplus:user', JSON.stringify(normalized));
         })
         .catch(() => {
            setUser(null);
@@ -32,15 +43,23 @@ export function AuthProvider({ children }) {
 
   const login = async (credentials) => {
     const data = await apiPost('/v1/auth/login/', credentials);
-    const { access, refresh, full_name, role } = data;
+    const { access, refresh } = data;
     localStorage.setItem('@ongplus:token', access);
     localStorage.setItem('@ongplus:refresh_token', refresh);
-    
-    // Obter dados adicionais do usuário (se necessário) ou usar os do token
-    const userData = { full_name, role }; 
+
+    const me = await apiGet('/v1/auth/me/');
+    const userData = normalizeUser(me);
     setUser(userData);
     localStorage.setItem('@ongplus:user', JSON.stringify(userData));
     return userData;
+  };
+
+  const updateUser = (updates) => {
+    setUser((prevUser) => {
+      const nextUser = { ...prevUser, ...updates };
+      localStorage.setItem('@ongplus:user', JSON.stringify(nextUser));
+      return nextUser;
+    });
   };
 
   const logout = async () => {
@@ -60,7 +79,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, updateUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

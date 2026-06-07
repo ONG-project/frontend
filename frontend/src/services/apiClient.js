@@ -9,6 +9,24 @@ function getAuthHeaders(customHeaders = {}) {
   return headers;
 }
 
+function extractApiErrorMessage(data) {
+  if (!data) return null;
+  if (typeof data === 'string') return data;
+  if (Array.isArray(data)) return data.join(' ');
+
+  return Object.entries(data)
+    .flatMap(([key, value]) => {
+      if (Array.isArray(value)) {
+        return value.map((item) => `${key}: ${item}`);
+      }
+      if (typeof value === 'object' && value !== null) {
+        return extractApiErrorMessage(value);
+      }
+      return `${key}: ${value}`;
+    })
+    .join(' ');
+}
+
 async function parseResponse(res) {
   const text = await res.text();
   let data;
@@ -23,7 +41,7 @@ async function parseResponse(res) {
       localStorage.removeItem('@ongplus:refresh_token');
       localStorage.removeItem('@ongplus:user');
     }
-    const message = data?.error || data?.detail || `Erro ${res.status} na API`;
+    const message = data?.error || data?.detail || extractApiErrorMessage(data) || `Erro ${res.status} na API`;
     throw new Error(message);
   }
   return data;

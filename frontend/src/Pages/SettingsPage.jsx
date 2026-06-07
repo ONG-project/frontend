@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, User, CreditCard, X } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, login } = useAuth();
+  const { user, updateUser } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState(user?.name || '');
@@ -16,9 +16,9 @@ export default function SettingsPage() {
     setEmail(user?.email ?? '');
   }, [user]);
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!user) return;
-    await login({ ...user, name, email });
+    updateUser({ name, email });
     alert('Alterações salvas com sucesso!');
   };
 
