@@ -101,7 +101,7 @@ O repositorio adota o padrao **monorepo**, reunindo backend, frontend e document
 ongplus/
 |-- backend/      # API REST em Django
 |-- frontend/     # SPA em React + Vite
-|-- docs/         # Workflows, user stories, backlogs e guias
+|-- docs/         # Workflows, user stories, guias e estado de integracao
 ```
 
 ### Backend
@@ -124,9 +124,7 @@ O frontend e uma SPA em React + Vite. O escopo esperado inclui telas publicas, a
 
 - [Plano de entrega do MVP - 09/06/2026](docs/mvp-entrega-09-06.md)
 - [Checklist de validacao do MVP - 09/06/2026](docs/checklists/mvp-validacao-09-06.md)
-- [Backlog frontend](docs/backlog/frontend.md)
-- [Backlog backend](docs/backlog/backend.md)
-- [Backlog de integracao e produto](docs/backlog/integracao-produto.md)
+- [Estado de mocks e integracao do frontend](docs/estado-mocks-e-integracao.md)
 - [User story do doador](docs/user_stories/doador.md)
 - [User story da ONG](docs/user_stories/ong.md)
 - [User story do administrador](docs/user_stories/admin.md)
@@ -146,6 +144,6 @@ Consulte o guia de execucao:
 ## Contribuindo
 
 1. Crie uma branch a partir de `develop`.
-2. Implemente uma tarefa rastreavel dos backlogs.
+2. Consulte o documento de estado de integracao e mocks antes de alterar telas com dados ficticios.
 3. Adicione validacoes e testes quando a mudanca afetar regra de negocio ou fluxo critico.
 4. Abra um Pull Request descrevendo escopo, telas/APIs alteradas e evidencias de teste.
