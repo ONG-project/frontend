@@ -86,6 +86,7 @@ export default function BundleDetailPage({ onNavigate }) {
         bundleName: bundle.name,
         type: 'bundle',
         score: bundle.transparencyScore,
+        ngoId: bundle.ongs?.[0]?.id,
       },
     });
   };

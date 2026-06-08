@@ -2,13 +2,31 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 
-const DEFAULT_NGO = { id: 1, name: 'Instituto Rebrota' };
-
 export default function UrgencyRequestPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const ngoId = user?.ngoId ?? DEFAULT_NGO.id;
-  const ngoName = user?.ngoName ?? DEFAULT_NGO.name;
+  const ngoId = user?.ngoId;
+  const ngoName = user?.ngoName || user?.name || 'Sua ONG';
+
+  if (!ngoId) {
+    return (
+      <div className="min-h-screen bg-[#FAF8F5] font-sans flex items-center justify-center px-6">
+        <div className="bg-white border border-gray-100 rounded-2xl p-8 max-w-md text-center shadow-sm">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">ONG não vinculada</h2>
+          <p className="text-gray-500 text-sm mb-6">
+            Sua conta de gestão ainda não está associada a uma ONG na plataforma.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/gestao-ong')}
+            className="bg-[#0A665C] text-white font-bold px-6 py-2.5 rounded-full text-sm"
+          >
+            Ir para Gestão
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">

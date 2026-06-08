@@ -7,15 +7,11 @@ import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 import { 
   UploadCloud, 
   ChevronRight, 
-  ChevronLeft,
   ShieldCheck,
-  Search,
   PlusCircle,
   Download,
   History,
   RefreshCw,
-  Calendar,
-  Mail,
   FileText,
   FileDown,
   Check,
@@ -39,9 +35,8 @@ import Footer from '../components/Footer';
 export default function NgoManagementPage({ onNavigate }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useAuth();
-  const ngoName = user?.ngoName ?? 'Instituto Rebrota';
-  // Always start as null — UUID is resolved from the API below to avoid stale integer IDs from localStorage
-  const [ngoId, setNgoId] = useState(null);
+  const ngoName = user?.ngoName || user?.name || 'Sua ONG';
+  const [ngoId, setNgoId] = useState(user?.ngoId || null);
   const [ngoScore, setNgoScore] = useState(0);
 
   const [ngoDetails, setNgoDetails] = useState(null);
@@ -53,11 +48,6 @@ export default function NgoManagementPage({ onNavigate }) {
   const [urgencyView, setUrgencyView] = useState('list');
   const [urgencyRequestId, setUrgencyRequestId] = useState(null);
   const [campaignTab, setCampaignTab] = useState('ativas');
-  const [donorSection, setDonorSection] = useState('doadores');
-
-  // Doadores tab states
-  const [donorFilter, setDonorFilter] = useState('Todos');
-  const [searchQuery, setSearchQuery] = useState('');
 
   // Relatorios tab states
   const [period, setPeriod] = useState('30-days');
@@ -87,18 +77,9 @@ export default function NgoManagementPage({ onNavigate }) {
   const [formMatchPeriod, setFormMatchPeriod] = useState('');
 
   useEffect(() => {
-    // Resolve the real UUID from the API — never use user.ngoId directly
-    // because it may be a stale integer from a previous session/mock
-    ngoService.list()
-      .then((list) => {
-        const match = list.find((item) => item.name === ngoName) || list[0];
-        if (match) {
-          setNgoScore(match.score);
-          setNgoId(match.id); // Always use UUID from API
-        }
-      })
-      .catch(console.error);
-  }, [ngoName]);
+    if (!user?.ngoId) return;
+    setNgoId(user.ngoId);
+  }, [user?.ngoId]);
 
   useEffect(() => {
     if (tabFromUrl) setActiveSubTab(tabFromUrl);
@@ -115,7 +96,10 @@ export default function NgoManagementPage({ onNavigate }) {
 
     // Fetch NGO Details
     ngoService.getById(ngoId)
-      .then(setNgoDetails)
+      .then((data) => {
+        setNgoDetails(data);
+        setNgoScore(data.score ?? 0);
+      })
       .catch(console.error);
     
     // Fetch NGO Campaigns
@@ -132,19 +116,13 @@ export default function NgoManagementPage({ onNavigate }) {
       .catch(console.error);
   }, [ngoId]);
 
-  const donorRows = [
-    { initials: 'AS', color: 'bg-[#B2E4E1] text-[#0A665C]', name: 'Alice Schmidt', email: 'alice.schmidt@email.com', value: 'R$ 450,00', frequency: 'Mensal', date: '12 Out, 2024', status: 'Ativo' },
-    { initials: 'RM', color: 'bg-[#CBD9ED] text-indigo-700', name: 'Ricardo Mendes', email: 'mendes.r@provedor.net', value: 'R$ 1.200,00', frequency: 'Eventual', date: '08 Out, 2024', status: 'Ativo' },
-    { initials: 'HB', color: 'bg-gray-200 text-gray-600', name: 'Helena Barbosa', email: 'helena.b@site.com', value: 'R$ 75,00', frequency: 'Mensal', date: '05 Out, 2024', status: 'Pendente' },
-    { initials: 'CP', color: 'bg-[#DCEDC8] text-[#0A665C]', name: 'Clara Peroli', email: 'clara.peroli@gmail.com', value: 'R$ 300,00', frequency: 'Mensal', date: '28 Set, 2024', status: 'Ativo' }
-  ];
-
-  const filteredDonors = donorRows.filter((donor) => {
-    const matchesFilter = donorFilter === 'Todos' || donor.frequency === donorFilter;
-    const query = searchQuery.toLowerCase();
-    const matchesQuery = donor.name.toLowerCase().includes(query) || donor.email.toLowerCase().includes(query);
-    return matchesFilter && matchesQuery;
-  });
+  const ngoInitials = (ngoDetails?.name || ngoName || 'ONG')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase();
 
   // Action handlers
   const handleOpenCreate = () => {
@@ -274,7 +252,7 @@ export default function NgoManagementPage({ onNavigate }) {
                 <span>Painel de Gestão</span>
               </span>
               <span className="text-xs font-semibold text-gray-500">
-                CNPJ: {ngoDetails?.cnpj || '12.345.678/0001-90'}
+                CNPJ: {ngoDetails?.cnpj || '—'}
               </span>
             </div>
 
@@ -283,7 +261,7 @@ export default function NgoManagementPage({ onNavigate }) {
               {ngoDetails?.name || ngoName}
             </h1>
             <p className="text-gray-500 text-sm leading-relaxed max-w-2xl">
-              Bem-vindo de volta. Aqui você pode gerenciar suas campanhas, monitorar doações e exportar relatórios de impacto.
+              Bem-vindo de volta, {user?.name || 'gestor'}. Aqui você pode gerenciar suas campanhas, monitorar doações e exportar relatórios de impacto.
             </p>
           </div>
 
@@ -291,7 +269,7 @@ export default function NgoManagementPage({ onNavigate }) {
           <div className="mt-6 md:mt-0 w-20 h-20 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center p-3">
             <div className="w-full h-full bg-[#EAE8E3] rounded-lg flex flex-col items-center justify-center text-gray-400 font-bold text-xs uppercase tracking-tighter">
               <div className="w-6 h-6 border-2 border-gray-400 rounded-full flex items-center justify-center font-bold text-[10px]">
-                IR
+                {ngoInitials || 'ONG'}
               </div>
             </div>
           </div>
@@ -302,7 +280,6 @@ export default function NgoManagementPage({ onNavigate }) {
           {[
             { id: 'visao-geral', label: 'Visão Geral & Transparência' },
             { id: 'campanhas', label: 'Minhas Campanhas' },
-            { id: 'doadores', label: 'Doadores' },
             { id: 'relatorios', label: 'Relatórios' },
             { id: 'cadastro', label: 'Alterações Cadastrais' }
           ].map((subTab) => {
@@ -434,7 +411,7 @@ export default function NgoManagementPage({ onNavigate }) {
               <div>
                 <h2 className="text-3xl font-extrabold text-[#0A3D36]">Minhas Campanhas</h2>
                 <p className="text-gray-500 text-xs mt-1.5">
-                  Gerencie o impacto do Instituto Rebrota. Acompanhe a arrecadação em tempo real e crie novas iniciativas.
+                  Gerencie o impacto de {ngoDetails?.name || ngoName}. Acompanhe a arrecadação em tempo real e crie novas iniciativas.
                 </p>
               </div>
               {!isCreatingCampaign && (
@@ -756,249 +733,19 @@ export default function NgoManagementPage({ onNavigate }) {
           </div>
         )}
 
-
-        {/* VIEW 3: Doadores */}
-        {activeSubTab === 'doadores' && (
-          <div className="space-y-8">
-            
-            {/* Upper title & info bar */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h2 className="text-3xl font-extrabold text-[#0A3D36]">Base de Doadores</h2>
-                <div className="flex items-center space-x-3.5 mt-1">
-                  <span className="bg-[#CBDDCD] text-[#0A3D36] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                    CNPJ: Ativo
-                  </span>
-                  <span className="text-xs text-gray-400 font-semibold">
-                    Última atualização: Hoje, 09:42
-                  </span>
-                </div>
-              </div>
-
-              {/* Search input & buttons */}
-              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <div className="relative flex-grow sm:flex-grow-0 sm:w-64">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
-                    <Search className="w-4 h-4" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Buscar por nome ou e-mail..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[#EAE8E3]/60 text-gray-800 placeholder-gray-400 rounded-lg pl-10 pr-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-[#0A665C]"
-                  />
-                </div>
-                
-                <div className="bg-[#EAE8E3]/60 p-0.5 rounded-lg flex space-x-1">
-                  {['Todos', 'Mensais', 'Eventuais'].map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setDonorFilter(filter)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
-                        donorFilter === filter 
-                          ? 'bg-[#0A665C] text-white shadow-sm' 
-                          : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Inner sub-tabs list */}
-            <div className="flex space-x-6 border-b border-gray-100 pb-1">
-              {[
-                { id: 'doadores', label: 'Doadores' },
-                { id: 'campanhas', label: 'Campanhas' },
-                { id: 'relatorios', label: 'Relatórios' },
-                { id: 'retencao', label: 'Retenção' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setDonorSection(tab.id)}
-                  className={`pb-3 text-xs font-bold uppercase tracking-wider ${
-                    donorSection === tab.id ? 'text-[#0A665C] border-b-2 border-[#0A665C]' : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {donorSection === 'doadores' && (
-            <>
-            {/* Donors Table */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-100 text-gray-400 font-bold text-[10px] uppercase tracking-wider bg-gray-50/50">
-                      <th className="py-4 px-6">Doador</th>
-                      <th className="py-4 px-6 text-right">Último Valor</th>
-                      <th className="py-4 px-6">Frequência</th>
-                      <th className="py-4 px-6">Última Data</th>
-                      <th className="py-4 px-6">Status</th>
-                      <th className="py-4 px-6 text-center">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-150 text-xs font-medium text-gray-700">
-                    {filteredDonors.map((donor) => (
-                      <tr key={donor.email}>
-                        <td className="py-4 px-6 flex items-center space-x-3.5">
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${donor.color}`}>
-                            {donor.initials}
-                          </div>
-                          <div>
-                            <div className="font-bold text-gray-900">{donor.name}</div>
-                            <div className="text-gray-400 text-[10px]">{donor.email}</div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-6 text-right font-bold text-[#0A665C] text-sm">{donor.value}</td>
-                        <td className="py-4 px-6">
-                          <span className="flex items-center space-x-1.5 text-gray-500 font-semibold text-[11px]">
-                            {donor.frequency === 'Mensal' ? <RefreshCw className="w-3 h-3" /> : <Calendar className="w-3 h-3" />}
-                            <span>{donor.frequency === 'Eventual' ? 'Única' : donor.frequency}</span>
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-gray-500 font-semibold">{donor.date}</td>
-                        <td className="py-4 px-6">
-                          <span className={`font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-wide ${donor.status === 'Ativo' ? 'bg-[#CBDDCD]/60 text-[#0A3D36]' : 'bg-gray-100 text-gray-500'}`}>
-                            ● {donor.status}
-                          </span>
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <button className="bg-[#0A665C] hover:bg-[#08524a] text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-[10px] tracking-wide shadow-sm transition-colors mx-auto cursor-pointer">
-                            <Mail className="w-3 h-3" />
-                            <span>Enviar Mensagem</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Table pagination */}
-              <div className="flex items-center justify-between border-t border-gray-150 px-6 py-4 text-xs font-semibold text-gray-500">
-                <span>Mostrando {filteredDonors.length} de 1.240 doadores ativos</span>
-                <div className="flex items-center space-x-1">
-                  <button className="p-1.5 rounded-md hover:bg-gray-100 transition"><ChevronLeft className="w-4 h-4" /></button>
-                  <button className="w-7 h-7 bg-[#0A665C] text-white rounded-md flex items-center justify-center font-bold">1</button>
-                  <button className="w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center">2</button>
-                  <button className="w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center">3</button>
-                  <button className="p-1.5 rounded-md hover:bg-gray-100 transition"><ChevronRight className="w-4 h-4" /></button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom summary blocks */}
-            <div className="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-8">
-              {/* Engagement Alerts */}
-              <div className="bg-[#FAF8F5] border border-gray-100 p-8 rounded-2xl shadow-[0_1px_5px_rgba(0,0,0,0.01)] flex flex-col justify-between space-y-6">
-                <div className="space-y-1.5">
-                  <h4 className="font-extrabold text-[#0A3D36] text-lg">Engajamento de Impacto</h4>
-                  <p className="text-gray-500 text-xs leading-relaxed max-w-md">
-                    Você possui 12 doadores com pagamentos pendentes este mês. Inicie uma conversa empática para entender como podemos ajudá-los.
-                  </p>
-                </div>
-                <div className="flex space-x-3.5 pt-2">
-                  <button className="bg-gray-800 hover:bg-gray-900 text-white font-bold py-2.5 px-6 rounded-lg text-xs tracking-wide transition-colors cursor-pointer shadow-sm">
-                    Ver Pendências
-                  </button>
-                  <button className="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold py-2.5 px-6 rounded-lg text-xs tracking-wide transition-colors cursor-pointer">
-                    Baixar Relatório Mensal
-                  </button>
-                </div>
-              </div>
-
-              {/* Fundraising Target block */}
-              <div className="bg-[#E4F2EE] border border-[#CBDDCD] p-8 rounded-2xl shadow-[0_1px_5px_rgba(0,0,0,0.01)] flex flex-col justify-between space-y-4">
-                <div className="space-y-1.5">
-                  <h4 className="font-bold text-[#0A3D36] text-xs uppercase tracking-widest">Meta de Arrecadação</h4>
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-extrabold text-[#0A3D36]">R$ 84.200</span>
-                    <span className="text-[#0A665C] font-bold text-xs">78% da meta</span>
-                  </div>
-                </div>
-                
-                <div className="w-full bg-[#FAF8F5] rounded-full h-2.5 overflow-hidden border border-[#CBDDCD]/60">
-                  <div className="bg-[#0A665C] h-full rounded-full" style={{ width: '78%' }} />
-                </div>
-
-                <p className="text-[11px] text-gray-600 leading-normal">
-                  Faltam apenas <span className="font-bold text-gray-800">R$ 15.800</span> para batermos o objetivo mensal de reflorestamento.
-                </p>
-              </div>
-            </div>
-            </>
-            )}
-
-            {donorSection === 'campanhas' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {[
-                  { title: 'Projeto Verde Urbe', value: 'R$ 45.000', donors: '188 doadores' },
-                  { title: 'Refloresta SP', value: 'R$ 50.400', donors: '121 doadores' },
-                  { title: 'Ciclo Água Viva', value: 'R$ 82.400', donors: '267 doadores' }
-                ].map((item) => (
-                  <div key={item.title} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-2">
-                    <h4 className="text-sm font-bold text-gray-900">{item.title}</h4>
-                    <p className="text-2xl font-extrabold text-[#0A665C]">{item.value}</p>
-                    <p className="text-xs text-gray-500">{item.donors}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {donorSection === 'relatorios' && (
-              <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                <h4 className="text-sm font-bold text-gray-900 mb-4">Relatórios da Base de Doadores</h4>
-                <div className="space-y-3">
-                  {['Relatório Mensal de Retenção', 'Ticket Médio por Campanha', 'Doadores Inativos 90+ dias'].map((report) => (
-                    <div key={report} className="flex items-center justify-between bg-[#FAF8F5] border border-gray-100 rounded-xl px-4 py-3">
-                      <span className="text-xs font-semibold text-gray-700">{report}</span>
-                      <button className="text-xs font-bold text-[#0A665C]">Baixar</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {donorSection === 'retencao' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                  <p className="text-xs text-gray-500">Retenção 30 dias</p>
-                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">82%</p>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                  <p className="text-xs text-gray-500">Retenção 90 dias</p>
-                  <p className="text-3xl font-extrabold text-[#0A665C] mt-2">67%</p>
-                </div>
-                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
-                  <p className="text-xs text-gray-500">Risco de churn</p>
-                  <p className="text-3xl font-extrabold text-[#A14E3B] mt-2">14%</p>
-                </div>
-              </div>
-            )}
-
-          </div>
-        )}
-
-        {/* VIEW 4: Relatórios */}
+        {/* VIEW 3: Relatórios */}
         {activeSubTab === 'relatorios' && (
           <div className="space-y-8">
             
             {/* Header info panel */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-5 gap-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Instituto Rebrota</h3>
+                <h3 className="text-lg font-bold text-gray-900">{ngoDetails?.name || ngoName}</h3>
                 <div className="flex items-center space-x-3.5 mt-1">
                   <span className="bg-[#CBDDCD] text-[#0A3D36] text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                     CNPJ Ativo
                   </span>
-                  <span className="text-xs text-gray-500 font-semibold">12.345.678/0001-90</span>
+                  <span className="text-xs text-gray-500 font-semibold">{ngoDetails?.cnpj || '—'}</span>
                 </div>
               </div>
             </div>
@@ -1207,22 +954,22 @@ export default function NgoManagementPage({ onNavigate }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Razão Social</label>
-                    <input type="text" placeholder="Instituto Rebrota de Preservação Ambiental" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                    <input type="text" defaultValue={ngoDetails?.name || ''} placeholder="Razão social da organização" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
                   </div>
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Fantasia / Público</label>
-                    <input type="text" placeholder="Instituto Rebrota" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                    <input type="text" defaultValue={ngoDetails?.name || ''} placeholder="Nome público da ONG" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Endereço Principal / Sede</label>
-                  <input type="text" placeholder="Rua das Palmeiras, 102, Manaus, AM" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  <input type="text" defaultValue={ngoDetails?.location || ''} placeholder="Cidade, UF" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descrição Institucional</label>
-                  <textarea rows="4" placeholder="Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana..." className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  <textarea rows="4" defaultValue={ngoDetails?.description || ''} placeholder="Descrição institucional da ONG" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
                 </div>
 
                 <div className="space-y-1">
