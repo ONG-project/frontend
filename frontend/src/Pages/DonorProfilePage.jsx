@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  AlertTriangle,
   ArrowRight,
   BookOpen,
   Check,
@@ -19,7 +18,6 @@ import { donorProfileService } from '../services/donorProfileService';
 const CAUSE_STYLE = {
   'meio-ambiente': { icon: Globe, bg: 'bg-teal-800 text-white', iconColor: 'text-white' },
   educacao: { icon: BookOpen, bg: 'bg-[#CBDDCD] text-[#0A3D36]', iconColor: 'text-[#0A3D36]' },
-  urgencia: { icon: AlertTriangle, bg: 'bg-red-100 text-red-800', iconColor: 'text-red-600' },
   clima: { icon: Wind, bg: 'bg-slate-700 text-white', iconColor: 'text-white' },
 };
 

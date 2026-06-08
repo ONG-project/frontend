@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import reflorestaSeedling from '../assets/refloresta_seedling.png';
 import Footer from '../components/Footer';
-import UrgencyPublicSection from '../components/urgency/UrgencyPublicSection';
 
 const DEFAULT_BENEFITS = [
   {
@@ -363,12 +362,6 @@ export default function NgoProfilePage({ ong, onNavigate }) {
           </div>
 
         </div>
-
-        <UrgencyPublicSection
-          ngoId={currentOng.id ?? 1}
-          title="Apoio Emergencial desta ONG"
-          description="Solicitações de urgência aprovadas e publicadas, com transparência sobre a crise e o plano de uso dos recursos."
-        />
 
         {/* Campanhas Ativas */}
         <div className="space-y-6 pt-4">
