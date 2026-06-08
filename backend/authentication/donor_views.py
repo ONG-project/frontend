@@ -14,7 +14,6 @@ CAUSE_LABELS = {
     'educacao': 'Educação',
     'saude': 'Saúde',
     'direitos-humanos': 'Direitos Humanos',
-    'urgencia': 'Urgência',
     'clima': 'Clima',
 }
 

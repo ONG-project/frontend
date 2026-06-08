@@ -78,6 +78,7 @@ export default function NgoManagementPage({ onNavigate }) {
   const [cadastroFantasy, setCadastroFantasy] = useState('');
   const [cadastroLocation, setCadastroLocation] = useState('');
   const [cadastroDescription, setCadastroDescription] = useState('');
+  const [cadastroFile, setCadastroFile] = useState(null);
 
   // Relatorios tab states
   const [period, setPeriod] = useState('30-days');
@@ -343,6 +344,31 @@ export default function NgoManagementPage({ onNavigate }) {
     }
   };
 
+  const handleCadastroFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setCadastroFile(null);
+      return;
+    }
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setCadastroMessage({ type: 'error', text: 'Apenas arquivos PDF são permitidos.' });
+      e.target.value = '';
+      setCadastroFile(null);
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setCadastroMessage({ type: 'error', text: 'O arquivo deve ter no máximo 10 MB.' });
+      e.target.value = '';
+      setCadastroFile(null);
+      return;
+    }
+
+    setCadastroMessage(null);
+    setCadastroFile(file);
+  };
+
   const handleCadastroSubmit = async (e) => {
     e.preventDefault();
     if (!ngoId) return;
@@ -354,26 +380,46 @@ export default function NgoManagementPage({ onNavigate }) {
       { field_name: 'Descrição Institucional', old: ngoDetails?.description || '', new: cadastroDescription.trim() },
     ].filter((item) => item.new && item.new !== item.old);
 
-    if (fields.length === 0) {
-      setCadastroMessage({ type: 'error', text: 'Nenhuma alteração detectada nos campos.' });
+    if (fields.length === 0 && !cadastroFile) {
+      setCadastroMessage({ type: 'error', text: 'Nenhuma alteração detectada nos campos ou documento.' });
       return;
     }
 
     setCadastroLoading(true);
     setCadastroMessage(null);
     try {
-      await Promise.all(
-        fields.map((item) => transparencyService.submitChangeRequest(ngoId, {
-          field_name: item.field_name,
-          old_value: item.old,
-          new_value: item.new,
-          reason: 'Solicitação via painel de gestão da ONG.',
-        })),
-      );
+      let submittedCount = 0;
+
+      if (cadastroFile) {
+        const uploaded = await transparencyService.uploadDocument(ngoId, cadastroFile, {
+          description: 'Documento comprobatório enviado com solicitação cadastral.',
+        });
+        await transparencyService.submitChangeRequest(ngoId, {
+          field_name: 'Documento Comprovatório',
+          old_value: '',
+          new_value: uploaded.title,
+          reason: `Documento anexado: ${uploaded.title}`,
+        });
+        submittedCount += 1;
+        setCadastroFile(null);
+      }
+
+      if (fields.length > 0) {
+        await Promise.all(
+          fields.map((item) => transparencyService.submitChangeRequest(ngoId, {
+            field_name: item.field_name,
+            old_value: item.old,
+            new_value: item.new,
+            reason: 'Solicitação via painel de gestão da ONG.',
+          })),
+        );
+        submittedCount += fields.length;
+      }
+
       refreshChangeRequests();
       setCadastroMessage({
         type: 'success',
-        text: `${fields.length} solicitação(ões) enviada(s) para análise.`,
+        text: `${submittedCount} solicitação(ões) enviada(s) para análise.`,
       });
     } catch (error) {
       setCadastroMessage({ type: 'error', text: error.message || 'Erro ao enviar solicitação.' });
@@ -1204,12 +1250,35 @@ export default function NgoManagementPage({ onNavigate }) {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documento Comprovatório (PDF)</label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center bg-gray-50/50">
+                  <label htmlFor="cadastro-pdf" className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    Documento Comprovatório (PDF)
+                  </label>
+                  <label
+                    htmlFor="cadastro-pdf"
+                    className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center bg-gray-50/50 cursor-pointer hover:bg-gray-50 transition block"
+                  >
                     <UploadCloud className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                    <span className="text-xs font-bold text-gray-400 block">Upload de documentos em breve</span>
-                    <span className="text-[10px] text-gray-400">A equipe ONG+ solicitará o arquivo após análise inicial.</span>
-                  </div>
+                    {cadastroFile ? (
+                      <>
+                        <span className="text-xs font-bold text-[#0A665C] block">{cadastroFile.name}</span>
+                        <span className="text-[10px] text-gray-400">
+                          {(cadastroFile.size / (1024 * 1024)).toFixed(2)} MB — clique para trocar o arquivo
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-xs font-bold text-gray-500 block">Clique para anexar um PDF</span>
+                        <span className="text-[10px] text-gray-400">Máximo 10 MB. Estatuto, ata ou outro comprovante cadastral.</span>
+                      </>
+                    )}
+                  </label>
+                  <input
+                    id="cadastro-pdf"
+                    type="file"
+                    accept="application/pdf,.pdf"
+                    className="hidden"
+                    onChange={handleCadastroFileChange}
+                  />
                 </div>
 
                 {cadastroMessage && (

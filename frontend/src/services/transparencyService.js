@@ -1,4 +1,5 @@
 import { apiGet, apiPost, apiDownload, saveBlob } from './apiClient';
+import { apiGet, apiPost, apiUpload } from './apiClient';
 import { ngoService } from './ngoService';
 
 function mapProfile(detail) {
@@ -135,6 +136,22 @@ export const transparencyService = {
 
   async getDocuments(id) {
     return apiGet(`/v1/transparency/ngos/${id}/documents/`);
+  },
+
+  async uploadDocument(ongId, file, { title, description } = {}) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (title) formData.append('title', title);
+    if (description) formData.append('description', description);
+    const doc = await apiUpload(`/v1/transparency/ngos/${ongId}/documents/upload/`, formData);
+    return {
+      id: doc.id,
+      title: doc.title,
+      description: doc.description,
+      documentUrl: doc.documentUrl,
+      uploadedAt: doc.uploadedAt,
+      isPublic: doc.isPublic,
+    };
   },
 
   async getDataSources(id) {

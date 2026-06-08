@@ -388,18 +388,21 @@ class Command(BaseCommand):
                 'title': 'Relatório de Atividades 2025',
                 'description': 'Resumo das atividades e impacto socioambiental do último ano.',
                 'document_url': 'https://example.com/relatorio-2025.pdf',
+                'is_public': True,
             },
             {
                 'ong': ngo_map['Instituto Mata Viva'],
                 'title': 'Estatuto Social',
                 'description': 'Estatuto social consolidado da organização.',
                 'document_url': 'https://example.com/estatuto-imv.pdf',
+                'is_public': True,
             },
             {
                 'ong': ngo_map['Fundação Rio Puro'],
                 'title': 'Auditoria Financeira 2025',
                 'description': 'Parecer dos auditores independentes sobre as demonstrações contábeis.',
                 'document_url': 'https://example.com/auditoria-2025.pdf',
+                'is_public': True,
             }
         ]
 
