@@ -87,7 +87,7 @@ class DonationSerializer(serializers.ModelSerializer):
             'status', 'recurrence_type', 'is_anonymous', 'notes',
             'transaction', 'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'donor', 'status', 'created_at', 'updated_at']
 
     def validate_amount(self, value):
         if value <= 0:
@@ -100,6 +100,12 @@ class DonationSerializer(serializers.ModelSerializer):
                 "A campanha deve pertencer à mesma ONG da doação."
             )
         return data
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            validated_data['donor'] = request.user
+        return super().create(validated_data)
 
 
 class DonationDetailSerializer(DonationSerializer):

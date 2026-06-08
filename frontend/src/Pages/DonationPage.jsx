@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { financialService } from '../services/financialService';
 import { ngoService } from '../services/ngoService';
 import { 
   Sparkles,
@@ -19,13 +20,51 @@ import {
 } from 'lucide-react';
 import amaraStoryBg from '../assets/amara_story.png';
 
+const PAYMENT_TYPE_MAP = {
+  PIX: 'pix',
+};
+
+const FREQUENCY_MAP = {
+  Mensal: 'monthly',
+  Trimestral: 'quarterly',
+  Anual: 'annual',
+  Única: 'once',
+};
+
 export default function DonationPage({ onGoHome }) {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const routeState = location.state || {}; // contains ngoId, ngoName, campaignId, campaignName, bundleId, bundleName, type
   
   const [donationStep, setDonationStep] = useState(1); // 1 = Form, 3 = Confirmation
   const [ngoScore, setNgoScore] = useState(routeState.score || null);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(true);
+  const [paymentError, setPaymentError] = useState(null);
+  const [submittingDonation, setSubmittingDonation] = useState(false);
+  const [completedDonation, setCompletedDonation] = useState(null);
+  const [frequency, setFrequency] = useState(routeState.frequency || 'Mensal');
+  const [selectedAmount, setSelectedAmount] = useState(routeState.amount ? Number(routeState.amount) : 50);
+  const [customAmount, setCustomAmount] = useState(
+    routeState.amount && ![50, 100, 200].includes(Number(routeState.amount))
+      ? String(routeState.amount)
+      : ''
+  );
+  const [selectedCause, setSelectedCause] = useState(() => {
+    if (routeState.type === 'bundle') return `Bundle: ${routeState.bundleName}`;
+    if (routeState.type === 'campaign') return `Campanha: ${routeState.campaignName}`;
+    if (routeState.type === 'ngo') return `ONG: ${routeState.ngoName}`;
+    return '';
+  });
+  const [paymentMethod, setPaymentMethod] = useState('PIX');
+  const [submitError, setSubmitError] = useState(null);
+
+  useEffect(() => {
+    if (user?.role !== 'ong' && !routeState.type) {
+      navigate('/causas', { replace: true });
+    }
+  }, [user?.role, routeState.type, navigate]);
 
   useEffect(() => {
     if (routeState.type === 'ngo' || routeState.type === 'campaign') {
@@ -62,6 +101,24 @@ export default function DonationPage({ onGoHome }) {
     }
   }, [routeState.ngoId, routeState.type, ngoScore]);
 
+  useEffect(() => {
+    let cancelled = false;
+    financialService.listPaymentMethods()
+      .then((methods) => {
+        if (!cancelled) {
+          setPaymentMethods(methods || []);
+          setPaymentError(null);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) setPaymentError(err.message || 'Não foi possível carregar os métodos de pagamento.');
+      })
+      .finally(() => {
+        if (!cancelled) setPaymentMethodsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   if (user?.role === 'ong') {
     return (
       <div className="flex-grow bg-[#FCFBF9] font-sans py-16 px-6 text-center flex flex-col items-center justify-center">
@@ -81,26 +138,6 @@ export default function DonationPage({ onGoHome }) {
       </div>
     );
   }
-  const [frequency, setFrequency] = useState(routeState.frequency || 'Mensal'); // 'Única', 'Mensal'
-  const [selectedAmount, setSelectedAmount] = useState(routeState.amount ? Number(routeState.amount) : 50);
-  const [customAmount, setCustomAmount] = useState(
-    routeState.amount && ![50, 100, 200].includes(Number(routeState.amount))
-      ? String(routeState.amount)
-      : ''
-  );
-  const [selectedCause, setSelectedCause] = useState(() => {
-    if (routeState.type === 'bundle') return `Bundle: ${routeState.bundleName}`;
-    if (routeState.type === 'campaign') return `Campanha: ${routeState.campaignName}`;
-    if (routeState.type === 'ngo') return `ONG: ${routeState.ngoName}`;
-    return 'Todas as causas';
-  });
-  const [paymentMethod, setPaymentMethod] = useState('Cartão');
-  
-  // Card input fields
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-
   const displayAmount = customAmount ? parseFloat(customAmount) || 0 : selectedAmount;
 
   const matchMultiplier = routeState.matchMultiplier || 1;
@@ -118,6 +155,46 @@ export default function DonationPage({ onGoHome }) {
     if (val === '' || /^\d*$/.test(val)) {
       setCustomAmount(val);
       setSelectedAmount(0);
+    }
+  };
+
+  const resolvePaymentMethodId = () => {
+    const methodType = PAYMENT_TYPE_MAP[paymentMethod];
+    const match = paymentMethods.find((m) => m.method_type === methodType);
+    return match?.id || null;
+  };
+
+  const handleFinalizeDonation = async () => {
+    if (!routeState.ngoId) {
+      setSubmitError('Selecione uma causa na página de causas antes de doar.');
+      return;
+    }
+    if (displayAmount <= 0) {
+      setSubmitError('Informe um valor válido para a doação.');
+      return;
+    }
+    const paymentMethodId = resolvePaymentMethodId();
+    if (!paymentMethodId) {
+      setSubmitError('Método de pagamento indisponível. Tente outra opção.');
+      return;
+    }
+
+    setSubmittingDonation(true);
+    setSubmitError(null);
+    try {
+      const donation = await financialService.createDonation({
+        ong: routeState.ngoId,
+        amount: displayAmount,
+        payment_method: paymentMethodId,
+        recurrence_type: FREQUENCY_MAP[frequency] || 'once',
+      });
+      const processed = await financialService.processDonation(donation.id);
+      setCompletedDonation(processed);
+      setDonationStep(3);
+    } catch (err) {
+      setSubmitError(err.message || 'Não foi possível processar sua doação.');
+    } finally {
+      setSubmittingDonation(false);
     }
   };
 
@@ -449,9 +526,7 @@ export default function DonationPage({ onGoHome }) {
             {/* Payment Selection Tabs */}
             <div className="flex space-x-4 border-b border-gray-100 pb-2">
               {[
-                { id: 'PIX', label: 'PIX', icon: QrCode },
-                { id: 'Cartão', label: 'Cartão', icon: CreditCard },
-                { id: 'Boleto', label: 'Boleto', icon: FileText }
+                { id: 'PIX', label: 'PIX', icon: QrCode }
               ].map((method) => {
                 const MethodIcon = method.icon;
                 const isActive = paymentMethod === method.id;
@@ -474,43 +549,6 @@ export default function DonationPage({ onGoHome }) {
             </div>
 
             {/* Conditional fields */}
-            {paymentMethod === 'Cartão' && (
-              <div className="bg-white p-6 rounded-2xl border border-gray-50 space-y-4">
-                <div className="space-y-2">
-                  <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Número do Cartão</label>
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Validade</label>
-                    <input
-                      type="text"
-                      placeholder="MM/AA"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">CVV</label>
-                    <input
-                      type="text"
-                      placeholder="123"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
             {paymentMethod === 'PIX' && (
               <div className="bg-white p-6 rounded-2xl border border-gray-50 text-center space-y-3">
                 <QrCode className="w-16 h-16 mx-auto text-gray-300" />
@@ -519,25 +557,25 @@ export default function DonationPage({ onGoHome }) {
                 </p>
               </div>
             )}
-
-            {paymentMethod === 'Boleto' && (
-              <div className="bg-white p-6 rounded-2xl border border-gray-50 text-center space-y-3">
-                <FileText className="w-16 h-16 mx-auto text-gray-300" />
-                <p className="text-gray-600 text-sm">
-                  Um boleto bancário em PDF será gerado após clicar no botão de finalizar.
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4">
+          <div className="pt-4 space-y-3">
+            {submitError && (
+              <p className="text-sm text-red-600 font-medium">{submitError}</p>
+            )}
+            {paymentError && (
+              <p className="text-sm text-amber-700 font-medium">{paymentError}</p>
+            )}
             <button 
               type="button" 
-              onClick={() => setDonationStep(3)}
-              className="w-full sm:w-auto bg-[#147B72] hover:bg-teal-800 text-white font-bold px-12 py-4 rounded-full transition shadow-md flex items-center justify-center space-x-2 cursor-pointer"
+              onClick={handleFinalizeDonation}
+              disabled={submittingDonation || paymentMethodsLoading || !routeState.ngoId}
+              className="w-full sm:w-auto bg-[#147B72] hover:bg-teal-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold px-12 py-4 rounded-full transition shadow-md flex items-center justify-center space-x-2 cursor-pointer"
             >
-              <span>Finalizar Doação de R$ {displayAmount}</span>
+              <span>
+                {submittingDonation ? 'Processando...' : `Finalizar Doação de R$ ${displayAmount}`}
+              </span>
               <Heart className="w-4 h-4 fill-white" />
             </button>
           </div>

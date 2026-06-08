@@ -85,10 +85,34 @@ class OngRegisterSerializer(serializers.ModelSerializer):
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    ngo_profile = serializers.SerializerMethodField()
+    donor_profile = serializers.SerializerMethodField()
+
     class Meta:
         model = CustomUser
-        fields = ('id', 'email', 'full_name', 'role', 'date_joined')
+        fields = ('id', 'email', 'full_name', 'role', 'date_joined', 'ngo_profile', 'donor_profile')
         read_only_fields = fields
+
+    def get_ngo_profile(self, obj):
+        ngo = getattr(obj, 'ngo_profile', None)
+        if not ngo:
+            return None
+        return {
+            'id': str(ngo.id),
+            'name': ngo.name,
+            'cnpj': ngo.cnpj,
+            'score': int(float(ngo.current_score or 0)),
+        }
+
+    def get_donor_profile(self, obj):
+        profile = getattr(obj, 'donor_profile', None)
+        if not profile:
+            return None
+        return {
+            'phone': profile.phone,
+            'birthDate': profile.birth_date.isoformat() if profile.birth_date else None,
+            'preferredCauses': profile.preferred_causes or [],
+        }
 
 
 class ChangePasswordSerializer(serializers.Serializer):

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -185,8 +187,8 @@ class DonationViewSet(viewsets.ModelViewSet):
             transaction = PaymentTransaction.objects.create(
                 donation=donation,
                 amount=donation.amount,
-                net_amount=donation.amount * 0.97,  # 3% de taxa
-                fee=donation.amount * 0.03,
+                net_amount=donation.amount * Decimal('0.97'),
+                fee=donation.amount * Decimal('0.03'),
                 status=PaymentTransaction.Status.CAPTURED
             )
             

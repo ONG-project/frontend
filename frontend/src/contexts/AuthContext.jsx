@@ -10,6 +10,10 @@ function normalizeUser(userData) {
     name: userData.full_name || userData.name || '',
     email: userData.email || '',
     role: userData.role || 'visitor',
+    joinedAt: userData.date_joined || userData.joinedAt || null,
+    ngoId: userData.ngo_profile?.id || userData.ngoProfile?.id || null,
+    ngoName: userData.ngo_profile?.name || userData.ngoProfile?.name || null,
+    donorProfile: userData.donor_profile || userData.donorProfile || null,
   };
 }
 

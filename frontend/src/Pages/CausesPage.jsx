@@ -140,7 +140,7 @@ export default function CausesPage({ onNavigate }) {
     if (type === 'campaign') {
       navigate('/doacao', { state: { campaignId: item.id, campaignName: item.name, type: 'campaign', score: item.score, ngoId: item.ngoId } });
     } else if (type === 'bundle') {
-      navigate('/doacao', { state: { bundleId: item.id, bundleName: item.name, type: 'bundle', score: item.transparencyScore } });
+      navigate('/doacao', { state: { bundleId: item.id, bundleName: item.name, type: 'bundle', score: item.transparencyScore, ngoId: item.ongs?.[0]?.id } });
     } else {
       navigate('/doacao', { state: { ngoId: item.id, ngoName: item.name, type: 'ngo', score: item.score } });
     }
@@ -277,15 +277,7 @@ export default function CausesPage({ onNavigate }) {
             </div>
           )}
 
-          {/* Botão de Doar Fundo */}
           <div className="space-y-2.5 w-full">
-            <button 
-              onClick={() => navigate('/doacao')}
-              className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 shadow-md transition-colors cursor-pointer"
-            >
-              <Heart className="w-4 h-4 fill-white" />
-              <span>Doar para o nosso fundo</span>
-            </button>
             <button 
               onClick={() => setShowSupportModal(true)}
               className="w-full bg-white hover:bg-gray-50 text-teal-800 border border-teal-700/20 py-3.5 px-6 rounded-full font-bold text-xs flex items-center justify-center space-x-2.5 transition-colors cursor-pointer shadow-xs"

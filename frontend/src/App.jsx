@@ -219,7 +219,7 @@ function MobileMenu({ links, user, onNavigate, onLogin, onLogout }) {
                   className="w-full bg-[#0A665C] text-white font-bold py-3 rounded-xl text-sm">
                   Login
                 </button>
-                <button onClick={() => { setOpen(false); onNavigate('/doacao'); }}
+                <button onClick={() => { setOpen(false); onNavigate('/causas'); }}
                   className="w-full border border-[#0A665C] text-[#0A665C] font-bold py-3 rounded-xl text-sm">
                   Doar Agora
                 </button>
@@ -266,7 +266,7 @@ function AppContent() {
     <div className="flex items-center space-x-5">
       <button
         id="donate-btn"
-        onClick={() => navigate('/doacao')}
+        onClick={() => navigate('/causas')}
         className="bg-[#0A665C] text-white px-5 py-2 rounded-full font-bold text-xs hover:bg-teal-900 transition shadow-sm cursor-pointer hidden md:block"
       >
         Doar Agora
@@ -277,7 +277,7 @@ function AppContent() {
     <div className="hidden md:flex items-center space-x-4">
       <button
         id="donate-now-btn"
-        onClick={() => handleNavigate('/doacao')}
+        onClick={() => handleNavigate('/causas')}
         className="bg-teal-800 text-white px-5 py-2 rounded-full font-medium text-sm hover:bg-teal-900 transition shadow-sm"
       >
         Doar Agora
