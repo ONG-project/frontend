@@ -22,8 +22,6 @@ import amaraStoryBg from '../assets/amara_story.png';
 
 const PAYMENT_TYPE_MAP = {
   PIX: 'pix',
-  Cartão: 'credit_card',
-  Boleto: 'bank_transfer',
 };
 
 const FREQUENCY_MAP = {
@@ -59,10 +57,7 @@ export default function DonationPage({ onGoHome }) {
     if (routeState.type === 'ngo') return `ONG: ${routeState.ngoName}`;
     return '';
   });
-  const [paymentMethod, setPaymentMethod] = useState('Cartão');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('PIX');
   const [submitError, setSubmitError] = useState(null);
 
   useEffect(() => {
@@ -531,9 +526,7 @@ export default function DonationPage({ onGoHome }) {
             {/* Payment Selection Tabs */}
             <div className="flex space-x-4 border-b border-gray-100 pb-2">
               {[
-                { id: 'PIX', label: 'PIX', icon: QrCode },
-                { id: 'Cartão', label: 'Cartão', icon: CreditCard },
-                { id: 'Boleto', label: 'Boleto', icon: FileText }
+                { id: 'PIX', label: 'PIX', icon: QrCode }
               ].map((method) => {
                 const MethodIcon = method.icon;
                 const isActive = paymentMethod === method.id;
@@ -556,57 +549,11 @@ export default function DonationPage({ onGoHome }) {
             </div>
 
             {/* Conditional fields */}
-            {paymentMethod === 'Cartão' && (
-              <div className="bg-white p-6 rounded-2xl border border-gray-50 space-y-4">
-                <div className="space-y-2">
-                  <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Número do Cartão</label>
-                  <input
-                    type="text"
-                    placeholder="0000 0000 0000 0000"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">Validade</label>
-                    <input
-                      type="text"
-                      placeholder="MM/AA"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value)}
-                      className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-[0.65rem] font-bold text-gray-400 uppercase tracking-wider">CVV</label>
-                    <input
-                      type="text"
-                      placeholder="123"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value)}
-                      className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
             {paymentMethod === 'PIX' && (
               <div className="bg-white p-6 rounded-2xl border border-gray-50 text-center space-y-3">
                 <QrCode className="w-16 h-16 mx-auto text-gray-300" />
                 <p className="text-gray-600 text-sm">
                   Um QR Code PIX será gerado na próxima tela para você concluir sua doação.
-                </p>
-              </div>
-            )}
-
-            {paymentMethod === 'Boleto' && (
-              <div className="bg-white p-6 rounded-2xl border border-gray-50 text-center space-y-3">
-                <FileText className="w-16 h-16 mx-auto text-gray-300" />
-                <p className="text-gray-600 text-sm">
-                  Um boleto bancário em PDF será gerado após clicar no botão de finalizar.
                 </p>
               </div>
             )}

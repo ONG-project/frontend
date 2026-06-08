@@ -12,8 +12,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         methods = [
             ('pix', 'PIX'),
-            ('credit_card', 'Cartão de Crédito'),
-            ('bank_transfer', 'Boleto Bancário'),
         ]
         method_map = {}
         for method_type, name in methods:
