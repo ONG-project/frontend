@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ngoService } from '../services/ngoService';
-import UrgencyRequestsDashboard from '../components/urgency/UrgencyRequestsDashboard';
-import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
 import { 
   UploadCloud, 
   ChevronRight, 
@@ -45,8 +43,6 @@ export default function NgoManagementPage({ onNavigate }) {
 
   const tabFromUrl = searchParams.get('tab');
   const [activeSubTab, setActiveSubTab] = useState(tabFromUrl || 'visao-geral');
-  const [urgencyView, setUrgencyView] = useState('list');
-  const [urgencyRequestId, setUrgencyRequestId] = useState(null);
   const [campaignTab, setCampaignTab] = useState('ativas');
 
   // Relatorios tab states
