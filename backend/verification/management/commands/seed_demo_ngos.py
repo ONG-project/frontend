@@ -5,6 +5,7 @@ import uuid
 import json
 
 from verification.models import NGO, Campaign, Bundle
+from financial.models import FinancialRecord
 
 
 DEMO_NGOS = [
@@ -270,5 +271,103 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f'Bundles ready: {bundle_created} created, {bundle_updated} updated.'
+            )
+        )
+
+        # ── 4. Seed FinancialRecords (Transfers & Donations) ─────────────────
+        now = timezone.now()
+
+        DEMO_RECORDS = [
+            # Recent transfers (within last 7 days — period "week")
+            {
+                'ong': ngo_map['Instituto Rebrota'],
+                'record_type': FinancialRecord.RecordType.TRANSFER,
+                'amount': 45000,
+                'description': 'Repasse mensal — Reflorestamento de Nascentes',
+                'reference_id': 'TRF-001',
+                'days_ago': 2,
+            },
+            {
+                'ong': ngo_map['Águas Limpas Brasil'],
+                'record_type': FinancialRecord.RecordType.TRANSFER,
+                'amount': 28000,
+                'description': 'Repasse mensal — Água Saudável nas Escolas',
+                'reference_id': 'TRF-002',
+                'days_ago': 5,
+            },
+            # Older transfers (within last 30 days — period "month")
+            {
+                'ong': ngo_map['Educação Sem Fronteiras'],
+                'record_type': FinancialRecord.RecordType.TRANSFER,
+                'amount': 35000,
+                'description': 'Repasse — Bolsas para Desenvolvedoras',
+                'reference_id': 'TRF-003',
+                'days_ago': 12,
+            },
+            {
+                'ong': ngo_map['Vozes da Comunidade'],
+                'record_type': FinancialRecord.RecordType.TRANSFER,
+                'amount': 60000,
+                'description': 'Repasse — Suporte Jurídico Comunitário',
+                'reference_id': 'TRF-004',
+                'days_ago': 20,
+            },
+            {
+                'ong': ngo_map['Instituto Rebrota'],
+                'record_type': FinancialRecord.RecordType.TRANSFER,
+                'amount': 22000,
+                'description': 'Repasse complementar — Fundo Amazônia Viva',
+                'reference_id': 'TRF-005',
+                'days_ago': 25,
+            },
+            # Donation records (used to calculate budgetUtilization)
+            {
+                'ong': ngo_map['Instituto Rebrota'],
+                'record_type': FinancialRecord.RecordType.DONATION,
+                'amount': 98400,
+                'description': 'Arrecadação acumulada — Aliança Amazônia Viva',
+                'reference_id': 'DON-001',
+                'days_ago': 30,
+            },
+            {
+                'ong': ngo_map['Águas Limpas Brasil'],
+                'record_type': FinancialRecord.RecordType.DONATION,
+                'amount': 42000,
+                'description': 'Arrecadação acumulada — Água Saudável',
+                'reference_id': 'DON-002',
+                'days_ago': 30,
+            },
+            {
+                'ong': ngo_map['Educação Sem Fronteiras'],
+                'record_type': FinancialRecord.RecordType.DONATION,
+                'amount': 74000,
+                'description': 'Arrecadação acumulada — Futuro Brilhante',
+                'reference_id': 'DON-003',
+                'days_ago': 30,
+            },
+            {
+                'ong': ngo_map['Vozes da Comunidade'],
+                'record_type': FinancialRecord.RecordType.DONATION,
+                'amount': 85000,
+                'description': 'Arrecadação acumulada — Vozes da Comunidade',
+                'reference_id': 'DON-004',
+                'days_ago': 30,
+            },
+        ]
+
+        rec_created = 0
+        for data in DEMO_RECORDS:
+            days_ago = data.pop('days_ago')
+            ref_id = data['reference_id']
+            created_at = now - timedelta(days=days_ago)
+            if not FinancialRecord.objects.filter(reference_id=ref_id).exists():
+                obj = FinancialRecord.objects.create(**data)
+                # Adjust created_at to simulate historical data
+                FinancialRecord.objects.filter(pk=obj.pk).update(created_at=created_at)
+                rec_created += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'FinancialRecords ready: {rec_created} created.'
             )
         )
