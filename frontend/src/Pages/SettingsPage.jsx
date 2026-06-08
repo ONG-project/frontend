@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Shield, User, CreditCard, X } from 'lucide-react';
+import Toast from '../components/Toast';
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
@@ -9,16 +10,26 @@ export default function SettingsPage() {
 
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email ?? '');
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: 'success' });
 
   useEffect(() => {
     setName(user?.name ?? '');
     setEmail(user?.email ?? '');
   }, [user]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!user) return;
-    updateUser({ name, email });
-    alert('Alterações salvas com sucesso!');
+    setSaving(true);
+    setToast({ message: '', type: 'success' }); // Reset caso já tenha um visível
+    try {
+      await updateUser({ name, email });
+      setToast({ message: 'Alterações salvas com sucesso!', type: 'success' });
+    } catch (e) {
+      setToast({ message: `Erro ao salvar: ${e.message}`, type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -88,13 +99,19 @@ export default function SettingsPage() {
           <div className="p-6 md:p-8 bg-gray-50 border-t border-gray-100 flex justify-end">
             <button 
               onClick={handleSave}
-              className="bg-teal-800 text-white px-6 py-2 rounded-xl font-bold hover:bg-teal-900 transition cursor-pointer"
+              disabled={saving}
+              className={`px-6 py-2 rounded-xl font-bold text-white transition ${saving ? 'bg-teal-700 opacity-70 cursor-not-allowed' : 'bg-teal-800 hover:bg-teal-900 cursor-pointer'}`}
             >
-              Salvar Alterações
+              {saving ? 'Salvando...' : 'Salvar Alterações'}
             </button>
           </div>
         </div>
       </main>
+      <Toast 
+        message={toast.message} 
+        type={toast.type} 
+        onClose={() => setToast({ message: '', type: 'success' })} 
+      />
     </div>
   );
 }

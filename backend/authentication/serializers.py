@@ -91,7 +91,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('id', 'email', 'full_name', 'role', 'date_joined', 'ngo_profile', 'donor_profile')
-        read_only_fields = fields
+        read_only_fields = ('id', 'role', 'date_joined', 'ngo_profile', 'donor_profile')
 
     def get_ngo_profile(self, obj):
         ngo = getattr(obj, 'ngo_profile', None)

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { apiPost, apiGet } from '../services/apiClient';
+import { apiPost, apiGet, apiPatch } from '../services/apiClient';
 
 const AuthContext = createContext({});
 
@@ -58,12 +58,16 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
-  const updateUser = (updates) => {
-    setUser((prevUser) => {
-      const nextUser = { ...prevUser, ...updates };
-      localStorage.setItem('@ongplus:user', JSON.stringify(nextUser));
-      return nextUser;
-    });
+  const updateUser = async (updates) => {
+    const payload = {};
+    if (updates.name !== undefined) payload.full_name = updates.name;
+    if (updates.email !== undefined) payload.email = updates.email;
+
+    const me = await apiPatch('/v1/auth/me/', payload);
+    const userData = normalizeUser(me);
+    setUser(userData);
+    localStorage.setItem('@ongplus:user', JSON.stringify(userData));
+    return userData;
   };
 
   const logout = async () => {

@@ -82,12 +82,12 @@ class LogoutView(APIView):
 
 # --- Task 7: View de usuário atual ---
 
-class CurrentUserView(APIView):
+class CurrentUserView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = CurrentUserSerializer
 
-    def get(self, request):
-        serializer = CurrentUserSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
 
 
 class ChangePasswordView(APIView):
