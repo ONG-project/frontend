@@ -3,11 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ngoService } from '../services/ngoService';
 import { transparencyService } from '../services/transparencyService';
+import { saveBlob } from '../services/apiClient';
 import { 
   UploadCloud, 
   ChevronRight, 
   ShieldCheck,
   PlusCircle,
+  Download,
   History,
   RefreshCw,
   FileText,
@@ -69,6 +71,7 @@ export default function NgoManagementPage({ onNavigate }) {
   const [reports, setReports] = useState([]);
   const [changeRequests, setChangeRequests] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
+  const [downloadingReportId, setDownloadingReportId] = useState(null);
   const [cadastroLoading, setCadastroLoading] = useState(false);
   const [cadastroMessage, setCadastroMessage] = useState(null);
   const [cadastroName, setCadastroName] = useState('');
@@ -294,29 +297,33 @@ export default function NgoManagementPage({ onNavigate }) {
     if (!ngoId) return;
     setExportLoading(true);
     try {
-      const result = await transparencyService.generateReport(ngoId, {
+      const report = await transparencyService.generateAndDownloadReport(ngoId, {
         period,
         include_finance: includeFinance,
         include_donors: includeDonors,
         include_campaigns: includeCampaigns,
         include_cnpj: includeCnpj,
       });
-      if (result?.report) {
-        setReports((prev) => [result.report, ...prev]);
-      }
-      if (result?.summary) {
-        const blob = new Blob([JSON.stringify(result.summary, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `relatorio-${ngoId.slice(0, 8)}-${Date.now()}.json`;
-        link.click();
-        URL.revokeObjectURL(url);
+      if (report) {
+        setReports((prev) => [report, ...prev]);
       }
     } catch (error) {
       alert(`Erro ao gerar relatório: ${error.message}`);
     } finally {
       setExportLoading(false);
+    }
+  };
+
+  const handleDownloadReport = async (reportId) => {
+    if (!ngoId || !reportId) return;
+    setDownloadingReportId(reportId);
+    try {
+      const file = await transparencyService.downloadReport(ngoId, reportId);
+      saveBlob(file.blob, file.filename);
+    } catch (error) {
+      alert(`Erro ao baixar relatório: ${error.message}`);
+    } finally {
+      setDownloadingReportId(null);
     }
   };
 
@@ -1004,6 +1011,42 @@ export default function NgoManagementPage({ onNavigate }) {
                         <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Fidelidade e novos ingressos</p>
                       </div>
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIncludeCampaigns(!includeCampaigns)}
+                      className={`flex items-start text-left p-4 bg-white border rounded-xl transition-all cursor-pointer ${
+                        includeCampaigns ? 'border-[#0A665C]' : 'border-gray-150 hover:border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-4.5 h-4.5 rounded border flex items-center justify-center mr-3 mt-0.5 shrink-0 ${
+                        includeCampaigns ? 'bg-[#0A665C] border-[#0A665C] text-white' : 'border-gray-300'
+                      }`}>
+                        {includeCampaigns && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-gray-900">Campanhas</h5>
+                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">Arrecadação e campanhas ativas</p>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIncludeCnpj(!includeCnpj)}
+                      className={`flex items-start text-left p-4 bg-white border rounded-xl transition-all cursor-pointer ${
+                        includeCnpj ? 'border-[#0A665C]' : 'border-gray-150 hover:border-gray-200'
+                      }`}
+                    >
+                      <div className={`w-4.5 h-4.5 rounded border flex items-center justify-center mr-3 mt-0.5 shrink-0 ${
+                        includeCnpj ? 'bg-[#0A665C] border-[#0A665C] text-white' : 'border-gray-300'
+                      }`}>
+                        {includeCnpj && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold text-gray-900">Dados Cadastrais</h5>
+                        <p className="text-[10px] text-gray-400 mt-0.5 leading-relaxed">CNPJ e identificação da ONG</p>
+                      </div>
+                    </button>
                   </div>
                 </div>
 
@@ -1016,10 +1059,10 @@ export default function NgoManagementPage({ onNavigate }) {
                     className="w-full bg-[#0A665C] hover:bg-[#08524a] disabled:opacity-60 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2.5 text-sm shadow-md transition-colors cursor-pointer"
                   >
                     <FileDown className="w-5 h-5" />
-                    <span>{exportLoading ? 'Gerando...' : 'Exportar Relatório'}</span>
+                    <span>{exportLoading ? 'Gerando PDF...' : 'Exportar Relatório PDF'}</span>
                   </button>
                   <p className="text-[10px] text-gray-400 text-center mt-2">
-                    O relatório é gerado com dados reais e baixado em JSON.
+                    O relatório é gerado com dados reais da plataforma e baixado em PDF.
                   </p>
                 </div>
               </div>
@@ -1053,9 +1096,20 @@ export default function NgoManagementPage({ onNavigate }) {
                                 </div>
                               </div>
                             </div>
-                            <span className="text-[9px] font-semibold text-gray-400 uppercase">
-                              {doc.periodLabel || doc.period}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-[9px] font-semibold text-gray-400 uppercase hidden sm:inline">
+                                {doc.periodLabel || doc.period}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadReport(doc.id)}
+                                disabled={!doc.hasPdf || downloadingReportId === doc.id}
+                                title={doc.hasPdf ? 'Baixar PDF' : 'PDF indisponível'}
+                                className="p-2 text-[#0A665C] hover:bg-[#EAE8E3] rounded-lg transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         ))
                       )}

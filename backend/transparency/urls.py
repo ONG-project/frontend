@@ -12,6 +12,7 @@ from .views import (
     ngo_documents_view,
     ngo_reports_view,
     generate_report_view,
+    download_report_view,
 )
 
 urlpatterns = [
@@ -23,6 +24,7 @@ urlpatterns = [
     path('ngos/<uuid:pk>/pending-requests/', pending_requests_view, name='pending-requests'),
     path('ngos/<uuid:pk>/reports/', ngo_reports_view, name='ngo-reports'),
     path('ngos/<uuid:pk>/reports/generate/', generate_report_view, name='generate-report'),
+    path('ngos/<uuid:pk>/reports/<uuid:report_id>/download/', download_report_view, name='download-report'),
     path('ngos/<uuid:pk>/requests/', submit_change_request_view, name='submit-change-request'),
     path('requests/<uuid:pk>/approve/', approve_change_request_view, name='approve-change-request'),
     path('requests/<uuid:pk>/reject/', reject_change_request_view, name='reject-change-request'),

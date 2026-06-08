@@ -48,6 +48,7 @@ class NGOReport(models.Model):
     include_donors = models.BooleanField(default=True)
     include_campaigns = models.BooleanField(default=False)
     include_cnpj = models.BooleanField(default=True)
+    pdf_file = models.FileField(upload_to='ngo_reports/%Y/%m/', blank=True, null=True)
     generated_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -1,12 +1,14 @@
 import json
 from django.utils import timezone
-from django.http import JsonResponse
+from django.core.files.base import ContentFile
+from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.db.models import Sum
 
 from .models import ChangeRequest, NGODocument, NGOReport
+from .report_pdf import build_report_pdf
 from .serializers import ChangeRequestSerializer
 from verification.models import NGO, Campaign
 from financial.models import FinancialRecord, Donation
@@ -273,6 +275,7 @@ def _serialize_report(report):
         'includeCampaigns': report.include_campaigns,
         'includeCnpj': report.include_cnpj,
         'generatedAt': report.generated_at.isoformat(),
+        'hasPdf': bool(report.pdf_file),
     }
 
 
@@ -365,8 +368,23 @@ def generate_report_view(request, pk):
         include_cnpj=options['include_cnpj'],
     )
     summary = _build_report_summary(ong, period, options)
+    pdf_bytes = build_report_pdf(summary, title)
+    filename = f'relatorio-{str(report.id)[:8]}.pdf'
+    report.pdf_file.save(filename, ContentFile(pdf_bytes), save=True)
 
     return JsonResponse({
         'report': _serialize_report(report),
-        'summary': summary,
     }, status=201)
+
+
+@require_GET
+def download_report_view(request, pk, report_id):
+    ong = get_object_or_404(NGO, pk=pk)
+    report = get_object_or_404(NGOReport, pk=report_id, ong=ong)
+    if not report.pdf_file:
+        return JsonResponse({'error': 'Arquivo PDF não disponível para este relatório.'}, status=404)
+
+    filename = report.pdf_file.name.split('/')[-1]
+    response = FileResponse(report.pdf_file.open('rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
