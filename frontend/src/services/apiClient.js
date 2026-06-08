@@ -80,3 +80,18 @@ export async function apiPatch(path, body) {
   });
   return parseResponse(res);
 }
+
+export async function apiUpload(path, formData) {
+  const token = localStorage.getItem('@ongplus:token');
+  const headers = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  return parseResponse(res);
+}

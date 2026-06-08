@@ -24,12 +24,18 @@ class ChangeRequest(models.Model):
     def __str__(self):
         return f"Request {self.id} for {self.ong.name} ({self.status})"
 
+def ngo_document_upload_path(instance, filename):
+    return f'ngo_documents/{instance.ong_id}/{filename}'
+
+
 class NGODocument(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     ong = models.ForeignKey(NGO, on_delete=models.CASCADE, related_name='documents')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    document_url = models.URLField()
+    document_url = models.URLField(blank=True, null=True)
+    file = models.FileField(upload_to=ngo_document_upload_path, blank=True, null=True)
+    is_public = models.BooleanField(default=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

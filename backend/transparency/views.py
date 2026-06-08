@@ -1,4 +1,5 @@
 import json
+import os
 from django.utils import timezone
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -6,10 +7,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.db.models import Sum
 
+from .auth_helpers import require_ngo_access
 from .models import ChangeRequest, NGODocument, NGOReport
 from .serializers import ChangeRequestSerializer
 from verification.models import NGO, Campaign
 from financial.models import FinancialRecord, Donation
+
+MAX_DOCUMENT_SIZE_BYTES = 10 * 1024 * 1024
+ALLOWED_DOCUMENT_EXTENSIONS = {'.pdf'}
 
 
 CAUSE_LABELS = {
@@ -226,20 +231,61 @@ def reject_change_request_view(request, pk):
     serializer = ChangeRequestSerializer(change_request)
     return JsonResponse(serializer.data)
 
+def _document_url(request, doc):
+    if doc.file:
+        return request.build_absolute_uri(doc.file.url)
+    return doc.document_url or ''
+
+
+def _serialize_document(request, doc):
+    return {
+        'id': str(doc.id),
+        'title': doc.title,
+        'description': doc.description or '',
+        'documentUrl': _document_url(request, doc),
+        'uploadedAt': doc.uploaded_at.isoformat(),
+        'isPublic': doc.is_public,
+    }
+
+
 @require_GET
 def ngo_documents_view(request, pk):
     ong = get_object_or_404(NGO, pk=pk)
-    documents = NGODocument.objects.filter(ong=ong)
-    results = [
-        {
-            "id": str(doc.id),
-            "title": doc.title,
-            "description": doc.description,
-            "documentUrl": doc.document_url,
-            "uploadedAt": doc.uploaded_at.isoformat()
-        } for doc in documents
-    ]
-    return JsonResponse(results, safe=False)
+    documents = NGODocument.objects.filter(ong=ong, is_public=True)
+    return JsonResponse([_serialize_document(request, doc) for doc in documents], safe=False)
+
+
+@csrf_exempt
+@require_POST
+def upload_ngo_document_view(request, pk):
+    ong = get_object_or_404(NGO, pk=pk)
+    _, error_response = require_ngo_access(request, ong)
+    if error_response:
+        return error_response
+
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return JsonResponse({'error': 'Arquivo PDF é obrigatório.'}, status=400)
+
+    extension = os.path.splitext(uploaded_file.name)[1].lower()
+    if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
+        return JsonResponse({'error': 'Apenas arquivos PDF são permitidos.'}, status=400)
+
+    if uploaded_file.size > MAX_DOCUMENT_SIZE_BYTES:
+        return JsonResponse({'error': 'O arquivo deve ter no máximo 10 MB.'}, status=400)
+
+    title = (request.POST.get('title') or uploaded_file.name).strip()[:255]
+    description = (request.POST.get('description') or 'Documento comprobatório enviado via painel de gestão.').strip()
+
+    document = NGODocument.objects.create(
+        ong=ong,
+        title=title,
+        description=description,
+        file=uploaded_file,
+        is_public=False,
+    )
+
+    return JsonResponse(_serialize_document(request, document), status=201)
 
 
 PERIOD_LABELS = {

@@ -10,6 +10,7 @@ from .views import (
     approve_change_request_view,
     reject_change_request_view,
     ngo_documents_view,
+    upload_ngo_document_view,
     ngo_reports_view,
     generate_report_view,
 )
@@ -27,4 +28,5 @@ urlpatterns = [
     path('requests/<uuid:pk>/approve/', approve_change_request_view, name='approve-change-request'),
     path('requests/<uuid:pk>/reject/', reject_change_request_view, name='reject-change-request'),
     path('ngos/<uuid:pk>/documents/', ngo_documents_view, name='ngo-documents'),
+    path('ngos/<uuid:pk>/documents/upload/', upload_ngo_document_view, name='upload-ngo-document'),
 ]
