@@ -88,7 +88,6 @@ function parseFilename(contentDisposition, fallback) {
 }
 
 export async function apiDownload(path, fallbackFilename = 'download.pdf') {
-export async function apiUpload(path, formData) {
   const token = localStorage.getItem('@ongplus:token');
   const headers = {};
   if (token) {
@@ -113,6 +112,21 @@ export async function apiUpload(path, formData) {
   return { blob, filename };
 }
 
+export async function apiUpload(path, formData) {
+  const token = localStorage.getItem('@ongplus:token');
+  const headers = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+  return parseResponse(res);
+}
+
 export function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -120,10 +134,4 @@ export function saveBlob(blob, filename) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method: 'POST',
-    headers,
-    body: formData,
-  });
-  return parseResponse(res);
 }

@@ -1,5 +1,4 @@
-import { apiGet, apiPost, apiDownload, saveBlob } from './apiClient';
-import { apiGet, apiPost, apiUpload } from './apiClient';
+import { apiGet, apiPost, apiDownload, saveBlob, apiUpload } from './apiClient';
 import { ngoService } from './ngoService';
 
 function mapProfile(detail) {
