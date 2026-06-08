@@ -76,6 +76,7 @@ def build_verification_payload(ngo: NGO) -> dict:
         'verifiedAt': verified_at.isoformat() if verified_at else None,
         'lastUpdate': last_update.isoformat() if last_update else None,
         'consistencyStatus': _consistency_status(ngo),
+        'auditStatus': 'monitoring',
         'evidenceList': _build_evidence_list(ngo),
         'criteria': {
             'score': score,
@@ -140,6 +141,7 @@ def serialize_campaign(campaign: Campaign) -> dict:
         'targetAmount': float(campaign.target_amount),
         'raisedAmount': float(campaign.raised_amount),
         'status': campaign.status,
+        'endDate': campaign.end_date.isoformat() if campaign.end_date else None,
         'daysLeft': max((campaign.end_date - date.today()).days, 0) if campaign.end_date else 0,
         'matchMultiplier': campaign.match_multiplier,
         'matchSponsor': campaign.match_sponsor,

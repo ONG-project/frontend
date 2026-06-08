@@ -45,7 +45,7 @@ export default function ConsistencyPanel({ verification, score }) {
             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Auditoria Ativa</span>
             <span className="text-sm font-bold text-teal-400 flex items-center space-x-1 mt-2">
               <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
-              <span>Monitorando</span>
+              <span>{verification?.auditStatus === 'monitoring' ? 'Monitorando' : (verification?.auditStatus || '—')}</span>
             </span>
           </div>
         </div>

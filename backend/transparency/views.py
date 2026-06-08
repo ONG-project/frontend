@@ -6,10 +6,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django.db.models import Sum
 
-from .models import ChangeRequest
+from .models import ChangeRequest, NGODocument, NGOReport
 from .serializers import ChangeRequestSerializer
 from verification.models import NGO, Campaign
-from financial.models import FinancialRecord
+from financial.models import FinancialRecord, Donation
 
 
 CAUSE_LABELS = {
@@ -225,3 +225,148 @@ def reject_change_request_view(request, pk):
     change_request.save()
     serializer = ChangeRequestSerializer(change_request)
     return JsonResponse(serializer.data)
+
+@require_GET
+def ngo_documents_view(request, pk):
+    ong = get_object_or_404(NGO, pk=pk)
+    documents = NGODocument.objects.filter(ong=ong)
+    results = [
+        {
+            "id": str(doc.id),
+            "title": doc.title,
+            "description": doc.description,
+            "documentUrl": doc.document_url,
+            "uploadedAt": doc.uploaded_at.isoformat()
+        } for doc in documents
+    ]
+    return JsonResponse(results, safe=False)
+
+
+PERIOD_LABELS = {
+    '30-days': 'Últimos 30 dias',
+    '3-months': 'Últimos 3 meses',
+    'custom': 'Período personalizado',
+}
+
+
+def _serialize_change_request(req):
+    return {
+        'id': str(req.id),
+        'field_name': req.field_name,
+        'old_value': req.old_value,
+        'new_value': req.new_value,
+        'reason': req.reason,
+        'status': req.status,
+        'created_at': req.created_at.isoformat(),
+        'updated_at': req.updated_at.isoformat(),
+    }
+
+
+def _serialize_report(report):
+    return {
+        'id': str(report.id),
+        'title': report.title,
+        'period': report.period,
+        'periodLabel': PERIOD_LABELS.get(report.period, report.period),
+        'includeFinance': report.include_finance,
+        'includeDonors': report.include_donors,
+        'includeCampaigns': report.include_campaigns,
+        'includeCnpj': report.include_cnpj,
+        'generatedAt': report.generated_at.isoformat(),
+    }
+
+
+def _build_report_summary(ong, period, options):
+    now = timezone.now()
+    days = 30 if period == '30-days' else 90 if period == '3-months' else 30
+    since = now - timezone.timedelta(days=days)
+
+    summary = {
+        'ong': {'id': str(ong.id), 'name': ong.name, 'cnpj': ong.cnpj},
+        'period': PERIOD_LABELS.get(period, period),
+        'generatedAt': now.isoformat(),
+        'score': int(float(ong.current_score or 0)),
+    }
+
+    if options.get('include_finance', True):
+        records = FinancialRecord.objects.filter(ong=ong, created_at__gte=since)
+        donations = records.filter(record_type=FinancialRecord.RecordType.DONATION)
+        transfers = records.filter(record_type=FinancialRecord.RecordType.TRANSFER)
+        summary['finance'] = {
+            'totalIncome': float(donations.aggregate(total=Sum('amount'))['total'] or 0),
+            'totalDistributed': float(transfers.aggregate(total=Sum('amount'))['total'] or 0),
+        }
+
+    if options.get('include_donors', True):
+        donations_qs = Donation.objects.filter(
+            ong=ong,
+            status=Donation.Status.COMPLETED,
+            created_at__gte=since,
+        )
+        summary['donors'] = {
+            'donationCount': donations_qs.count(),
+            'uniqueDonors': donations_qs.values('donor').distinct().count(),
+            'totalAmount': float(donations_qs.aggregate(total=Sum('amount'))['total'] or 0),
+        }
+
+    if options.get('include_campaigns', False):
+        campaigns = Campaign.objects.filter(ong=ong, is_active=True)
+        summary['campaigns'] = {
+            'activeCount': campaigns.filter(status=Campaign.Status.PUBLISHED).count(),
+            'totalRaised': float(campaigns.aggregate(total=Sum('raised_amount'))['total'] or 0),
+        }
+
+    if options.get('include_cnpj', True):
+        summary['cnpj'] = ong.cnpj
+
+    return summary
+
+
+@require_GET
+def change_requests_view(request, pk):
+    ong = get_object_or_404(NGO, pk=pk)
+    requests = ChangeRequest.objects.filter(ong=ong).order_by('-created_at')
+    return JsonResponse([_serialize_change_request(req) for req in requests], safe=False)
+
+
+@require_GET
+def ngo_reports_view(request, pk):
+    ong = get_object_or_404(NGO, pk=pk)
+    reports = NGOReport.objects.filter(ong=ong).order_by('-generated_at')[:20]
+    return JsonResponse([_serialize_report(report) for report in reports], safe=False)
+
+
+@csrf_exempt
+@require_POST
+def generate_report_view(request, pk):
+    ong = get_object_or_404(NGO, pk=pk)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido.'}, status=400)
+
+    period = data.get('period', '30-days')
+    options = {
+        'include_finance': data.get('include_finance', True),
+        'include_donors': data.get('include_donors', True),
+        'include_campaigns': data.get('include_campaigns', False),
+        'include_cnpj': data.get('include_cnpj', True),
+    }
+    period_label = PERIOD_LABELS.get(period, period)
+    title = data.get('title') or f'Relatório de Impacto — {period_label}'
+
+    report = NGOReport.objects.create(
+        ong=ong,
+        title=title,
+        period=period,
+        include_finance=options['include_finance'],
+        include_donors=options['include_donors'],
+        include_campaigns=options['include_campaigns'],
+        include_cnpj=options['include_cnpj'],
+    )
+    summary = _build_report_summary(ong, period, options)
+
+    return JsonResponse({
+        'report': _serialize_report(report),
+        'summary': summary,
+    }, status=201)

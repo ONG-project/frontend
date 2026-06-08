@@ -27,7 +27,6 @@ npm run lint
 
 ## Documentacao Relacionada
 
-- [Backlog frontend](../docs/backlog/frontend.md)
-- [Backlog de integracao e produto](../docs/backlog/integracao-produto.md)
+- [Estado de mocks e integracao](../docs/estado-mocks-e-integracao.md)
 - [Workflow do doador](../docs/workflow/client_workflow.md)
 - [Workflow da ONG](../docs/workflow/ong_workflow.md)

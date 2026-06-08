@@ -8,7 +8,9 @@ export function useTransparency(ongId) {
     financial: null,
     campaigns: [],
     changeHistory: [],
-    pendingRequests: []
+    pendingRequests: [],
+    documents: [],
+    dataSources: []
   });
   
   const [loading, setLoading] = useState(true);
@@ -27,14 +29,18 @@ export function useTransparency(ongId) {
         financial,
         campaigns,
         changeHistory,
-        pendingRequests
+        pendingRequests,
+        documents,
+        dataSources
       ] = await Promise.all([
         transparencyService.getNGOProfile(ongId),
         transparencyService.getVerificationData(ongId),
         transparencyService.getFinancialData(ongId),
         transparencyService.getCampaignHistory(ongId),
         transparencyService.getChangeHistory(ongId),
-        transparencyService.getPendingRequests(ongId)
+        transparencyService.getPendingRequests(ongId),
+        transparencyService.getDocuments(ongId),
+        transparencyService.getDataSources(ongId)
       ]);
 
       setData({
@@ -43,7 +49,9 @@ export function useTransparency(ongId) {
         financial,
         campaigns,
         changeHistory,
-        pendingRequests
+        pendingRequests,
+        documents,
+        dataSources
       });
     } catch (err) {
       console.error("Failed to load transparency data:", err);
@@ -59,8 +67,13 @@ export function useTransparency(ongId) {
 
   const submitChangeRequest = async (formData) => {
     try {
-      await transparencyService.submitChangeRequest(formData);
-      await loadData(); // Reload pending requests
+      await transparencyService.submitChangeRequest(ongId, {
+        field_name: formData.field,
+        new_value: formData.newValue,
+        reason: formData.justification,
+        old_value: formData.oldValue || '',
+      });
+      await loadData();
       return { success: true };
     } catch (err) {
       console.error(err);

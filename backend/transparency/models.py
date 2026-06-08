@@ -23,3 +23,35 @@ class ChangeRequest(models.Model):
 
     def __str__(self):
         return f"Request {self.id} for {self.ong.name} ({self.status})"
+
+class NGODocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ong = models.ForeignKey(NGO, on_delete=models.CASCADE, related_name='documents')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    document_url = models.URLField()
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.ong.name}"
+
+
+class NGOReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    ong = models.ForeignKey(NGO, on_delete=models.CASCADE, related_name='reports')
+    title = models.CharField(max_length=255)
+    period = models.CharField(max_length=50, help_text="e.g. '30-days', '3-months', 'custom'")
+    include_finance = models.BooleanField(default=True)
+    include_donors = models.BooleanField(default=True)
+    include_campaigns = models.BooleanField(default=False)
+    include_cnpj = models.BooleanField(default=True)
+    generated_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-generated_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.ong.name}"

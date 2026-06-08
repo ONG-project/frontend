@@ -2,12 +2,10 @@ import React from 'react';
 import { 
   ArrowLeft, 
   ShieldCheck, 
-  Download, 
   Scale, 
-  FileText, 
-  FileSpreadsheet, 
   Building2,
-  Loader2
+  Loader2,
+  FileText
 } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import Footer from '../components/Footer';
@@ -22,6 +20,20 @@ import DataSourceCard from '../components/transparency/DataSourceCard';
 import ConsistencyPanel from '../components/transparency/ConsistencyPanel';
 import ValidationActions from '../components/transparency/ValidationActions';
 import VerificationStatus from '../components/transparency/VerificationStatus';
+
+function getScoreLabel(score) {
+  if (score >= 90) return 'Excelência A+';
+  if (score >= 75) return 'Excelente';
+  if (score >= 50) return 'Bom';
+  return 'Em desenvolvimento';
+}
+
+const VERIFICATION_STATUS_LABELS = {
+  verified: 'Sem Ressalvas',
+  analysis: 'Em Análise',
+  pending: 'Pendente',
+  inconsistent: 'Inconsistência Detectada',
+};
 
 export default function NgoTransparencyPage({ ong, onNavigate }) {
   const [searchParams] = useSearchParams();
@@ -41,6 +53,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
   const apiScore = data.verification?.criteria?.score ?? data.profile?.score ?? ong?.score ?? 0;
   const apiVerified = data.verification?.status === 'verified' || ong?.verified;
 
+  const verificationStatus = data.verification?.status;
   const resolvedOng = {
     name: data.profile?.name || ong?.name || '—',
     cnpj: data.profile?.cnpj || ong?.cnpj || '',
@@ -48,11 +61,16 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
     operatingSince: data.profile?.yearsOperating
       ? `${data.profile.yearsOperating} anos de operação`
       : (ong?.operatingSince || '—'),
-    legalNature: ong?.legalNature || '',
     score: apiScore,
+    scoreLabel: getScoreLabel(apiScore),
     budgetUtilization: data.financial?.budgetUtilization ?? ong?.budgetUtilization ?? 0,
-    lastAudit: data.profile?.lastExternalAudit || ong?.lastAudit || '—',
-    auditStatus: data.verification?.status || ong?.auditStatus || '—',
+    lastAudit: data.financial?.lastAudit
+      || data.profile?.lastExternalAudit
+      || ong?.lastExternalAudit
+      || '—',
+    auditStatus: data.financial?.auditStatus
+      || VERIFICATION_STATUS_LABELS[verificationStatus]
+      || '—',
     verified: apiVerified,
   };
 
@@ -135,7 +153,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
             <div className="space-y-1">
               <span className="text-xs font-bold text-[#0A665C] flex items-center space-x-1 uppercase tracking-wider">
                 <ShieldCheck className="w-4 h-4" />
-                <span>Excelência A+</span>
+                <span>{resolvedOng.scoreLabel}</span>
               </span>
               <p className="text-[10px] text-gray-400 max-w-[120px] font-medium leading-tight">
                 Score calculado com base em CNPJ ativo, endereço validado e tempo de atuação.
@@ -164,10 +182,6 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   <div className="space-y-1">
                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Em operação desde</span>
                     <span className="text-sm font-extrabold text-[#0A3D36]">{resolvedOng.operatingSince}</span>
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block">Natureza Jurídica</span>
-                    <span className="text-sm font-extrabold text-[#0A3D36]">{resolvedOng.legalNature}</span>
                   </div>
                 </div>
 
@@ -223,8 +237,12 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
                   <ShieldCheck className="w-5 h-5 text-teal-300" />
                 </div>
                 <div className="space-y-2">
-                  <h4 className="text-lg font-bold tracking-tight">Confirmação de Histórico Limpo</h4>
-                  <p className="text-xs text-white/70 leading-relaxed">Certificada sem pendências jurídicas ou sanções administrativas nos últimos 10 anos de operação.</p>
+                  <h4 className="text-lg font-bold tracking-tight">Verificação Cadastral</h4>
+                  <p className="text-xs text-white/70 leading-relaxed">
+                    {apiVerified
+                      ? 'Verificação concluída sem inconsistências detectadas pela plataforma ONG+.'
+                      : 'Verificação em andamento. Consulte os registros públicos para validar a situação cadastral.'}
+                  </p>
                 </div>
                 <button
                   onClick={() => {
@@ -269,34 +287,42 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </div>
             </div>
 
-            <div className="bg-[#F5F2EC]/40 rounded-[2rem] p-8 border border-[#E5E2D9]/40 space-y-6">
+            <div className="bg-[#F5F2EC]/40 rounded-[2rem] p-8 border border-[#E5E2D9]/40 space-y-4">
               <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">Documentos Públicos</h3>
-              <div className="space-y-3">
-                {[
-                  { name: 'Relatório Anual 2023', size: 'PDF • 14.2 MB', ext: 'pdf' },
-                  { name: 'Estatuto Social', size: 'PDF • 2.8 MB', ext: 'pdf' },
-                  { name: 'Demonstrativo Financeiro (DRE)', size: 'XLSX • 1.1 MB', ext: 'xlsx' }
-                ].map((asset, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.005)] flex items-center justify-between hover:border-[#0A665C]/20 transition-all group">
-                    <div className="flex items-center space-x-3.5">
-                      <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-gray-400 group-hover:text-[#0A665C] transition-colors">
-                        {asset.ext === 'pdf' ? <FileText className="w-5 h-5" /> : <FileSpreadsheet className="w-5 h-5" />}
+              
+              {data.documents && data.documents.length > 0 ? (
+                <div className="space-y-3">
+                  {data.documents.map((doc) => (
+                    <a 
+                      key={doc.id}
+                      href={doc.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center space-x-4 hover:border-[#0A665C]/30 hover:shadow-md transition group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] group-hover:bg-[#E4F2EE] flex items-center justify-center text-gray-400 group-hover:text-[#0A665C] transition">
+                        <FileText className="w-5 h-5" />
                       </div>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-bold text-gray-800 block leading-tight">{asset.name}</span>
-                        <span className="text-[9px] font-semibold text-gray-400 block">{asset.size}</span>
+                      <div className="flex-1 text-left">
+                        <h4 className="text-sm font-bold text-[#0A3D36]">{doc.title}</h4>
+                        <p className="text-[10px] text-gray-500 mt-0.5">{doc.description}</p>
                       </div>
-                    </div>
-                    <button
-                       title="Download disponível em breve"
-                       disabled
-                       className="w-8 h-8 rounded-full bg-[#FAF8F5] flex items-center justify-center text-gray-300 cursor-not-allowed"
-                     >
-                       <Download className="w-4 h-4" />
-                     </button>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-gray-400">
+                    <FileText className="w-5 h-5" />
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm text-gray-500 font-medium">
+                    Nenhum documento publicado pela organização.
+                  </p>
+                  <p className="text-[10px] text-gray-400">
+                    Relatórios e demonstrativos aparecerão aqui quando a ONG disponibilizá-los.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -333,7 +359,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-8">
-                  <DataSourceCard />
+                  <DataSourceCard sources={data.dataSources} />
                   <ConsistencyPanel verification={data.verification} score={resolvedOng.score} />
                 </div>
                 <div>

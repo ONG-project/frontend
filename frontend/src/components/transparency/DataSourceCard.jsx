@@ -1,13 +1,7 @@
 import React from 'react';
-import { Database, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { Database, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
 
-export default function DataSourceCard() {
-  const sources = [
-    { name: 'Receita Federal', lastSync: '2 horas atrás', status: 'success' },
-    { name: 'Brasil API', lastSync: '1 dia atrás', status: 'success' },
-    { name: 'Base Própria', lastSync: 'Agora', status: 'success' },
-  ];
-
+export default function DataSourceCard({ sources = [] }) {
   return (
     <div className="bg-[#111827] rounded-3xl p-8 border border-gray-800 shadow-xl space-y-6">
       <div className="flex items-center justify-between border-b border-gray-800 pb-4">
@@ -36,6 +30,12 @@ export default function DataSourceCard() {
               <span className="inline-flex items-center space-x-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-full text-[10px] font-bold uppercase">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Online</span>
+              </span>
+            )}
+            {source.status === 'warning' && (
+              <span className="inline-flex items-center space-x-1 text-amber-400 bg-amber-400/10 px-2 py-1 rounded-full text-[10px] font-bold uppercase">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Atenção</span>
               </span>
             )}
           </div>

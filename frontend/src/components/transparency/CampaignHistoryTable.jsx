@@ -1,5 +1,33 @@
 import React from 'react';
 
+const STATUS_LABELS = {
+  publicada: 'Publicada',
+  encerrada: 'Encerrada',
+  arquivada: 'Arquivada',
+  rascunho: 'Rascunho',
+  'em-revisao': 'Em Revisão',
+  aprovada: 'Aprovada',
+  recusada: 'Recusada',
+  active: 'Ativa',
+  closed: 'Encerrada',
+  cancelled: 'Cancelada',
+};
+
+function formatDate(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('pt-BR');
+}
+
+function formatDateRange(startDate, endDate) {
+  const start = formatDate(startDate);
+  const end = formatDate(endDate);
+  if (start && end) return `${start} - ${end}`;
+  if (end) return `Até ${end}`;
+  if (start) return `Desde ${start}`;
+  return '—';
+}
+
 export default function CampaignHistoryTable({ campaigns }) {
   if (!campaigns || campaigns.length === 0) {
     return (
@@ -11,20 +39,25 @@ export default function CampaignHistoryTable({ campaigns }) {
   }
 
   const formatCurrency = (value) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value ?? 0);
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case 'active':
-        return <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Ativa</span>;
-      case 'closed':
-        return <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Encerrada</span>;
-      case 'cancelled':
-        return <span className="bg-red-100 text-red-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Cancelada</span>;
-      default:
-        return <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">{status}</span>;
-    }
+    const label = STATUS_LABELS[status] || status;
+    const isActive = ['publicada', 'active', 'aprovada'].includes(status);
+    const isEnded = ['encerrada', 'arquivada', 'closed'].includes(status);
+    const isRejected = ['recusada', 'cancelled'].includes(status);
+
+    let className = 'bg-gray-100 text-gray-600';
+    if (isActive) className = 'bg-green-100 text-green-800';
+    else if (isEnded) className = 'bg-gray-100 text-gray-600';
+    else if (isRejected) className = 'bg-red-100 text-red-800';
+
+    return (
+      <span className={`${className} text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider`}>
+        {label}
+      </span>
+    );
   };
 
   return (
@@ -39,31 +72,26 @@ export default function CampaignHistoryTable({ campaigns }) {
           <thead>
             <tr className="border-b border-gray-100 bg-[#FAF8F5] rounded-t-xl">
               <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest rounded-tl-xl">Nome</th>
-              <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Início / Fim</th>
+              <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Período</th>
               <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Meta</th>
               <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Arrecadado</th>
               <th className="py-4 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center rounded-tr-xl">Status</th>
             </tr>
           </thead>
           <tbody>
-            {campaigns.map((camp) => {
-              const start = new Date(camp.startDate).toLocaleDateString('pt-BR');
-              const end = new Date(camp.endDate).toLocaleDateString('pt-BR');
-              
-              return (
-                <tr key={camp.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
-                  <td className="py-5 px-6 font-bold text-gray-900 text-sm">{camp.title}</td>
-                  <td className="py-5 px-6 text-gray-500 text-xs font-medium">
-                    {start} <span className="text-gray-300 mx-1">-</span> {end}
-                  </td>
-                  <td className="py-5 px-6 text-gray-600 text-sm font-semibold text-right">{formatCurrency(camp.goal)}</td>
-                  <td className="py-5 px-6 font-bold text-teal-700 text-sm text-right">{formatCurrency(camp.raisedAmount)}</td>
-                  <td className="py-5 px-6 text-center">
-                    {getStatusBadge(camp.status)}
-                  </td>
-                </tr>
-              );
-            })}
+            {campaigns.map((camp) => (
+              <tr key={camp.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition">
+                <td className="py-5 px-6 font-bold text-gray-900 text-sm">{camp.title}</td>
+                <td className="py-5 px-6 text-gray-500 text-xs font-medium">
+                  {formatDateRange(camp.startDate, camp.endDate)}
+                </td>
+                <td className="py-5 px-6 text-gray-600 text-sm font-semibold text-right">{formatCurrency(camp.goal)}</td>
+                <td className="py-5 px-6 font-bold text-teal-700 text-sm text-right">{formatCurrency(camp.raisedAmount)}</td>
+                <td className="py-5 px-6 text-center">
+                  {getStatusBadge(camp.status)}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
