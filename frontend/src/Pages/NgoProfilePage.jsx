@@ -175,11 +175,16 @@ export default function NgoProfilePage({ ong, onNavigate }) {
               <span>•</span>
               <span>Última atualização: {currentOng.lastUpdated || currentOng.scoreUpdatedAt?.slice(0, 10) || '—'}</span>
               <span>•</span>
-              {currentOng.verified !== false ? (
-                <span className="text-[#0A665C]">Consistência de dados: 100% íntegro</span>
-              ) : (
-                <span className="text-amber-600">Consistência de dados: Sob análise documental</span>
-              )}
+              {(() => {
+                const status = currentOng.verification?.consistencyStatus;
+                if (status === 'consistent') {
+                  return <span className="text-[#0A665C]">Consistência de dados: Íntegro</span>;
+                }
+                if (status === 'inconsistent') {
+                  return <span className="text-red-600">Consistência de dados: Inconsistências detectadas</span>;
+                }
+                return <span className="text-amber-600">Consistência de dados: Sob análise documental</span>;
+              })()}
             </div>
 
             <p className="text-gray-600 text-base leading-relaxed max-w-2xl font-medium pt-2">

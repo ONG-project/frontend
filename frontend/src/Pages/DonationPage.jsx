@@ -79,8 +79,14 @@ export default function DonationPage({ onGoHome }) {
           .catch(err => console.error("Error loading NGO score:", err));
       }
     } else if (routeState.type === 'bundle') {
-      if (!ngoScore) {
-        setNgoScore(95); // Default bundle score
+      if (!ngoScore && routeState.bundleId) {
+        ngoService.getBundleById(routeState.bundleId)
+          .then(data => {
+            if (data?.transparencyScore !== undefined) {
+              setNgoScore(data.transparencyScore);
+            }
+          })
+          .catch(err => console.error("Error loading bundle score:", err));
       }
     } else {
       if (!ngoScore) {
@@ -89,17 +95,14 @@ export default function DonationPage({ onGoHome }) {
             if (data && data.length > 0) {
               const total = data.reduce((sum, item) => sum + (item.score || 0), 0);
               setNgoScore(Math.round(total / data.length));
-            } else {
-              setNgoScore(95);
             }
           })
           .catch(err => {
             console.error("Error loading all NGOs for average score:", err);
-            setNgoScore(95);
           });
       }
     }
-  }, [routeState.ngoId, routeState.type, ngoScore]);
+  }, [routeState.ngoId, routeState.bundleId, routeState.type, ngoScore]);
 
   useEffect(() => {
     let cancelled = false;
