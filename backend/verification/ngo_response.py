@@ -140,6 +140,7 @@ def serialize_campaign(campaign: Campaign) -> dict:
         'targetAmount': float(campaign.target_amount),
         'raisedAmount': float(campaign.raised_amount),
         'status': campaign.status,
+        'endDate': campaign.end_date.isoformat() if campaign.end_date else None,
         'daysLeft': max((campaign.end_date - date.today()).days, 0) if campaign.end_date else 0,
         'matchMultiplier': campaign.match_multiplier,
         'matchSponsor': campaign.match_sponsor,

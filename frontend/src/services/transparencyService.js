@@ -18,6 +18,44 @@ function mapProfile(detail) {
     score: detail.score,
     verified: detail.verified,
     lastUpdated: detail.lastUpdated,
+    lastExternalAudit: detail.lastExternalAudit || null,
+  };
+}
+
+function mapCampaign(camp) {
+  return {
+    id: camp.id,
+    title: camp.name ?? camp.title,
+    goal: camp.targetAmount ?? camp.goal ?? 0,
+    raisedAmount: camp.raisedAmount ?? 0,
+    status: camp.status,
+    startDate: camp.startDate ?? null,
+    endDate: camp.endDate ?? null,
+  };
+}
+
+function mapChangeHistoryEntry(entry) {
+  return {
+    id: entry.id,
+    field: entry.field,
+    oldValue: entry.oldValue ?? '',
+    newValue: entry.newValue ?? '',
+    date: entry.date ?? entry.changedAt,
+    approvedBy: entry.approvedBy ?? entry.changedBy ?? '—',
+    reason: entry.reason ?? '',
+  };
+}
+
+function mapChangeRequest(req) {
+  return {
+    id: req.id,
+    field: req.field_name ?? req.field,
+    oldValue: req.old_value ?? req.oldValue ?? '',
+    newValue: req.new_value ?? req.newValue ?? '',
+    justification: req.reason ?? req.justification ?? '',
+    status: req.status,
+    createdAt: req.created_at ?? req.createdAt,
+    adminResponse: req.admin_response ?? req.adminResponse ?? null,
   };
 }
 
@@ -36,15 +74,18 @@ export const transparencyService = {
   },
 
   async getCampaignHistory(id) {
-    return ngoService.getNgoCampaigns(id);
+    const campaigns = await ngoService.getNgoCampaigns(id);
+    return (campaigns || []).map(mapCampaign);
   },
 
   async getChangeHistory(id) {
-    return apiGet(`/v1/transparency/ngos/${id}/change-history/`);
+    const history = await apiGet(`/v1/transparency/ngos/${id}/change-history/`);
+    return (history || []).map(mapChangeHistoryEntry);
   },
 
   async getPendingRequests(id) {
-    return apiGet(`/v1/transparency/ngos/${id}/pending-requests/`);
+    const requests = await apiGet(`/v1/transparency/ngos/${id}/pending-requests/`);
+    return (requests || []).map(mapChangeRequest);
   },
 
   async submitChangeRequest(ongId, data) {

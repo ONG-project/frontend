@@ -59,8 +59,13 @@ export function useTransparency(ongId) {
 
   const submitChangeRequest = async (formData) => {
     try {
-      await transparencyService.submitChangeRequest(formData);
-      await loadData(); // Reload pending requests
+      await transparencyService.submitChangeRequest(ongId, {
+        field_name: formData.field,
+        new_value: formData.newValue,
+        reason: formData.justification,
+        old_value: formData.oldValue || '',
+      });
+      await loadData();
       return { success: true };
     } catch (err) {
       console.error(err);

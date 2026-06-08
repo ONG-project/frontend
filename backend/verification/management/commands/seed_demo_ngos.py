@@ -1,17 +1,15 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from datetime import timedelta, date
-import uuid
-import json
 
 from verification.models import NGO, Campaign, Bundle
 from financial.models import FinancialRecord
 
-
+# CNPJs claramente fictícios — apenas para ambiente de demonstração.
 DEMO_NGOS = [
     {
-        'name': 'Instituto Rebrota',
-        'cnpj': '12345678000190',
+        'name': 'Instituto Mata Viva',
+        'cnpj': '10200300000170',
         'description': (
             'Nossa missão é restaurar o equilíbrio ecológico através da biodiversidade urbana. '
             'Transformamos espaços cinzas em pulmões vivos, conectando comunidades à regeneração '
@@ -25,13 +23,13 @@ DEMO_NGOS = [
         'address_valid': True,
         'verification_status': NGO.VerificationStatus.VERIFIED,
         'social_networks': [
-            {'platform': 'instagram', 'handle': '@institutorebrota'},
-            {'platform': 'facebook', 'handle': '/institutorebrota'},
+            {'platform': 'instagram', 'handle': '@institutomataviva'},
+            {'platform': 'facebook', 'handle': '/institutomataviva'},
         ],
     },
     {
-        'name': 'Águas Limpas Brasil',
-        'cnpj': '98765432000110',
+        'name': 'Fundação Rio Puro',
+        'cnpj': '20300400000181',
         'description': (
             'Projetos de saneamento básico e acesso à água potável em comunidades '
             'ribeirinhas do Norte e Nordeste.'
@@ -43,11 +41,11 @@ DEMO_NGOS = [
         'years_operating': 12,
         'address_valid': True,
         'verification_status': NGO.VerificationStatus.VERIFIED,
-        'social_networks': [{'platform': 'instagram', 'handle': '@aguaslimpas'}],
+        'social_networks': [{'platform': 'instagram', 'handle': '@fundacaoriopuro'}],
     },
     {
-        'name': 'Educação Sem Fronteiras',
-        'cnpj': '45123890000155',
+        'name': 'Rede Aprender Juntos',
+        'cnpj': '30400500000192',
         'description': (
             'Promovemos acesso à educação de qualidade para jovens em situação de '
             'vulnerabilidade através de bolsas e mentoria educacional.'
@@ -62,8 +60,8 @@ DEMO_NGOS = [
         'social_networks': [],
     },
     {
-        'name': 'Vozes da Comunidade',
-        'cnpj': '11222333000144',
+        'name': 'Coletivo Cidadania Ativa',
+        'cnpj': '40500600000103',
         'description': (
             'Defesa e fomento dos direitos humanos através de suporte legal, '
             'capacitação e denúncia de violações em áreas periféricas.'
@@ -76,9 +74,17 @@ DEMO_NGOS = [
         'address_valid': True,
         'verification_status': NGO.VerificationStatus.VERIFIED,
         'social_networks': [
-            {'platform': 'instagram', 'handle': '@vozesdacomunidade'},
+            {'platform': 'instagram', 'handle': '@cidadaniaativa'},
         ],
     },
+]
+
+# CNPJs das ONGs de demonstração anteriores — removidos ao reexecutar o seed.
+LEGACY_DEMO_CNPJS = [
+    '12345678000190',
+    '98765432000110',
+    '45123890000155',
+    '11222333000144',
 ]
 
 
@@ -89,6 +95,12 @@ class Command(BaseCommand):
         now = timezone.now()
         ngo_created = 0
         ngo_updated = 0
+
+        removed, _ = NGO.objects.filter(cnpj__in=LEGACY_DEMO_CNPJS).delete()
+        if removed:
+            self.stdout.write(
+                self.style.WARNING(f'Removed {removed} legacy demo NGO record(s).')
+            )
 
         # ── 1. Seed NGOs ─────────────────────────────────────────────────────
         ngo_map = {}
@@ -115,7 +127,7 @@ class Command(BaseCommand):
         DEMO_CAMPAIGNS = [
             {
                 'name': 'Reflorestamento de Nascentes',
-                'ngo': ngo_map['Instituto Rebrota'],
+                'ngo': ngo_map['Instituto Mata Viva'],
                 'description': (
                     'Recuperação direta de 5 nascentes degradadas no entorno urbano de Manaus '
                     'com o plantio planejado de 10 mil mudas de espécies nativas.'
@@ -135,7 +147,7 @@ class Command(BaseCommand):
             },
             {
                 'name': 'Água Saudável nas Escolas',
-                'ngo': ngo_map['Águas Limpas Brasil'],
+                'ngo': ngo_map['Fundação Rio Puro'],
                 'description': (
                     'Instalação de filtros de carvão ativo e reservatórios higienizados em '
                     '12 escolas públicas ribeirinhas na região do Baixo Amazonas.'
@@ -151,7 +163,7 @@ class Command(BaseCommand):
             },
             {
                 'name': 'Bolsas para Desenvolvedoras',
-                'ngo': ngo_map['Educação Sem Fronteiras'],
+                'ngo': ngo_map['Rede Aprender Juntos'],
                 'description': (
                     'Financiamento completo de cursos intensivos de desenvolvimento de software '
                     'e fornecimento de notebooks para 30 mulheres da periferia paulistana.'
@@ -227,7 +239,7 @@ class Command(BaseCommand):
                     'participante). Os repasses ocorrem mensalmente sob condição de entrega das '
                     'prestações de contas parciais e relatórios de atividades.'
                 ),
-                'ngo_names': ['Instituto Rebrota', 'Águas Limpas Brasil'],
+                'ngo_names': ['Instituto Mata Viva', 'Fundação Rio Puro'],
             },
             {
                 'name': 'Futuro Brilhante',
@@ -250,7 +262,7 @@ class Command(BaseCommand):
                     'A distribuição é proporcional ao score de transparência das organizações '
                     'participantes, otimizando o repasse em favor da excelência na prestação de contas.'
                 ),
-                'ngo_names': ['Educação Sem Fronteiras', 'Vozes da Comunidade'],
+                'ngo_names': ['Rede Aprender Juntos', 'Coletivo Cidadania Ativa'],
             },
         ]
 
@@ -278,9 +290,8 @@ class Command(BaseCommand):
         now = timezone.now()
 
         DEMO_RECORDS = [
-            # Recent transfers (within last 7 days — period "week")
             {
-                'ong': ngo_map['Instituto Rebrota'],
+                'ong': ngo_map['Instituto Mata Viva'],
                 'record_type': FinancialRecord.RecordType.TRANSFER,
                 'amount': 45000,
                 'description': 'Repasse mensal — Reflorestamento de Nascentes',
@@ -288,16 +299,15 @@ class Command(BaseCommand):
                 'days_ago': 2,
             },
             {
-                'ong': ngo_map['Águas Limpas Brasil'],
+                'ong': ngo_map['Fundação Rio Puro'],
                 'record_type': FinancialRecord.RecordType.TRANSFER,
                 'amount': 28000,
                 'description': 'Repasse mensal — Água Saudável nas Escolas',
                 'reference_id': 'TRF-002',
                 'days_ago': 5,
             },
-            # Older transfers (within last 30 days — period "month")
             {
-                'ong': ngo_map['Educação Sem Fronteiras'],
+                'ong': ngo_map['Rede Aprender Juntos'],
                 'record_type': FinancialRecord.RecordType.TRANSFER,
                 'amount': 35000,
                 'description': 'Repasse — Bolsas para Desenvolvedoras',
@@ -305,7 +315,7 @@ class Command(BaseCommand):
                 'days_ago': 12,
             },
             {
-                'ong': ngo_map['Vozes da Comunidade'],
+                'ong': ngo_map['Coletivo Cidadania Ativa'],
                 'record_type': FinancialRecord.RecordType.TRANSFER,
                 'amount': 60000,
                 'description': 'Repasse — Suporte Jurídico Comunitário',
@@ -313,16 +323,15 @@ class Command(BaseCommand):
                 'days_ago': 20,
             },
             {
-                'ong': ngo_map['Instituto Rebrota'],
+                'ong': ngo_map['Instituto Mata Viva'],
                 'record_type': FinancialRecord.RecordType.TRANSFER,
                 'amount': 22000,
                 'description': 'Repasse complementar — Fundo Amazônia Viva',
                 'reference_id': 'TRF-005',
                 'days_ago': 25,
             },
-            # Donation records (used to calculate budgetUtilization)
             {
-                'ong': ngo_map['Instituto Rebrota'],
+                'ong': ngo_map['Instituto Mata Viva'],
                 'record_type': FinancialRecord.RecordType.DONATION,
                 'amount': 98400,
                 'description': 'Arrecadação acumulada — Aliança Amazônia Viva',
@@ -330,7 +339,7 @@ class Command(BaseCommand):
                 'days_ago': 30,
             },
             {
-                'ong': ngo_map['Águas Limpas Brasil'],
+                'ong': ngo_map['Fundação Rio Puro'],
                 'record_type': FinancialRecord.RecordType.DONATION,
                 'amount': 42000,
                 'description': 'Arrecadação acumulada — Água Saudável',
@@ -338,7 +347,7 @@ class Command(BaseCommand):
                 'days_ago': 30,
             },
             {
-                'ong': ngo_map['Educação Sem Fronteiras'],
+                'ong': ngo_map['Rede Aprender Juntos'],
                 'record_type': FinancialRecord.RecordType.DONATION,
                 'amount': 74000,
                 'description': 'Arrecadação acumulada — Futuro Brilhante',
@@ -346,10 +355,10 @@ class Command(BaseCommand):
                 'days_ago': 30,
             },
             {
-                'ong': ngo_map['Vozes da Comunidade'],
+                'ong': ngo_map['Coletivo Cidadania Ativa'],
                 'record_type': FinancialRecord.RecordType.DONATION,
                 'amount': 85000,
-                'description': 'Arrecadação acumulada — Vozes da Comunidade',
+                'description': 'Arrecadação acumulada — Coletivo Cidadania Ativa',
                 'reference_id': 'DON-004',
                 'days_ago': 30,
             },
@@ -362,7 +371,6 @@ class Command(BaseCommand):
             created_at = now - timedelta(days=days_ago)
             if not FinancialRecord.objects.filter(reference_id=ref_id).exists():
                 obj = FinancialRecord.objects.create(**data)
-                # Adjust created_at to simulate historical data
                 FinancialRecord.objects.filter(pk=obj.pk).update(created_at=created_at)
                 rec_created += 1
 
