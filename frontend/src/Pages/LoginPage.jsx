@@ -97,10 +97,7 @@ export default function LoginPage({ onRegisterClick }) {
 
             {/* Senha */}
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-bold text-gray-800">Senha</label>
-                <a href="#" className="text-sm text-[#147B72] font-medium hover:underline">Esqueci minha senha</a>
-              </div>
+              <label className="block text-sm font-bold text-gray-800">Senha</label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
                   <Lock className="w-5 h-5" />

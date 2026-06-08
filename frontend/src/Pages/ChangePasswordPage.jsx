@@ -1,24 +1,58 @@
 import React, { useState } from 'react';
-import { Lock, ArrowLeft } from 'lucide-react';
+import { Lock, ArrowLeft, Loader2, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import loginBg from '../assets/login_bg_plant.png';
+import { authService } from '../services/authService';
 
 export default function ChangePasswordPage() {
   const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg('');
+
     if (newPassword !== confirmPassword) {
-      alert("As senhas não coincidem!");
+      setErrorMsg('As senhas não coincidem.');
       return;
     }
-    // Simulate password change
-    alert("Senha alterada com sucesso!");
-    navigate('/configuracoes');
+
+    setLoading(true);
+    try {
+      await authService.changePassword({
+        currentPassword,
+        newPassword,
+        newPasswordConfirm: confirmPassword,
+      });
+      setSuccess(true);
+      setTimeout(() => navigate('/configuracoes'), 2000);
+    } catch (err) {
+      setErrorMsg(err.message || 'Não foi possível alterar a senha. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FCFBF9] font-sans p-8">
+        <div className="max-w-md w-full text-center space-y-4">
+          <div className="w-16 h-16 bg-[#E4F2EE] rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle className="w-8 h-8 text-[#0A665C]" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Senha alterada!</h2>
+          <p className="text-gray-500 text-sm">
+            Sua nova senha foi salva com sucesso. Redirecionando para configurações...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#FCFBF9] font-sans">
@@ -63,6 +97,12 @@ export default function ChangePasswordPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {errorMsg && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+                {errorMsg}
+              </div>
+            )}
+
             {/* Senha Atual */}
             <div className="space-y-2">
               <label className="block text-sm font-bold text-gray-800">Senha Atual</label>
@@ -76,7 +116,8 @@ export default function ChangePasswordPage() {
                   placeholder="••••••••"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
+                  disabled={loading}
+                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition disabled:opacity-60"
                 />
               </div>
             </div>
@@ -94,7 +135,8 @@ export default function ChangePasswordPage() {
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
+                  disabled={loading}
+                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition disabled:opacity-60"
                 />
               </div>
             </div>
@@ -112,17 +154,26 @@ export default function ChangePasswordPage() {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition"
+                  disabled={loading}
+                  className="w-full bg-[#EAE8E3] text-gray-800 placeholder-gray-500 rounded-lg pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-[#147B72] transition disabled:opacity-60"
                 />
               </div>
             </div>
 
             {/* Submit Button */}
             <button 
-              type="submit" 
-              className="w-full bg-[#147B72] hover:bg-teal-800 text-white font-bold py-4 rounded-full transition shadow-md cursor-pointer mt-4"
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#147B72] hover:bg-teal-800 text-white font-bold py-4 rounded-full transition shadow-md cursor-pointer mt-4 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
-              Salvar Nova Senha
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Salvando...</span>
+                </>
+              ) : (
+                <span>Salvar Nova Senha</span>
+              )}
             </button>
           </form>
         </div>
