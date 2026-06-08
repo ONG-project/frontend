@@ -76,6 +76,7 @@ def build_verification_payload(ngo: NGO) -> dict:
         'verifiedAt': verified_at.isoformat() if verified_at else None,
         'lastUpdate': last_update.isoformat() if last_update else None,
         'consistencyStatus': _consistency_status(ngo),
+        'auditStatus': 'monitoring',
         'evidenceList': _build_evidence_list(ngo),
         'criteria': {
             'score': score,

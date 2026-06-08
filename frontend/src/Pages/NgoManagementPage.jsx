@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ngoService } from '../services/ngoService';
-import UrgencyRequestsDashboard from '../components/urgency/UrgencyRequestsDashboard';
-import UrgencyRequestWizard from '../components/urgency/UrgencyRequestWizard';
+import { transparencyService } from '../services/transparencyService';
 import { 
   UploadCloud, 
   ChevronRight, 
   ShieldCheck,
   PlusCircle,
-  Download,
   History,
   RefreshCw,
   FileText,
@@ -26,11 +24,32 @@ import {
   Trash2,
   Copy
 } from 'lucide-react';
-import verdeUrbeGarden from '../assets/verde_urbe_garden.png';
-import reflorestaSeedling from '../assets/refloresta_seedling.png';
-import loginBgPlant from '../assets/login_bg_plant.png';
 import genericImage from '../assets/imagem_generica.jpg';
 import Footer from '../components/Footer';
+
+const CHANGE_STATUS_STYLES = {
+  pending: { label: 'Pendente', color: 'bg-amber-100 text-amber-800 border-amber-200' },
+  approved: { label: 'Aprovada', color: 'bg-[#CBDDCD] text-[#0A3D36] border-[#CBDDCD]' },
+  rejected: { label: 'Recusada', color: 'bg-red-50 text-red-700 border-red-100' },
+};
+
+function formatReportDate(iso) {
+  if (!iso) return '—';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(iso)).toUpperCase();
+}
+
+function formatChangeDate(iso) {
+  if (!iso) return '—';
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(new Date(iso));
+}
 
 export default function NgoManagementPage({ onNavigate }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,9 +64,17 @@ export default function NgoManagementPage({ onNavigate }) {
 
   const tabFromUrl = searchParams.get('tab');
   const [activeSubTab, setActiveSubTab] = useState(tabFromUrl || 'visao-geral');
-  const [urgencyView, setUrgencyView] = useState('list');
-  const [urgencyRequestId, setUrgencyRequestId] = useState(null);
   const [campaignTab, setCampaignTab] = useState('ativas');
+  const [financialData, setFinancialData] = useState(null);
+  const [reports, setReports] = useState([]);
+  const [changeRequests, setChangeRequests] = useState([]);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [cadastroLoading, setCadastroLoading] = useState(false);
+  const [cadastroMessage, setCadastroMessage] = useState(null);
+  const [cadastroName, setCadastroName] = useState('');
+  const [cadastroFantasy, setCadastroFantasy] = useState('');
+  const [cadastroLocation, setCadastroLocation] = useState('');
+  const [cadastroDescription, setCadastroDescription] = useState('');
 
   // Relatorios tab states
   const [period, setPeriod] = useState('30-days');
@@ -99,7 +126,23 @@ export default function NgoManagementPage({ onNavigate }) {
       .then((data) => {
         setNgoDetails(data);
         setNgoScore(data.score ?? 0);
+        setCadastroName(data.name || '');
+        setCadastroFantasy(data.name || '');
+        setCadastroLocation(data.location || '');
+        setCadastroDescription(data.description || '');
       })
+      .catch(console.error);
+
+    transparencyService.getFinancialData(ngoId)
+      .then(setFinancialData)
+      .catch(console.error);
+
+    transparencyService.listReports(ngoId)
+      .then(setReports)
+      .catch(console.error);
+
+    transparencyService.getChangeRequests(ngoId)
+      .then(setChangeRequests)
       .catch(console.error);
     
     // Fetch NGO Campaigns
@@ -115,6 +158,10 @@ export default function NgoManagementPage({ onNavigate }) {
       })
       .catch(console.error);
   }, [ngoId]);
+
+  const lastAuditLabel = ngoDetails?.lastExternalAudit
+    || financialData?.lastAudit
+    || '—';
 
   const ngoInitials = (ngoDetails?.name || ngoName || 'ONG')
     .split(' ')
@@ -236,6 +283,98 @@ export default function NgoManagementPage({ onNavigate }) {
     }
   };
 
+  const refreshChangeRequests = () => {
+    if (!ngoId) return;
+    transparencyService.getChangeRequests(ngoId)
+      .then(setChangeRequests)
+      .catch(console.error);
+  };
+
+  const handleExportReport = async () => {
+    if (!ngoId) return;
+    setExportLoading(true);
+    try {
+      const result = await transparencyService.generateReport(ngoId, {
+        period,
+        include_finance: includeFinance,
+        include_donors: includeDonors,
+        include_campaigns: includeCampaigns,
+        include_cnpj: includeCnpj,
+      });
+      if (result?.report) {
+        setReports((prev) => [result.report, ...prev]);
+      }
+      if (result?.summary) {
+        const blob = new Blob([JSON.stringify(result.summary, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `relatorio-${ngoId.slice(0, 8)}-${Date.now()}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      alert(`Erro ao gerar relatório: ${error.message}`);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  const handleAuditRequest = async () => {
+    if (!ngoId) return;
+    try {
+      await transparencyService.submitChangeRequest(ngoId, {
+        field_name: 'Auditoria Externa',
+        old_value: lastAuditLabel === '—' ? '' : lastAuditLabel,
+        new_value: 'Atualização solicitada',
+        reason: 'Solicitação de envio de nova auditoria externa via painel de gestão.',
+      });
+      refreshChangeRequests();
+      alert('Solicitação registrada. A equipe ONG+ entrará em contato para receber o documento.');
+    } catch (error) {
+      alert(`Erro ao registrar solicitação: ${error.message}`);
+    }
+  };
+
+  const handleCadastroSubmit = async (e) => {
+    e.preventDefault();
+    if (!ngoId) return;
+
+    const fields = [
+      { field_name: 'Razão Social', old: ngoDetails?.name || '', new: cadastroName.trim() },
+      { field_name: 'Nome Fantasia', old: ngoDetails?.name || '', new: cadastroFantasy.trim() },
+      { field_name: 'Endereço / Sede', old: ngoDetails?.location || '', new: cadastroLocation.trim() },
+      { field_name: 'Descrição Institucional', old: ngoDetails?.description || '', new: cadastroDescription.trim() },
+    ].filter((item) => item.new && item.new !== item.old);
+
+    if (fields.length === 0) {
+      setCadastroMessage({ type: 'error', text: 'Nenhuma alteração detectada nos campos.' });
+      return;
+    }
+
+    setCadastroLoading(true);
+    setCadastroMessage(null);
+    try {
+      await Promise.all(
+        fields.map((item) => transparencyService.submitChangeRequest(ngoId, {
+          field_name: item.field_name,
+          old_value: item.old,
+          new_value: item.new,
+          reason: 'Solicitação via painel de gestão da ONG.',
+        })),
+      );
+      refreshChangeRequests();
+      setCadastroMessage({
+        type: 'success',
+        text: `${fields.length} solicitação(ões) enviada(s) para análise.`,
+      });
+    } catch (error) {
+      setCadastroMessage({ type: 'error', text: error.message || 'Erro ao enviar solicitação.' });
+    } finally {
+      setCadastroLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF8F5] flex flex-col font-sans">
       
@@ -329,12 +468,19 @@ export default function NgoManagementPage({ onNavigate }) {
               {/* Bottom details & Button */}
               <div className="w-full space-y-4">
                 <p className="text-xs font-medium text-gray-500">
-                  Última auditoria externa: <span className="font-bold text-gray-700">{ngoDetails?.lastExternalAudit || 'Maio 2026'}</span>
+                  Última auditoria externa: <span className="font-bold text-gray-700">{lastAuditLabel}</span>
                 </p>
+                {financialData?.auditStatus && (
+                  <p className="text-[10px] text-gray-400">Status: {financialData.auditStatus}</p>
+                )}
                 
-                <button className="w-full bg-white hover:bg-gray-50 text-[#0A665C] font-bold py-3.5 px-6 rounded-2xl border border-[#EBE9E3] shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer">
+                <button
+                  type="button"
+                  onClick={handleAuditRequest}
+                  className="w-full bg-white hover:bg-gray-50 text-[#0A665C] font-bold py-3.5 px-6 rounded-2xl border border-[#EBE9E3] shadow-sm flex items-center justify-center space-x-2 text-sm transition-colors cursor-pointer"
+                >
                   <UploadCloud className="w-4 h-4" />
-                  <span>Enviar Nova Auditoria</span>
+                  <span>Solicitar Atualização de Auditoria</span>
                 </button>
               </div>
             </div>
@@ -861,12 +1007,20 @@ export default function NgoManagementPage({ onNavigate }) {
                   </div>
                 </div>
 
-                {/* PDF export button */}
+                {/* Export button */}
                 <div className="pt-4">
-                  <button className="w-full bg-[#0A665C] hover:bg-[#08524a] text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2.5 text-sm shadow-md transition-colors cursor-pointer">
+                  <button
+                    type="button"
+                    onClick={handleExportReport}
+                    disabled={exportLoading}
+                    className="w-full bg-[#0A665C] hover:bg-[#08524a] disabled:opacity-60 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2.5 text-sm shadow-md transition-colors cursor-pointer"
+                  >
                     <FileDown className="w-5 h-5" />
-                    <span>Exportar Relatório PDF</span>
+                    <span>{exportLoading ? 'Gerando...' : 'Exportar Relatório'}</span>
                   </button>
+                  <p className="text-[10px] text-gray-400 text-center mt-2">
+                    O relatório é gerado com dados reais e baixado em JSON.
+                  </p>
                 </div>
               </div>
 
@@ -881,33 +1035,32 @@ export default function NgoManagementPage({ onNavigate }) {
                     </div>
 
                     <div className="space-y-4">
-                      {[
-                        { title: 'Relatório Anual 2023', date: 'GERADO EM 12 JAN, 2024' },
-                        { title: 'Impacto Q4 - Social', date: 'GERADO EM 05 DEZ, 2023' },
-                        { title: 'Auditoria Fiscal Outubro', date: 'GERADO EM 02 NOV, 2023' },
-                        { title: 'Resumo de Doadores Mensal', date: 'GERADO EM 30 OUT, 2023' }
-                      ].map((doc, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-3 bg-[#FAF8F5] rounded-xl border border-gray-50">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-9 h-9 bg-[#DDF3E8] text-[#0A665C] rounded-lg flex items-center justify-center shrink-0">
-                              <FileText className="w-4.5 h-4.5" />
+                      {reports.length === 0 ? (
+                        <p className="text-xs text-gray-400 text-center py-4">
+                          Nenhum relatório gerado ainda. Use o botão de exportação para criar o primeiro.
+                        </p>
+                      ) : (
+                        reports.map((doc) => (
+                          <div key={doc.id} className="flex justify-between items-center p-3 bg-[#FAF8F5] rounded-xl border border-gray-50">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-9 h-9 bg-[#DDF3E8] text-[#0A665C] rounded-lg flex items-center justify-center shrink-0">
+                                <FileText className="w-4.5 h-4.5" />
+                              </div>
+                              <div>
+                                <div className="text-xs font-bold text-gray-800">{doc.title}</div>
+                                <div className="text-[9px] font-bold text-gray-400 mt-0.5 tracking-wider">
+                                  GERADO EM {formatReportDate(doc.generatedAt)}
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <div className="text-xs font-bold text-gray-800">{doc.title}</div>
-                              <div className="text-[9px] font-bold text-gray-400 mt-0.5 tracking-wider">{doc.date}</div>
-                            </div>
+                            <span className="text-[9px] font-semibold text-gray-400 uppercase">
+                              {doc.periodLabel || doc.period}
+                            </span>
                           </div>
-                          <button className="p-2 text-[#0A665C] hover:bg-[#EAE8E3] rounded-lg transition-colors cursor-pointer">
-                            <Download className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                   </div>
-
-                  <a href="#" className="text-xs font-bold text-[#0A665C] hover:underline text-center block pt-2">
-                    Ver todos os arquivos
-                  </a>
                 </div>
 
                 {/* Score badge card */}
@@ -950,39 +1103,73 @@ export default function NgoManagementPage({ onNavigate }) {
                 </p>
               </div>
 
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleCadastroSubmit}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Razão Social</label>
-                    <input type="text" defaultValue={ngoDetails?.name || ''} placeholder="Razão social da organização" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                    <input
+                      type="text"
+                      value={cadastroName}
+                      onChange={(e) => setCadastroName(e.target.value)}
+                      placeholder="Razão social da organização"
+                      className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                    />
                   </div>
                   <div className="space-y-1">
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Nome Fantasia / Público</label>
-                    <input type="text" defaultValue={ngoDetails?.name || ''} placeholder="Nome público da ONG" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                    <input
+                      type="text"
+                      value={cadastroFantasy}
+                      onChange={(e) => setCadastroFantasy(e.target.value)}
+                      placeholder="Nome público da ONG"
+                      className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Endereço Principal / Sede</label>
-                  <input type="text" defaultValue={ngoDetails?.location || ''} placeholder="Cidade, UF" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  <input
+                    type="text"
+                    value={cadastroLocation}
+                    onChange={(e) => setCadastroLocation(e.target.value)}
+                    placeholder="Cidade, UF"
+                    className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                  />
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Descrição Institucional</label>
-                  <textarea rows="4" defaultValue={ngoDetails?.description || ''} placeholder="Descrição institucional da ONG" className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]" />
+                  <textarea
+                    rows="4"
+                    value={cadastroDescription}
+                    onChange={(e) => setCadastroDescription(e.target.value)}
+                    placeholder="Descrição institucional da ONG"
+                    className="w-full bg-[#FAF8F5] border-none rounded-xl px-4 py-3 text-xs focus:ring-1 focus:ring-[#0A665C]"
+                  />
                 </div>
 
                 <div className="space-y-1">
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Documento Comprovatório (PDF)</label>
-                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:bg-[#FAF8F5] transition cursor-pointer">
-                    <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <span className="text-xs font-bold text-[#0A665C] block">Fazer upload do Estatuto ou Ata de Eleição</span>
-                    <span className="text-[10px] text-gray-400">PDF de até 10MB</span>
+                  <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center bg-gray-50/50">
+                    <UploadCloud className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                    <span className="text-xs font-bold text-gray-400 block">Upload de documentos em breve</span>
+                    <span className="text-[10px] text-gray-400">A equipe ONG+ solicitará o arquivo após análise inicial.</span>
                   </div>
                 </div>
 
-                <button type="submit" className="bg-[#0A665C] hover:bg-[#08524a] text-white py-3.5 px-6 rounded-full font-bold text-xs tracking-wider transition-colors cursor-pointer" onClick={(e) => { e.preventDefault(); alert('Solicitação de alteração cadastral enviada para moderação!'); }}>
-                  Enviar para Análise
+                {cadastroMessage && (
+                  <p className={`text-xs font-medium ${cadastroMessage.type === 'success' ? 'text-[#0A665C]' : 'text-red-600'}`}>
+                    {cadastroMessage.text}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={cadastroLoading}
+                  className="bg-[#0A665C] hover:bg-[#08524a] disabled:opacity-60 text-white py-3.5 px-6 rounded-full font-bold text-xs tracking-wider transition-colors cursor-pointer"
+                >
+                  {cadastroLoading ? 'Enviando...' : 'Enviar para Análise'}
                 </button>
               </form>
             </div>
@@ -993,24 +1180,31 @@ export default function NgoManagementPage({ onNavigate }) {
                 <h4 className="text-sm font-bold text-gray-900">Histórico de Solicitações</h4>
                 
                 <div className="space-y-4">
-                  {[
-                    { type: 'Endereço & Nome Fantasia', date: '02 Jun, 2026', status: 'Pendente', color: 'bg-amber-100 text-amber-800 border-amber-200', notes: 'Aguardando validação da equipe interna.' },
-                    { type: 'Estatuto de Fundação', date: '14 Abr, 2026', status: 'Aprovada', color: 'bg-[#CBDDCD] text-[#0A3D36] border-[#CBDDCD]', notes: 'Documento homologado com sucesso.' },
-                    { type: 'Razão Social', date: '10 Mar, 2026', status: 'Recusada', color: 'bg-red-50 text-red-700 border-red-100', notes: 'Cópia do CNPJ incorreta ou desatualizada.' }
-                  ].map((req, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-[#FAF8F5] border border-gray-50 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-gray-900">{req.type}</span>
-                        <span className={`text-[9px] font-extrabold border px-2 py-0.5 rounded-full uppercase tracking-wider ${req.color}`}>
-                          {req.status}
-                        </span>
-                      </div>
-                      <div className="text-[10px] text-gray-400 font-semibold">Solicitado em: {req.date}</div>
-                      <p className="text-[10px] text-gray-500 font-medium leading-relaxed bg-white p-2 rounded-lg border border-gray-100/50">
-                        {req.notes}
-                      </p>
-                    </div>
-                  ))}
+                  {changeRequests.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-4">
+                      Nenhuma solicitação cadastral registrada.
+                    </p>
+                  ) : (
+                    changeRequests.map((req) => {
+                      const style = CHANGE_STATUS_STYLES[req.status] || CHANGE_STATUS_STYLES.pending;
+                      return (
+                        <div key={req.id} className="p-4 rounded-2xl bg-[#FAF8F5] border border-gray-50 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold text-gray-900">{req.field}</span>
+                            <span className={`text-[9px] font-extrabold border px-2 py-0.5 rounded-full uppercase tracking-wider ${style.color}`}>
+                              {style.label}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-semibold">
+                            Solicitado em: {formatChangeDate(req.createdAt)}
+                          </div>
+                          <p className="text-[10px] text-gray-500 font-medium leading-relaxed bg-white p-2 rounded-lg border border-gray-100/50">
+                            {req.justification || req.reason || '—'}
+                          </p>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>

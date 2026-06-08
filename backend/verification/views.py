@@ -176,3 +176,23 @@ def list_bundles_view(request):
 def bundle_detail_view(request, pk):
     bundle = get_object_or_404(Bundle, pk=pk, is_active=True)
     return JsonResponse(serialize_bundle_detail(bundle))
+
+
+@require_GET
+def ngo_data_sources_view(request, pk):
+    ngo = get_object_or_404(NGO, pk=pk)
+    
+    # Calculate times relative to the NGO's verification status
+    last_verified = ngo.last_verified_at or ngo.updated_at
+    hours_ago = int((timezone.now() - last_verified).total_seconds() / 3600)
+    
+    receita_sync = "Agora" if hours_ago < 1 else f"{hours_ago} horas atrás"
+    brasil_api_sync = "1 dia atrás" if hours_ago < 24 else f"{int(hours_ago/24)} dias atrás"
+
+    sources = [
+        {"name": "Receita Federal", "lastSync": receita_sync, "status": "success" if ngo.is_active else "warning"},
+        {"name": "Brasil API", "lastSync": brasil_api_sync, "status": "success"},
+        {"name": "Base Própria", "lastSync": "Agora", "status": "success"},
+    ]
+    
+    return JsonResponse(sources, safe=False)

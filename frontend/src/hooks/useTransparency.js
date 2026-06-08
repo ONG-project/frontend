@@ -8,7 +8,9 @@ export function useTransparency(ongId) {
     financial: null,
     campaigns: [],
     changeHistory: [],
-    pendingRequests: []
+    pendingRequests: [],
+    documents: [],
+    dataSources: []
   });
   
   const [loading, setLoading] = useState(true);
@@ -27,14 +29,18 @@ export function useTransparency(ongId) {
         financial,
         campaigns,
         changeHistory,
-        pendingRequests
+        pendingRequests,
+        documents,
+        dataSources
       ] = await Promise.all([
         transparencyService.getNGOProfile(ongId),
         transparencyService.getVerificationData(ongId),
         transparencyService.getFinancialData(ongId),
         transparencyService.getCampaignHistory(ongId),
         transparencyService.getChangeHistory(ongId),
-        transparencyService.getPendingRequests(ongId)
+        transparencyService.getPendingRequests(ongId),
+        transparencyService.getDocuments(ongId),
+        transparencyService.getDataSources(ongId)
       ]);
 
       setData({
@@ -43,7 +49,9 @@ export function useTransparency(ongId) {
         financial,
         campaigns,
         changeHistory,
-        pendingRequests
+        pendingRequests,
+        documents,
+        dataSources
       });
     } catch (err) {
       console.error("Failed to load transparency data:", err);

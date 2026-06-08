@@ -4,6 +4,7 @@ from datetime import timedelta, date
 
 from verification.models import NGO, Campaign, Bundle
 from financial.models import FinancialRecord
+from transparency.models import NGODocument
 
 # CNPJs claramente fictícios — apenas para ambiente de demonstração.
 DEMO_NGOS = [
@@ -377,5 +378,39 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f'FinancialRecords ready: {rec_created} created.'
+            )
+        )
+
+        # ── 5. Seed Documents ────────────────────────────────────────────────
+        DEMO_DOCUMENTS = [
+            {
+                'ong': ngo_map['Instituto Mata Viva'],
+                'title': 'Relatório de Atividades 2025',
+                'description': 'Resumo das atividades e impacto socioambiental do último ano.',
+                'document_url': 'https://example.com/relatorio-2025.pdf',
+            },
+            {
+                'ong': ngo_map['Instituto Mata Viva'],
+                'title': 'Estatuto Social',
+                'description': 'Estatuto social consolidado da organização.',
+                'document_url': 'https://example.com/estatuto-imv.pdf',
+            },
+            {
+                'ong': ngo_map['Fundação Rio Puro'],
+                'title': 'Auditoria Financeira 2025',
+                'description': 'Parecer dos auditores independentes sobre as demonstrações contábeis.',
+                'document_url': 'https://example.com/auditoria-2025.pdf',
+            }
+        ]
+
+        doc_created = 0
+        for data in DEMO_DOCUMENTS:
+            if not NGODocument.objects.filter(ong=data['ong'], title=data['title']).exists():
+                NGODocument.objects.create(**data)
+                doc_created += 1
+
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'NGODocuments ready: {doc_created} created.'
             )
         )

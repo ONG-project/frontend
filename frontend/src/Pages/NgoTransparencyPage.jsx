@@ -289,17 +289,40 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
 
             <div className="bg-[#F5F2EC]/40 rounded-[2rem] p-8 border border-[#E5E2D9]/40 space-y-4">
               <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">Documentos Públicos</h3>
-              <div className="bg-white p-6 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-gray-400">
-                  <FileText className="w-5 h-5" />
+              
+              {data.documents && data.documents.length > 0 ? (
+                <div className="space-y-3">
+                  {data.documents.map((doc) => (
+                    <a 
+                      key={doc.id}
+                      href={doc.documentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center space-x-4 hover:border-[#0A665C]/30 hover:shadow-md transition group"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] group-hover:bg-[#E4F2EE] flex items-center justify-center text-gray-400 group-hover:text-[#0A665C] transition">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 text-left">
+                        <h4 className="text-sm font-bold text-[#0A3D36]">{doc.title}</h4>
+                        <p className="text-[10px] text-gray-500 mt-0.5">{doc.description}</p>
+                      </div>
+                    </a>
+                  ))}
                 </div>
-                <p className="text-sm text-gray-500 font-medium">
-                  Nenhum documento publicado pela organização.
-                </p>
-                <p className="text-[10px] text-gray-400">
-                  Relatórios e demonstrativos aparecerão aqui quando a ONG disponibilizá-los.
-                </p>
-              </div>
+              ) : (
+                <div className="bg-white p-6 rounded-2xl border border-gray-100 flex flex-col items-center text-center space-y-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] flex items-center justify-center text-gray-400">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm text-gray-500 font-medium">
+                    Nenhum documento publicado pela organização.
+                  </p>
+                  <p className="text-[10px] text-gray-400">
+                    Relatórios e demonstrativos aparecerão aqui quando a ONG disponibilizá-los.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -336,7 +359,7 @@ export default function NgoTransparencyPage({ ong, onNavigate }) {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-8">
-                  <DataSourceCard />
+                  <DataSourceCard sources={data.dataSources} />
                   <ConsistencyPanel verification={data.verification} score={resolvedOng.score} />
                 </div>
                 <div>

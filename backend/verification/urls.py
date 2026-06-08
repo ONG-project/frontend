@@ -13,6 +13,7 @@ from verification.views import (
     campaign_status_view,
     list_bundles_view,
     bundle_detail_view,
+    ngo_data_sources_view,
 )
 
 urlpatterns = [
@@ -28,4 +29,5 @@ urlpatterns = [
     path('v1/campaigns/<uuid:pk>/status/', campaign_status_view, name='campaign_status'),
     path('v1/bundles/', list_bundles_view, name='list_bundles'),
     path('v1/bundles/<uuid:pk>/', bundle_detail_view, name='bundle-detail'),
+    path('v1/ngos/<uuid:pk>/data-sources/', ngo_data_sources_view, name='ngo-data-sources'),
 ]

@@ -88,6 +88,19 @@ export const transparencyService = {
     return (requests || []).map(mapChangeRequest);
   },
 
+  async getChangeRequests(id) {
+    const requests = await apiGet(`/v1/transparency/ngos/${id}/change-requests/`);
+    return (requests || []).map(mapChangeRequest);
+  },
+
+  async listReports(id) {
+    return apiGet(`/v1/transparency/ngos/${id}/reports/`);
+  },
+
+  async generateReport(id, payload) {
+    return apiPost(`/v1/transparency/ngos/${id}/reports/generate/`, payload);
+  },
+
   async submitChangeRequest(ongId, data) {
     return apiPost(`/v1/transparency/ngos/${ongId}/requests/`, data);
   },
@@ -98,6 +111,14 @@ export const transparencyService = {
 
   async rejectChangeRequest(id) {
     return apiPost(`/v1/transparency/requests/${id}/reject/`, {});
+  },
+
+  async getDocuments(id) {
+    return apiGet(`/v1/transparency/ngos/${id}/documents/`);
+  },
+
+  async getDataSources(id) {
+    return apiGet(`/v1/ngos/${id}/data-sources/`);
   },
 };
 
