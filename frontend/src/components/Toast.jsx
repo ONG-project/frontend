@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CheckCircle, XCircle, X } from 'lucide-react';
 
-export default function Toast({ message, type = 'success', onClose, duration = 4000 }) {
+export default function Toast({ message, type = 'success', onClose = () => {}, duration = 4000 }) {
   const [show, setShow] = useState(false);
 
   useEffect(() => {

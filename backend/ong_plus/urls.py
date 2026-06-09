@@ -9,6 +9,7 @@ urlpatterns = [
     path('api/v1/donors/', include('authentication.donor_urls')),
     path('api/v1/financial/', include('financial.urls')),
     path('api/v1/transparency/', include('transparency.urls')),
+    path('api/v1/admin/', include('verification.admin_urls')),
     path('api/', include('verification.urls')),
 ]
 

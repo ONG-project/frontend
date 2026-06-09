@@ -17,7 +17,10 @@ export function useTransparency(ongId) {
   const [error, setError] = useState(null);
 
   const loadData = useCallback(async () => {
-    if (!ongId) return;
+    if (!ongId) {
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);

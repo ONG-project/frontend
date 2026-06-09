@@ -68,6 +68,10 @@ def validate_ong_view(request):
         if not cnpj_input:
             return JsonResponse({"cnpj": "CNPJ is required.", "error": "CNPJ is required."}, status=400)
         
+        cnpj_digits = ''.join(filter(str.isdigit, str(cnpj_input)))
+        if len(cnpj_digits) != 14:
+            return JsonResponse({"error": "CNPJ format is invalid."}, status=400)
+        
         result = validate_ngo(cnpj_input)
         return JsonResponse(result)
 

@@ -1,7 +1,7 @@
 import json
 from unittest.mock import MagicMock, patch
 import urllib.error
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from verification.models import NGO
 from verification.exceptions import CnpjNotFound, ExternalApiError
 from verification.services.cnpj_service import get_cnpj_data
@@ -177,3 +177,98 @@ class ServiceTests(TestCase):
         ngo = NGO.objects.get(cnpj=cnpj)
         self.assertEqual(ngo.current_score, 75)
         self.assertTrue(ngo.is_active)
+
+    def test_cnpj_service_invalid_length(self):
+        with self.assertRaises(ValueError):
+            get_cnpj_data("123")
+
+    @patch('urllib.request.urlopen')
+    def test_cnpj_service_http_error(self, mock_urlopen):
+        mock_urlopen.side_effect = urllib.error.HTTPError(
+            url="https://open.cnpja.com/office/12345678000199",
+            code=500, msg="Internal Server Error", hdrs=None, fp=None
+        )
+        with self.assertRaises(ExternalApiError):
+            get_cnpj_data("12345678000199")
+
+    @patch('urllib.request.urlopen')
+    def test_cnpj_service_url_error(self, mock_urlopen):
+        mock_urlopen.side_effect = urllib.error.URLError("Connection refused")
+        with self.assertRaises(ExternalApiError):
+            get_cnpj_data("12345678000199")
+
+    @patch('urllib.request.urlopen')
+    def test_cnpj_service_generic_error(self, mock_urlopen):
+        mock_urlopen.side_effect = Exception("Generic")
+        with self.assertRaises(ExternalApiError):
+            get_cnpj_data("12345678000199")
+
+    def test_address_service_invalid_length(self):
+        with self.assertRaises(ValueError):
+            get_address_by_cep("123")
+
+    @patch('urllib.request.urlopen')
+    def test_address_service_viacep_not_found(self, mock_urlopen):
+        mock_data = {"erro": True}
+        mock_urlopen.return_value = MockResponse(mock_data)
+        
+        result = get_address_by_cep("57000000")
+        self.assertIsNone(result)
+
+    @patch('urllib.request.urlopen')
+    def test_address_service_viacep_error(self, mock_urlopen):
+        mock_urlopen.side_effect = Exception("Generic")
+        with self.assertRaises(ExternalApiError):
+            get_address_by_cep("57000000")
+
+    @override_settings(CORREIOS_TOKEN='fake_token')
+    @patch('urllib.request.urlopen')
+    def test_address_service_correios_success(self, mock_urlopen):
+        mock_data = {
+            "cep": "57000000",
+            "logradouro": "Rua Principal C",
+            "bairro": "Centro C",
+            "localidade": "Maceio C",
+            "uf": "AL"
+        }
+        mock_urlopen.return_value = MockResponse(mock_data)
+        
+        result = get_address_by_cep("57000000")
+        self.assertEqual(result["logradouro"], "Rua Principal C")
+
+    @override_settings(CORREIOS_TOKEN='fake_token')
+    @patch('urllib.request.urlopen')
+    def test_address_service_correios_not_found(self, mock_urlopen):
+        mock_urlopen.side_effect = urllib.error.HTTPError(
+            url="", code=404, msg="Not Found", hdrs=None, fp=None
+        )
+        result = get_address_by_cep("57000000")
+        self.assertIsNone(result)
+
+    @override_settings(CORREIOS_TOKEN='fake_token')
+    @patch('urllib.request.urlopen')
+    def test_address_service_correios_http_fallback(self, mock_urlopen):
+        # First call: Correios (fails with 500)
+        # Second call: ViaCEP (succeeds)
+        mock_urlopen.side_effect = [
+            urllib.error.HTTPError(url="", code=500, msg="Server Error", hdrs=None, fp=None),
+            MockResponse({
+                "cep": "57000-000", "logradouro": "Rua Principal V", "bairro": "Centro", "localidade": "Maceio", "uf": "AL"
+            })
+        ]
+        result = get_address_by_cep("57000000")
+        self.assertEqual(result["logradouro"], "Rua Principal V")
+
+    @override_settings(CORREIOS_TOKEN='fake_token')
+    @patch('urllib.request.urlopen')
+    def test_address_service_correios_exception_fallback(self, mock_urlopen):
+        # First call: Correios (fails with Exception)
+        # Second call: ViaCEP (succeeds)
+        mock_urlopen.side_effect = [
+            Exception("Generic Correios Error"),
+            MockResponse({
+                "cep": "57000-000", "logradouro": "Rua Principal VE", "bairro": "Centro", "localidade": "Maceio", "uf": "AL"
+            })
+        ]
+        result = get_address_by_cep("57000000")
+        self.assertEqual(result["logradouro"], "Rua Principal VE")

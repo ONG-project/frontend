@@ -2,6 +2,7 @@ import io
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from authentication.models import CustomUser
 from transparency.models import NGODocument
@@ -36,7 +37,8 @@ class UploadNgoDocumentViewTests(TestCase):
         self.url = f'/api/v1/transparency/ngos/{self.ngo.id}/documents/upload/'
 
     def _auth(self, user):
-        self.client.force_authenticate(user=user)
+        refresh = RefreshToken.for_user(user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
 
     def test_upload_pdf_creates_private_document(self):
         self._auth(self.ngo_user)
