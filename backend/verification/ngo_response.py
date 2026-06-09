@@ -172,6 +172,7 @@ def serialize_bundle_list_item(bundle: Bundle) -> dict:
         'matchMultiplier': bundle.match_multiplier,
         'matchSponsor': bundle.match_sponsor,
         'transparencyScore': transparency_score,
+        'isActive': bundle.is_active,
         'ongs': [
             {'id': str(n.id), 'name': n.name, 'score': _score_int(n)}
             for n in ngo_list

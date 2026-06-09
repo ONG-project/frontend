@@ -23,8 +23,10 @@ export default function LoginPage({ onRegisterClick }) {
         navigate('/donor-profile');
       } else if (user.role === 'ong') {
         navigate('/gestao-ong');
+      } else if (user.role === 'admin') {
+        navigate('/admin-dashboard');
       } else {
-        navigate('/'); // fallback
+        navigate('/');
       }
     } catch (err) {
       setErrorMsg(
