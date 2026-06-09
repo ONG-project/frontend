@@ -25,8 +25,8 @@ def get_cnpj_data(cnpj: str) -> dict:
     }
     """
     cnpj_digits = ''.join(filter(str.isdigit, str(cnpj)))
-    if not cnpj_digits or len(cnpj_digits) != 14:
-        raise ValueError("CNPJ must contain exactly 14 digits.")
+    if not cnpj_digits or len(cnpj_digits) not in [13, 14]:
+        raise ValueError("CNPJ must contain exactly 13 or 14 digits.")
         
     url = f"https://open.cnpja.com/office/{cnpj_digits}"
     
