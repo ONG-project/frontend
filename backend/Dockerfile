@@ -25,4 +25,4 @@ COPY . /app/
 EXPOSE 8000
 
 # Start server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "gunicorn ong_plus.wsgi:application --bind 0.0.0.0:${PORT:-8000}"]

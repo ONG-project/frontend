@@ -11,8 +11,11 @@ RUN npm install
 # Copy application code
 COPY . .
 
-# Expose Vite dev server port
-EXPOSE 5173
+# Build the application for production
+RUN npm run build
 
-# Run development server with host configuration
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Install static server
+RUN npm install -g serve
+
+# Run static server on port PORT (fallback to 5173 for local docker-compose)
+CMD ["sh", "-c", "serve -s dist -l ${PORT:-5173}"]
