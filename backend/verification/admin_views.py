@@ -130,7 +130,7 @@ def admin_ngo_validate_view(request, pk):
         return error
     ngo = get_object_or_404(NGO, pk=pk)
     try:
-        result = validate_ngo(ngo.cnpj)
+        result = validate_ngo(ngo.cnpj, persist=False)
         ngo.refresh_from_db()
         return JsonResponse({
             'validation': result,
