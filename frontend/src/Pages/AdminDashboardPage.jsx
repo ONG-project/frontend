@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { adminService } from '../services/adminService';
+import { useAuth } from '../contexts/AuthContext';
 import Footer from '../components/Footer';
 
 const TABS = [
@@ -75,6 +76,7 @@ function MessageBanner({ message, type = 'info' }) {
 }
 
 export default function AdminDashboardPage() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('revisao');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
@@ -327,6 +329,17 @@ export default function AdminDashboardPage() {
           <p className="text-gray-500 text-sm mt-2">Verifique ONGs e campanhas, gerencie bundles coletivos e scores de confiança.</p>
         </div>
 
+        <div className="mb-8 bg-white border border-[#E5E2D9] rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Administrador logado</p>
+            <h2 className="text-lg font-extrabold text-[#0A3D36] mt-1">{user?.name || 'Administrador'}</h2>
+            <p className="text-xs text-gray-500">{user?.email}</p>
+          </div>
+          <span className="bg-[#0A665C] text-white text-[10px] font-bold uppercase tracking-widest rounded-full px-3 py-1">
+            role: {user?.role}
+          </span>
+        </div>
+
         <MessageBanner message={message?.text} type={message?.type} />
 
         <div className="flex flex-wrap gap-2 mb-8">
@@ -392,6 +405,16 @@ export default function AdminDashboardPage() {
                               <h3 className="font-bold text-gray-900">{camp.name}</h3>
                               <p className="text-sm text-gray-500">{camp.ngoName} · Meta R$ {camp.targetAmount?.toLocaleString('pt-BR')}</p>
                               <p className="text-sm text-gray-600 mt-2 line-clamp-2">{camp.description}</p>
+                              <div className="mt-3 grid md:grid-cols-2 gap-2 text-xs">
+                                <div className="bg-[#FAF8F5] border border-[#E5E2D9] rounded-xl p-3">
+                                  <p className="font-bold text-gray-500 uppercase tracking-wider mb-1">Requisitos enviados</p>
+                                  <p className="text-gray-700">{camp.requirements || 'Nenhum requisito informado.'}</p>
+                                </div>
+                                <div className="bg-[#FAF8F5] border border-[#E5E2D9] rounded-xl p-3">
+                                  <p className="font-bold text-gray-500 uppercase tracking-wider mb-1">Destino dos recursos</p>
+                                  <p className="text-gray-700">{camp.destination || 'Destino não informado.'}</p>
+                                </div>
+                              </div>
                             </div>
                             <StatusBadge status={camp.status} map={CAMPAIGN_STATUS_LABELS} />
                           </div>
