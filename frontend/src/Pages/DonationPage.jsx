@@ -9,9 +9,7 @@ import {
   TreeDeciduous, 
   HeartPulse, 
   Scale,
-  CreditCard, 
   QrCode, 
-  FileText, 
   ShieldCheck, 
   Lock, 
   ThumbsUp, 
@@ -190,6 +188,10 @@ export default function DonationPage({ onGoHome }) {
         amount: displayAmount,
         payment_method: paymentMethodId,
         recurrence_type: FREQUENCY_MAP[frequency] || 'once',
+        notes: [
+          routeState.type === 'campaign' && routeState.campaignId ? `Campanha verificada: ${routeState.campaignId}` : null,
+          routeState.type === 'bundle' && routeState.bundleId ? `Bundle coletivo: ${routeState.bundleId}` : null,
+        ].filter(Boolean).join(' | '),
       });
       const processed = await financialService.processDonation(donation.id);
       setCompletedDonation(processed);

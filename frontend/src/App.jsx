@@ -7,6 +7,7 @@ import AboutPage from './Pages/AboutPage'
 import DonationPage from './Pages/DonationPage'
 import ChangePasswordPage from './Pages/ChangePasswordPage'
 import NgoManagementPage from './Pages/NgoManagementPage'
+import AdminDashboardPage from './Pages/AdminDashboardPage'
 import CausesPage from './Pages/CausesPage'
 import BundleDetailPage from './Pages/BundleDetailPage'
 import NgoProfilePage from './Pages/NgoProfilePage'
@@ -142,15 +143,22 @@ function ProfileDropdown({ user, onLogout, onNavigate }) {
         <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50">
           <div className="px-4 py-3 border-b border-gray-50">
             <p className="text-sm font-bold text-gray-900">{user.name}</p>
-            <p className="text-xs text-gray-400 capitalize">{user.role === 'donor' ? 'Doador' : 'ONG'}</p>
+            <p className="text-xs text-gray-400 capitalize">
+              {user.role === 'donor' ? 'Doador' : user.role === 'admin' ? 'Administrador' : 'ONG'}
+            </p>
           </div>
           <button
             id="goto-profile-btn"
-            onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
+            onClick={() => {
+              setOpen(false);
+              if (user.role === 'ong') onNavigate('/gestao-ong');
+              else if (user.role === 'admin') onNavigate('/admin-dashboard');
+              else onNavigate('/donor-profile');
+            }}
             className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition text-left"
           >
             <User className="w-4 h-4 text-gray-400" />
-            <span>{user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}</span>
+            <span>{user.role === 'ong' ? 'Minha ONG' : user.role === 'admin' ? 'Painel Admin' : 'Meu Perfil'}</span>
           </button>
           <button
             id="goto-settings-btn"
@@ -204,9 +212,14 @@ function MobileMenu({ links, user, onNavigate, onLogin, onLogout }) {
           <div className="pt-3 border-t border-gray-100 space-y-2">
             {user ? (
               <>
-                <button onClick={() => { setOpen(false); onNavigate(user.role === 'ong' ? '/gestao-ong' : '/donor-profile'); }}
+                <button onClick={() => {
+                  setOpen(false);
+                  if (user.role === 'ong') onNavigate('/gestao-ong');
+                  else if (user.role === 'admin') onNavigate('/admin-dashboard');
+                  else onNavigate('/donor-profile');
+                }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition">
-                  {user.role === 'ong' ? 'Minha ONG' : 'Meu Perfil'}
+                  {user.role === 'ong' ? 'Minha ONG' : user.role === 'admin' ? 'Painel Admin' : 'Meu Perfil'}
                 </button>
                 <button onClick={() => { setOpen(false); onLogout(); }}
                   className="w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition">
@@ -358,6 +371,7 @@ function AppContent() {
         {/* Role Specific */}
         <Route path="/donor-profile" element={<RequireRole allowedRoles={['donor']}><DonorProfilePage onNavigate={handleNavigate} /></RequireRole>} />
         <Route path="/gestao-ong" element={<RequireRole allowedRoles={['ong']}><NgoManagementPage /></RequireRole>} />
+        <Route path="/admin-dashboard" element={<RequireRole allowedRoles={['admin']}><AdminDashboardPage /></RequireRole>} />
       </Routes>
     </div>
   )
