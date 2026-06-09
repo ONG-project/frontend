@@ -81,6 +81,45 @@ export async function apiPatch(path, body) {
   return parseResponse(res);
 }
 
+export async function apiDelete(path) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return parseResponse(res);
+}
+
+function parseFilename(contentDisposition, fallback) {
+  if (!contentDisposition) return fallback;
+  const match = contentDisposition.match(/filename="([^"]+)"/);
+  return match?.[1] || fallback;
+}
+
+export async function apiDownload(path, fallbackFilename = 'download.pdf') {
+  const token = localStorage.getItem('@ongplus:token');
+  const headers = {};
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${BASE_URL}${path}`, { headers });
+  if (!res.ok) {
+    const text = await res.text();
+    let message = `Erro ${res.status} ao baixar arquivo`;
+    try {
+      const data = text ? JSON.parse(text) : null;
+      message = data?.error || data?.detail || message;
+    } catch {
+      if (text) message = text;
+    }
+    throw new Error(message);
+  }
+
+  const blob = await res.blob();
+  const filename = parseFilename(res.headers.get('Content-Disposition'), fallbackFilename);
+  return { blob, filename };
+}
+
 export async function apiUpload(path, formData) {
   const token = localStorage.getItem('@ongplus:token');
   const headers = {};
@@ -94,4 +133,13 @@ export async function apiUpload(path, formData) {
     body: formData,
   });
   return parseResponse(res);
+}
+
+export function saveBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
 }

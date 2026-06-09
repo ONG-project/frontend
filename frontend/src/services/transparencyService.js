@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiUpload } from './apiClient';
+import { apiGet, apiPost, apiDelete, apiDownload, saveBlob, apiUpload } from './apiClient';
 import { ngoService } from './ngoService';
 
 function mapProfile(detail) {
@@ -97,8 +97,32 @@ export const transparencyService = {
     return apiGet(`/v1/transparency/ngos/${id}/reports/`);
   },
 
+  async clearReports(id) {
+    return apiDelete(`/v1/transparency/ngos/${id}/reports/`);
+  },
+
   async generateReport(id, payload) {
     return apiPost(`/v1/transparency/ngos/${id}/reports/generate/`, payload);
+  },
+
+  async downloadReport(ngoId, reportId) {
+    return apiDownload(
+      `/v1/transparency/ngos/${ngoId}/reports/${reportId}/download/`,
+      `relatorio-${reportId.slice(0, 8)}.pdf`,
+    );
+  },
+
+  async generateAndDownloadReport(ngoId, payload) {
+    const result = await apiPost(`/v1/transparency/ngos/${ngoId}/reports/generate/`, payload);
+    if (!result?.report?.id) {
+      throw new Error('Relatório gerado sem identificador válido.');
+    }
+    const file = await apiDownload(
+      `/v1/transparency/ngos/${ngoId}/reports/${result.report.id}/download/`,
+      `relatorio-${result.report.id.slice(0, 8)}.pdf`,
+    );
+    saveBlob(file.blob, file.filename);
+    return result.report;
   },
 
   async submitChangeRequest(ongId, data) {
