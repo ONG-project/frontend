@@ -22,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-362%efv+@js&zyn2hjk!91*$)rlif+d-m2yp$s2%-hc*hz$p8b'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-362%efv+@js&zyn2hjk!91*$)rlif+d-m2yp$s2%-hc*hz$p8b')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
@@ -65,8 +65,17 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = config(
     'CORS_ALLOWED_ORIGINS', 
-    default='http://localhost:5173,http://127.0.0.1:5173'
+    default='http://localhost:5173,http://127.0.0.1:5173,https://ongplus.onrender.com'
 ).split(',')
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='http://localhost:5173,http://127.0.0.1:5173,https://ongplus.onrender.com'
+).split(',')
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 ROOT_URLCONF = 'ong_plus.urls'
 
@@ -138,6 +147,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+FRONTEND_DIST_DIR = BASE_DIR / 'frontend_dist'
+STATICFILES_DIRS = [FRONTEND_DIST_DIR] if FRONTEND_DIST_DIR.exists() else []
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
