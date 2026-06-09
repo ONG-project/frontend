@@ -25,14 +25,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS(f'Método {name}: {action}'))
 
         ong_user = CustomUser.objects.filter(email='ong@dev.com').first()
-        rebrota = NGO.objects.filter(name='Instituto Rebrota').first()
-        if ong_user and rebrota:
-            if rebrota.user_id != ong_user.id:
-                rebrota.user = ong_user
-                rebrota.save(update_fields=['user'])
-                self.stdout.write(self.style.SUCCESS('ong@dev.com vinculado ao Instituto Rebrota'))
+        demo_ngo = NGO.objects.filter(name='Instituto Mata Viva').first()
+        if ong_user and demo_ngo:
+            if demo_ngo.user_id != ong_user.id:
+                demo_ngo.user = ong_user
+                demo_ngo.save(update_fields=['user'])
+                self.stdout.write(self.style.SUCCESS('ong@dev.com vinculado ao Instituto Mata Viva'))
             else:
-                self.stdout.write(self.style.WARNING('ong@dev.com já vinculado ao Instituto Rebrota'))
+                self.stdout.write(self.style.WARNING('ong@dev.com já vinculado ao Instituto Mata Viva'))
         else:
             self.stdout.write(
                 self.style.WARNING(
@@ -48,12 +48,12 @@ class Command(BaseCommand):
                 profile.save(update_fields=['preferred_causes'])
                 self.stdout.write(self.style.SUCCESS('Preferências de causa do doador demo configuradas'))
 
-            if rebrota and not Donation.objects.filter(
-                donor=donor, ong=rebrota, status=Donation.Status.COMPLETED
+            if demo_ngo and not Donation.objects.filter(
+                donor=donor, ong=demo_ngo, status=Donation.Status.COMPLETED
             ).exists():
                 donation = Donation.objects.create(
                     donor=donor,
-                    ong=rebrota,
+                    ong=demo_ngo,
                     amount=Decimal('150.00'),
                     payment_method=method_map['pix'],
                     status=Donation.Status.COMPLETED,

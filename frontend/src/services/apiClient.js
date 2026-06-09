@@ -81,6 +81,14 @@ export async function apiPatch(path, body) {
   return parseResponse(res);
 }
 
+export async function apiDelete(path) {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+  });
+  return parseResponse(res);
+}
+
 function parseFilename(contentDisposition, fallback) {
   if (!contentDisposition) return fallback;
   const match = contentDisposition.match(/filename="([^"]+)"/);

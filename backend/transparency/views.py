@@ -1,11 +1,12 @@
 import json
 import os
+from django.conf import settings
 from django.utils import timezone
 from django.core.files.base import ContentFile
 from django.http import FileResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from django.db.models import Sum
 
 from .auth_helpers import require_ngo_access
@@ -325,13 +326,37 @@ def _serialize_report(report):
     }
 
 
+def _cleanup_orphan_report_files():
+    reports_dir = settings.MEDIA_ROOT / 'ngo_reports'
+    if not reports_dir.is_dir():
+        return 0
+
+    referenced = {
+        report.pdf_file.name
+        for report in NGOReport.objects.exclude(pdf_file='')
+        if report.pdf_file
+    }
+
+    removed = 0
+    for file_path in reports_dir.rglob('*.pdf'):
+        relative_path = file_path.relative_to(settings.MEDIA_ROOT).as_posix()
+        if relative_path not in referenced:
+            file_path.unlink(missing_ok=True)
+            removed += 1
+    return removed
+
+
 def _build_report_summary(ong, period, options):
     now = timezone.now()
     days = 30 if period == '30-days' else 90 if period == '3-months' else 30
     since = now - timezone.timedelta(days=days)
 
+    ong_data = {'id': str(ong.id), 'name': ong.name}
+    if options.get('include_cnpj', True):
+        ong_data['cnpj'] = ong.cnpj
+
     summary = {
-        'ong': {'id': str(ong.id), 'name': ong.name, 'cnpj': ong.cnpj},
+        'ong': ong_data,
         'period': PERIOD_LABELS.get(period, period),
         'generatedAt': now.isoformat(),
         'score': int(float(ong.current_score or 0)),
@@ -359,7 +384,7 @@ def _build_report_summary(ong, period, options):
         }
 
     if options.get('include_campaigns', False):
-        campaigns = Campaign.objects.filter(ong=ong, is_active=True)
+        campaigns = Campaign.objects.filter(ngo=ong, is_active=True)
         summary['campaigns'] = {
             'activeCount': campaigns.filter(status=Campaign.Status.PUBLISHED).count(),
             'totalRaised': float(campaigns.aggregate(total=Sum('raised_amount'))['total'] or 0),
@@ -378,9 +403,25 @@ def change_requests_view(request, pk):
     return JsonResponse([_serialize_change_request(req) for req in requests], safe=False)
 
 
-@require_GET
+@csrf_exempt
+@require_http_methods(['GET', 'DELETE'])
 def ngo_reports_view(request, pk):
     ong = get_object_or_404(NGO, pk=pk)
+    _, error = require_ngo_access(request, ong)
+    if error:
+        return error
+
+    if request.method == 'DELETE':
+        reports = list(NGOReport.objects.filter(ong=ong))
+        deleted_count = len(reports)
+        for report in reports:
+            report.delete()
+        orphans_removed = _cleanup_orphan_report_files()
+        return JsonResponse({
+            'deleted': deleted_count,
+            'orphansRemoved': orphans_removed,
+        })
+
     reports = NGOReport.objects.filter(ong=ong).order_by('-generated_at')[:20]
     return JsonResponse([_serialize_report(report) for report in reports], safe=False)
 
@@ -389,6 +430,9 @@ def ngo_reports_view(request, pk):
 @require_POST
 def generate_report_view(request, pk):
     ong = get_object_or_404(NGO, pk=pk)
+    _, error = require_ngo_access(request, ong)
+    if error:
+        return error
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -413,10 +457,14 @@ def generate_report_view(request, pk):
         include_campaigns=options['include_campaigns'],
         include_cnpj=options['include_cnpj'],
     )
-    summary = _build_report_summary(ong, period, options)
-    pdf_bytes = build_report_pdf(summary, title)
-    filename = f'relatorio-{str(report.id)[:8]}.pdf'
-    report.pdf_file.save(filename, ContentFile(pdf_bytes), save=True)
+    try:
+        summary = _build_report_summary(ong, period, options)
+        pdf_bytes = build_report_pdf(summary, title)
+        filename = f'relatorio-{str(report.id)[:8]}.pdf'
+        report.pdf_file.save(filename, ContentFile(pdf_bytes), save=True)
+    except Exception:
+        report.delete()
+        return JsonResponse({'error': 'Falha ao gerar o PDF do relatório.'}, status=500)
 
     return JsonResponse({
         'report': _serialize_report(report),
@@ -426,6 +474,9 @@ def generate_report_view(request, pk):
 @require_GET
 def download_report_view(request, pk, report_id):
     ong = get_object_or_404(NGO, pk=pk)
+    _, error = require_ngo_access(request, ong)
+    if error:
+        return error
     report = get_object_or_404(NGOReport, pk=report_id, ong=ong)
     if not report.pdf_file:
         return JsonResponse({'error': 'Arquivo PDF não disponível para este relatório.'}, status=404)

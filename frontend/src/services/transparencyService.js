@@ -1,4 +1,4 @@
-import { apiGet, apiPost, apiDownload, saveBlob, apiUpload } from './apiClient';
+import { apiGet, apiPost, apiDelete, apiDownload, saveBlob, apiUpload } from './apiClient';
 import { ngoService } from './ngoService';
 
 function mapProfile(detail) {
@@ -95,6 +95,10 @@ export const transparencyService = {
 
   async listReports(id) {
     return apiGet(`/v1/transparency/ngos/${id}/reports/`);
+  },
+
+  async clearReports(id) {
+    return apiDelete(`/v1/transparency/ngos/${id}/reports/`);
   },
 
   async generateReport(id, payload) {

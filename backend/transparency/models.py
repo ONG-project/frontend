@@ -60,5 +60,10 @@ class NGOReport(models.Model):
     class Meta:
         ordering = ['-generated_at']
 
+    def delete(self, *args, **kwargs):
+        if self.pdf_file:
+            self.pdf_file.delete(save=False)
+        super().delete(*args, **kwargs)
+
     def __str__(self):
         return f"{self.title} - {self.ong.name}"

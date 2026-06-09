@@ -71,6 +71,7 @@ export default function NgoManagementPage({ onNavigate }) {
   const [reports, setReports] = useState([]);
   const [changeRequests, setChangeRequests] = useState([]);
   const [exportLoading, setExportLoading] = useState(false);
+  const [clearHistoryLoading, setClearHistoryLoading] = useState(false);
   const [downloadingReportId, setDownloadingReportId] = useState(null);
   const [cadastroLoading, setCadastroLoading] = useState(false);
   const [cadastroMessage, setCadastroMessage] = useState(null);
@@ -295,7 +296,10 @@ export default function NgoManagementPage({ onNavigate }) {
   };
 
   const handleExportReport = async () => {
-    if (!ngoId) return;
+    if (!ngoId) {
+      alert('Nenhuma ONG vinculada à sua conta. Cadastre ou vincule uma ONG para gerar relatórios.');
+      return;
+    }
     setExportLoading(true);
     try {
       const report = await transparencyService.generateAndDownloadReport(ngoId, {
@@ -325,6 +329,25 @@ export default function NgoManagementPage({ onNavigate }) {
       alert(`Erro ao baixar relatório: ${error.message}`);
     } finally {
       setDownloadingReportId(null);
+    }
+  };
+
+  const handleClearReportHistory = async () => {
+    if (!ngoId || reports.length === 0) return;
+    const confirmed = window.confirm(
+      'Deseja limpar todo o histórico de relatórios? Os arquivos PDF serão removidos permanentemente.',
+    );
+    if (!confirmed) return;
+
+    setClearHistoryLoading(true);
+    try {
+      await transparencyService.clearReports(ngoId);
+      const updatedReports = await transparencyService.listReports(ngoId);
+      setReports(updatedReports || []);
+    } catch (error) {
+      alert(`Erro ao limpar histórico: ${error.message}`);
+    } finally {
+      setClearHistoryLoading(false);
     }
   };
 
@@ -966,7 +989,7 @@ export default function NgoManagementPage({ onNavigate }) {
                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     Seletor de Período
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setPeriod('30-days')}
@@ -995,21 +1018,6 @@ export default function NgoManagementPage({ onNavigate }) {
                         {period === '3-months' && <div className="w-2.5 h-2.5 rounded-full bg-[#0A665C]" />}
                       </div>
                       <span className="text-gray-800">Últimos 3 meses</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setPeriod('custom')}
-                      className={`flex items-center space-x-3 p-4 rounded-xl border text-xs font-bold transition-all cursor-pointer bg-white ${
-                        period === 'custom' ? 'border-[#0A665C] shadow-sm' : 'border-gray-100 hover:border-gray-200'
-                      }`}
-                    >
-                      <div className={`w-4.5 h-4.5 rounded-full border flex items-center justify-center shrink-0 ${
-                        period === 'custom' ? 'border-[#0A665C]' : 'border-gray-300'
-                      }`}>
-                        {period === 'custom' && <div className="w-2.5 h-2.5 rounded-full bg-[#0A665C]" />}
-                      </div>
-                      <span className="text-gray-800">Personalizado</span>
                     </button>
                   </div>
                 </div>
@@ -1101,7 +1109,7 @@ export default function NgoManagementPage({ onNavigate }) {
                   <button
                     type="button"
                     onClick={handleExportReport}
-                    disabled={exportLoading}
+                    disabled={exportLoading || !ngoId}
                     className="w-full bg-[#0A665C] hover:bg-[#08524a] disabled:opacity-60 text-white font-bold py-4 rounded-xl flex items-center justify-center space-x-2.5 text-sm shadow-md transition-colors cursor-pointer"
                   >
                     <FileDown className="w-5 h-5" />
@@ -1120,7 +1128,20 @@ export default function NgoManagementPage({ onNavigate }) {
                   <div className="w-full">
                     <div className="flex justify-between items-center mb-6">
                       <h4 className="text-sm font-bold text-gray-900">Histórico</h4>
-                      <History className="w-4 h-4 text-gray-400" />
+                      <div className="flex items-center space-x-2">
+                        {reports.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleClearReportHistory}
+                            disabled={clearHistoryLoading}
+                            className="flex items-center space-x-1.5 text-[10px] font-bold text-gray-400 hover:text-red-600 disabled:opacity-50 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>{clearHistoryLoading ? 'Limpando...' : 'Limpar histórico'}</span>
+                          </button>
+                        )}
+                        <History className="w-4 h-4 text-gray-400" />
+                      </div>
                     </div>
 
                     <div className="space-y-4">

@@ -32,6 +32,7 @@ def build_report_pdf(summary: dict, title: str) -> bytes:
         y -= line_height * gap
 
     def write_section(label):
+        nonlocal y
         y -= 0.2 * cm
         write_line(label, size=13, bold=True, gap=1.2)
 
