@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { apiPost, apiGet, apiPatch } from '../services/apiClient';
 
-const AuthContext = createContext({});
+const AuthContext = createContext(undefined);
 
 function normalizeUser(userData) {
   if (!userData) return null;

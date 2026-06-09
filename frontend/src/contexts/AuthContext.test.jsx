@@ -85,4 +85,114 @@ describe('AuthContext', () => {
     
     expect(localStorage.getItem('@ongplus:token')).toBeNull();
   });
+
+  it('clears token on init if fetch me fails', async () => {
+    localStorage.setItem('@ongplus:token', 'invalid-token');
+    
+    // We will mock fetch to return 401 just for this test
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: async () => JSON.stringify({ detail: 'Unauthorized' })
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user-status')).toHaveTextContent('Not logged in');
+    });
+
+    expect(localStorage.getItem('@ongplus:token')).toBeNull();
+    global.fetch = originalFetch;
+  });
+
+  it('allows user to update profile', async () => {
+    // Mock user login first
+    localStorage.setItem('@ongplus:token', 'fake-token');
+    
+    const ComponentWithUpdate = () => {
+      const { user, updateUser, loading } = useAuth();
+      if (loading) return null;
+      return (
+        <div>
+          <div data-testid="user-name">{user?.name}</div>
+          <button onClick={() => updateUser({ name: 'Updated Name', email: 'up@example.com' })}>Update</button>
+        </div>
+      );
+    };
+
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn()
+      // Initial me
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify({ id: 1, full_name: 'Test User' })
+      })
+      // update me
+      .mockResolvedValueOnce({
+        ok: true,
+        text: async () => JSON.stringify({ id: 1, full_name: 'Updated Name', email: 'up@example.com' })
+      });
+
+    render(
+      <AuthProvider>
+        <ComponentWithUpdate />
+      </AuthProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user-name')).toHaveTextContent('Test User');
+    });
+
+    act(() => {
+      screen.getByText('Update').click();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('user-name')).toHaveTextContent('Updated Name');
+    });
+
+    global.fetch = originalFetch;
+  });
+
+  it('logs error on logout failure', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    localStorage.setItem('@ongplus:refresh_token', 'fake-refresh');
+    
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    act(() => {
+      screen.getByText('Logout').click();
+    });
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Logout error', expect.any(Error));
+    });
+
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+});
+
+describe('useAuth outside provider', () => {
+  it('throws an error', () => {
+    // Suppress console.error from React about unhandled error boundary
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    expect(() => render(<TestComponent />)).toThrow('useAuth deve ser usado dentro de um AuthProvider');
+    
+    consoleSpy.mockRestore();
+  });
 });

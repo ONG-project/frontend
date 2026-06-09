@@ -43,4 +43,82 @@ describe('useTransparency', () => {
     
     expect(result.current.data.profile).toBeNull();
   });
+
+  it('handles load failure gracefully', async () => {
+    // Mock the global console.error
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
+    // We mock fetch inside setupServer, but since this test uses vitest mocks,
+    // we should override the transparencyService mock instead. But it's not mocked here.
+    // The service is actually hitting the MSW server because we didn't mock it in this file.
+    // We can use a mocked fetch to force error.
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn().mockRejectedValueOnce(new Error('Network error'));
+
+    const { result } = renderHook(() => useTransparency('test-ong-id'));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.error).toBe('Não foi possível carregar os dados de transparência. Tente novamente.');
+    
+    consoleSpy.mockRestore();
+    global.fetch = originalFetch;
+  });
+
+  it('submitChangeRequest works', async () => {
+    const originalFetch = global.fetch;
+    // mock loadData success
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, text: async () => JSON.stringify({ ok: true }) }) // submit
+      .mockResolvedValue({ ok: true, text: async () => JSON.stringify({}) }); // subsequent loads
+      
+    const { result } = renderHook(() => useTransparency('test-ong-id'));
+    
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    const res = await result.current.submitChangeRequest({ field: 'name', newValue: 'new name', justification: 'cuz' });
+    expect(res.success).toBe(true);
+
+    global.fetch = originalFetch;
+  });
+
+  it('approveRequest works', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, text: async () => JSON.stringify({ ok: true }) }) 
+      .mockResolvedValue({ ok: true, text: async () => JSON.stringify({}) }); 
+      
+    const { result } = renderHook(() => useTransparency('test-ong-id'));
+    
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    const res = await result.current.approveRequest('req1');
+    expect(res.success).toBe(true);
+
+    global.fetch = originalFetch;
+  });
+
+  it('rejectRequest works', async () => {
+    const originalFetch = global.fetch;
+    global.fetch = vi.fn()
+      .mockResolvedValueOnce({ ok: true, text: async () => JSON.stringify({ ok: true }) }) 
+      .mockResolvedValue({ ok: true, text: async () => JSON.stringify({}) }); 
+      
+    const { result } = renderHook(() => useTransparency('test-ong-id'));
+    
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    const res = await result.current.rejectRequest('req1');
+    expect(res.success).toBe(true);
+
+    global.fetch = originalFetch;
+  });
 });
