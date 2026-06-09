@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { configDefaults } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -13,7 +12,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './setupTests.js',
     globals: true,
-    exclude: [...configDefaults.exclude, 'tests/e2e/**'],
+    exclude: [
+      '**/node_modules/**', 
+      '**/dist/**', 
+      '**/cypress/**', 
+      '**/.{idea,git,cache,output,temp}/**', 
+      'tests/e2e/**'
+    ],
     coverage: {
       provider: 'v8'
     }

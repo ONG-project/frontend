@@ -171,12 +171,25 @@ export default function AdminDashboardPage() {
   const handleNgoScore = (ngoId) =>
     withAction(`ngo-score-${ngoId}`, () => adminService.updateNgoScore(ngoId, Number(scoreEdits[ngoId])));
 
-  const handleNgoValidate = (ngoId) =>
-    withAction(`ngo-validate-${ngoId}`, async () => {
+  const handleNgoValidate = async (ngoId) => {
+    setActionLoading(`ngo-validate-${ngoId}`);
+    try {
       const result = await adminService.validateNgo(ngoId);
-      const score = result.validation?.score ?? result.ngo?.score;
-      showMessage(`Validação concluída. Score calculado: ${score}`, 'success');
-    });
+      const v = result.validation || {};
+      const cnpjOk  = v.cnpj_ativo  ? '✅ CNPJ Ativo (+50 pts)' : '❌ CNPJ Inativo (0 pts)';
+      const addrOk  = v.endereco_valido ? '✅ Endereço Consistente (+25 pts)' : '❌ Endereço Inconsistente (0 pts)';
+      const yearsOk = (v.anos_atuacao ?? 0) >= 5 ? `✅ ${v.anos_atuacao} anos de atividade (+25 pts)` : `⚠️ ${v.anos_atuacao ?? 0} anos (< 5 anos, 0 pts)`;
+      const score = v.score ?? result.ngo?.score ?? '?';
+      showMessage(
+        `CNPJ validado. Score calculado: ${score}/100 — ${cnpjOk} | ${addrOk} | ${yearsOk}`,
+        v.cnpj_ativo ? 'success' : 'error'
+      );
+    } catch (err) {
+      showMessage(err.message, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleNgoDelete = (ngoId, name) => {
     if (!window.confirm(`Excluir permanentemente a ONG "${name}" e sua conta de usuário?`)) return;
@@ -347,11 +360,10 @@ export default function AdminDashboardPage() {
             <button
               key={id}
               onClick={() => setActiveTab(id)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition ${
-                activeTab === id
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition ${activeTab === id
                   ? 'bg-[#0A665C] text-white shadow-sm'
                   : 'bg-white text-gray-600 border border-[#E5E2D9] hover:border-[#0A665C]'
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" /> {label}
             </button>

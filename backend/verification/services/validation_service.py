@@ -68,7 +68,7 @@ def _resolve_verification_status(cnpj_ativo: bool, endereco_valido: bool) -> str
     return NGO.VerificationStatus.ANALYSIS
 
 
-def validate_ngo(cnpj: str) -> dict:
+def validate_ngo(cnpj: str, persist: bool = True) -> dict:
     """
     Orchestrates the entire validation flow for an NGO:
     1. Queries CNPJá API.
@@ -76,7 +76,7 @@ def validate_ngo(cnpj: str) -> dict:
     3. Calculates years of operation.
     4. Queries official CEP API to validate address.
     5. Calculates reliability score.
-    6. Persists the score and verification data in the database.
+    6. Persists the score and verification data in the database (if persist=True).
     7. Returns consolidated result.
     """
     cnpj_digits = ''.join(filter(str.isdigit, str(cnpj)))
@@ -122,41 +122,45 @@ def validate_ngo(cnpj: str) -> dict:
         or f"NGO {cnpj_digits}"
     )
 
-    if ngo:
-        ngo.current_score = score
-        ngo.is_active = cnpj_ativo
-        ngo.years_operating = anos_atuacao
-        ngo.address_valid = endereco_valido
-        ngo.verification_status = verification_status
-        ngo.last_verified_at = now
-        ngo.city = city or ngo.city
-        ngo.state = state or ngo.state
-        ngo.save()
-        logger.info(
-            f"Updated score ({score}) and status ({verification_status}) "
-            f"for existing NGO CNPJ {cnpj_digits}."
-        )
+    if persist:
+        if ngo:
+            ngo.current_score = score
+            ngo.is_active = cnpj_ativo
+            ngo.years_operating = anos_atuacao
+            ngo.address_valid = endereco_valido
+            ngo.verification_status = verification_status
+            ngo.last_verified_at = now
+            ngo.city = city or ngo.city
+            ngo.state = state or ngo.state
+            ngo.save()
+            logger.info(
+                f"Updated score ({score}) and status ({verification_status}) "
+                f"for existing NGO CNPJ {cnpj_digits}."
+            )
+        else:
+            ngo = NGO.objects.create(
+                cnpj=cnpj_digits,
+                name=name,
+                current_score=score,
+                is_active=cnpj_ativo,
+                years_operating=anos_atuacao,
+                address_valid=endereco_valido,
+                verification_status=verification_status,
+                last_verified_at=now,
+                city=city,
+                state=state,
+                description=f"Automated verification for {name}",
+            )
+            logger.info(
+                f"Created new NGO '{name}' with score {score} "
+                f"and status {verification_status} for CNPJ {cnpj_digits}."
+            )
     else:
-        ngo = NGO.objects.create(
-            cnpj=cnpj_digits,
-            name=name,
-            current_score=score,
-            is_active=cnpj_ativo,
-            years_operating=anos_atuacao,
-            address_valid=endereco_valido,
-            verification_status=verification_status,
-            last_verified_at=now,
-            city=city,
-            state=state,
-            description=f"Automated verification for {name}",
-        )
-        logger.info(
-            f"Created new NGO '{name}' with score {score} "
-            f"and status {verification_status} for CNPJ {cnpj_digits}."
-        )
+        # If not persisting but ngo doesn't exist, we still return the ID as empty or fake
+        pass
 
     return {
-        "id": str(ngo.id),
+        "id": str(ngo.id) if ngo else None,
         "score": score,
         "cnpj_ativo": cnpj_ativo,
         "endereco_valido": endereco_valido,
