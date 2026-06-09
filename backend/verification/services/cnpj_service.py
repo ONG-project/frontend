@@ -62,8 +62,8 @@ def get_cnpj_data(cnpj: str) -> dict:
             
     except urllib.error.HTTPError as e:
         logger.error(f"HTTP Error querying CNPJá API: {e.code} for CNPJ {cnpj_digits}")
-        if e.code == 404:
-            raise CnpjNotFound(f"CNPJ {cnpj_digits} not found.")
+        if e.code == 404 or e.code == 400:
+            raise CnpjNotFound(f"CNPJ {cnpj_digits} not found or invalid.")
         raise ExternalApiError(f"CNPJ API returned HTTP error: {e.code}")
     except urllib.error.URLError as e:
         logger.error(f"URL Error querying CNPJá API: {e.reason} for CNPJ {cnpj_digits}")
