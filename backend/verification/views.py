@@ -18,6 +18,7 @@ from .ngo_response import (
 )
 from .services.validation_service import validate_ngo
 from .services.cnpj_service import ExternalApiError
+from .exceptions import CnpjNotFound
 
 
 @require_GET
@@ -64,11 +65,17 @@ def validate_ong_view(request):
         if not cnpj_input:
             return JsonResponse({"error": "CNPJ is required."}, status=400)
         
+        cnpj_digits = ''.join(filter(str.isdigit, str(cnpj_input)))
+        if len(cnpj_digits) != 14:
+            return JsonResponse({"error": "CNPJ format is invalid."}, status=400)
+        
         result = validate_ngo(cnpj_input)
         return JsonResponse(result)
 
     except json.JSONDecodeError:
         return JsonResponse({"error": "Invalid JSON."}, status=400)
+    except CnpjNotFound as e:
+        return JsonResponse({"error": str(e)}, status=404)
     except ExternalApiError as e:
         return JsonResponse({"error": str(e)}, status=502)
     except Exception as e:

@@ -32,3 +32,21 @@ db.sqlite3
 
 # Arquivos temporários do Gemini / Antigravity
 scratch/
+
+# Cobertura e Cache de Testes
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
+
+# Logs e arquivos de texto gerados nos testes
+test_out.txt
+test_out_utf8.txt
+failures.txt
+
+# Arquivos/Pastas de CI
+.github/
