@@ -133,9 +133,69 @@ O frontend e uma SPA em React + Vite. O escopo esperado inclui telas publicas, a
 
 ---
 
+## Testes Automatizados
+
+O projeto utiliza suítes de testes tanto para o Backend quanto para o Frontend, focando em garantir a qualidade e cobertura.
+
+### Backend (Django + Pytest)
+A suíte do backend testa as rotas, regras de negócio e cobertura de código.
+
+**1. Instalar dependências de desenvolvimento:**
+```bash
+cd backend
+python -m venv .venv
+
+# No Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# No Windows (CMD):
+# .venv\Scripts\activate.bat
+
+# No Linux/Mac:
+# source .venv/bin/activate
+
+pip install -r requirements-dev.txt
+```
+
+**2. Executar os testes e relatório de cobertura:**
+```bash
+pytest
+```
+
+### Frontend (Vitest + Playwright)
+A suíte do frontend é dividida em testes unitários/integração (Vitest) e testes End-to-End (Playwright).
+
+**1. Instalar dependências:**
+```bash
+cd frontend
+npm install
+```
+
+**2. Executar testes unitários e de integração:**
+```bash
+# Rodar testes em modo watch
+npm run test
+
+# Rodar testes com interface de usuário
+npm run test:ui
+
+# Rodar testes e checar cobertura
+npm run test:coverage
+```
+
+**3. Executar testes E2E (Playwright):**
+```bash
+# Instalar navegadores do Playwright (apenas primeira vez)
+npx playwright install --with-deps chromium
+
+# Executar a suíte End-to-End
+npm run test:e2e
+```
+
+---
+
 ## Como Executar Localmente
 
-Consulte o guia de execucao:
+Consulte o guia de execução:
 
 - [How to Run](docs/how_to_run.md)
 

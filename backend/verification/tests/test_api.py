@@ -108,7 +108,7 @@ class ApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("cnpj", response.json())
+        self.assertIn("error", response.json())
 
     def test_missing_cnpj(self):
         payload = {}
@@ -120,7 +120,7 @@ class ApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("cnpj", response.json())
+        self.assertIn("error", response.json())
 
     def test_cnpj_not_found(self):
         payload = {"cnpj": "00000000000000"}

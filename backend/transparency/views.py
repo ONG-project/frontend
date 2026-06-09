@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from django.conf import settings
 from django.utils import timezone
 from django.core.files.base import ContentFile
@@ -327,7 +328,7 @@ def _serialize_report(report):
 
 
 def _cleanup_orphan_report_files():
-    reports_dir = settings.MEDIA_ROOT / 'ngo_reports'
+    reports_dir = Path(settings.MEDIA_ROOT) / 'ngo_reports'
     if not reports_dir.is_dir():
         return 0
 
